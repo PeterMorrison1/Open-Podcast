@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Open Podcast</string>
+    <string name="subscribed">Subscribed Podcasts</string>
+    <string name="search">Find New Podcasts</string>
+    <string name="header_title">Open Podcast</string>
 </resources>
