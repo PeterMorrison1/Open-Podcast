@@ -3,4 +3,5 @@
     <string name="subscribed">Subscribed Podcasts</string>
     <string name="search">Find New Podcasts</string>
     <string name="header_title">Open Podcast</string>
+    <string name="search_title">New title or author to search</string>
 </resources>
