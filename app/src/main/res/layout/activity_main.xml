@@ -7,6 +7,12 @@
     android:fitsSystemWindows="true">
 
     <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/search_fragment"
+        android:orientation="vertical" />
+
+    <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >

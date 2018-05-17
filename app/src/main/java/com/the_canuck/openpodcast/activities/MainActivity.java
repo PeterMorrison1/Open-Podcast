@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -18,8 +19,10 @@ import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.fragments.SearchFragment;
+import com.the_canuck.openpodcast.fragments.dummy.DummyContent;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchFragment.OnListFragmentInteractionListener {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private DrawerLayout mDrawerLayout;
@@ -76,6 +79,13 @@ public class MainActivity extends AppCompatActivity {
             Log.v(LOG_TAG, "handleIntent(): query = " + query);
             //TODO: Do stuff with the query info, likely send to search fragment in bundle
             Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
+//            Bundle bundle = new Bundle();
+//            bundle.putString("query", query);
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.search_fragment, new SearchFragment());
+            transaction.commit();
+
         }
     }
 
@@ -107,5 +117,8 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
 
+    }
 }
