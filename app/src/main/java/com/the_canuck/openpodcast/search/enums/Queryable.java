@@ -1,4 +1,4 @@
-package com.the_canuck.openpodcast.search;
+package com.the_canuck.openpodcast.search.enums;
 
 public enum Queryable {
     MEDIA("media"),
@@ -7,7 +7,7 @@ public enum Queryable {
     COUNTRY("country");
 
     private final String value;
-    private Queryable(String value) {
+    Queryable(String value) {
         this.value = value;
     }
 

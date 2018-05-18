@@ -2,6 +2,8 @@ package com.the_canuck.openpodcast.search;
 
 import android.util.Log;
 
+import com.the_canuck.openpodcast.search.enums.Queryable;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 

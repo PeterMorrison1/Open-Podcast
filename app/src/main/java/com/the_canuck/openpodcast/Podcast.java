@@ -1,41 +1,142 @@
 package com.the_canuck.openpodcast;
 
 public class Podcast {
-    private String id;
-    private String title;
-    private String author;
+    private int collectionId;
+    private String collectionName;
+    private String artistName;
+    private int trackCount;
+    private String artworkUrl30;
+    private String artworkUrl60;
+    private String artworkUrl100;
+    private String artworkUrl600;
+    private String censoredName;
 
-    public Podcast(String id, String title, String author) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
+
+    public Podcast(PodcastBuilder builder) {
+        collectionId = builder.collectionId;
+        collectionName = builder.collectionName;
+        artistName = builder.artistName;
+        trackCount = builder.trackCount;
+        artworkUrl30 = builder.artworkUrl30;
+        artworkUrl60 = builder.artworkUrl60;
+        artworkUrl100 = builder.artworkUrl100;
+        artworkUrl600 = builder.artworkUrl600;
+        censoredName = builder.censoredName;
     }
 
-    public String getId() {
-        return id;
+    public int getCollectionId() {
+        return collectionId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getCollectionName() {
+        return collectionName;
     }
 
-    public String getTitle() {
-        return title;
+    public String getArtistName() {
+        return artistName;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public int getTrackCount() {
+        return trackCount;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getArtworkUrl30() {
+        return artworkUrl30;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public String getArtworkUrl60() {
+        return artworkUrl60;
+    }
+
+    public String getArtworkUrl100() {
+        return artworkUrl100;
+    }
+
+    public String getArtworkUrl600() {
+        return artworkUrl600;
+    }
+
+    public String getCensoredName() {
+        return censoredName;
+    }
+
+    public static class PodcastBuilder {
+        String collectionName, artistName, artworkUrl30, artworkUrl60, artworkUrl100,
+                artworkUrl600, censoredName;
+        int trackCount, collectionId;
+
+//        public PodcastBuilder(int collectionId, String collectionName, String artistName, String artworkUrl30, String artworkUrl60, String artworkUrl100, String artworkUrl600, int trackCount) {
+//            this.collectionId = collectionId;
+//            this.collectionName = collectionName;
+//            this.artistName = artistName;
+//            this.artworkUrl30 = artworkUrl30;
+//            this.artworkUrl60 = artworkUrl60;
+//            this.artworkUrl100 = artworkUrl100;
+//            this.artworkUrl600 = artworkUrl600;
+//            this.trackCount = trackCount;
+//        }
+
+        public PodcastBuilder setCollectionId(int collectionId) {
+            this.collectionId = collectionId;
+            return this;
+        }
+
+        public PodcastBuilder setCollectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public PodcastBuilder setArtistName(String artistName) {
+            this.artistName = artistName;
+            return this;
+        }
+
+        public PodcastBuilder setArtworkUrl30(String artworkUrl30) {
+            this.artworkUrl30 = artworkUrl30;
+            return this;
+        }
+
+        public PodcastBuilder setArtworkUrl60(String artworkUrl60) {
+            this.artworkUrl60 = artworkUrl60;
+            return this;
+        }
+
+        public PodcastBuilder setArtworkUrl100(String artworkUrl100) {
+            this.artworkUrl100 = artworkUrl100;
+            return this;
+        }
+
+        public PodcastBuilder setArtworkUrl600(String artworkUrl600) {
+            this.artworkUrl600 = artworkUrl600;
+            return this;
+        }
+
+        public PodcastBuilder setTrackCount(int trackCount) {
+            this.trackCount = trackCount;
+            return this;
+        }
+
+        public PodcastBuilder setCensoredName(String censoredName) {
+            this.censoredName = censoredName;
+            return this;
+        }
+
+        public Podcast build() {
+            return new Podcast(this);
+        }
     }
     @Override
     public String toString() {
-        return title;
+        return "Podcast{" +
+                "collectionId='" + collectionId + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", artistName='" + artistName + '\'' +
+                ", trackCount=" + trackCount +
+                ", artworkUrl30='" + artworkUrl30 + '\'' +
+                ", artworkUrl60='" + artworkUrl60 + '\'' +
+                ", artworkUrl100='" + artworkUrl100 + '\'' +
+                ", artworkUrl600='" + artworkUrl600 + '\'' +
+                ", censoredName='" + censoredName + '\'' +
+                '}';
     }
 }

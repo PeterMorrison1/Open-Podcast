@@ -2,11 +2,10 @@ package com.the_canuck.openpodcast.search;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.ProgressBar;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.SearchResponseHolder;
-import com.the_canuck.openpodcast.activities.MainActivity;
+import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,7 +52,6 @@ public class SearchHelper {
      */
     public List<Podcast> populatePodcastList() {
         try {
-        Podcast podcast;
         List<Podcast> podcasts = new ArrayList<>();
         JSONObject response = new JSONObject(holder.getResults());
         JSONArray jsonArray = response.getJSONArray("results");
@@ -63,12 +61,31 @@ public class SearchHelper {
             Log.d("JSON TEST", "Test: " + i + "Title= " +
                     object.getString("trackName"));
 
-            // TODO: Add rest of the parameters to podcast object
-            podcast = new Podcast(Integer.toString(i),
-                    object.getString("trackName"), "hi");
-            podcasts.add(podcast);
+            podcasts.add(buildPodcast(object));
         }
         return podcasts;
+        } catch (JSONException e) {
+            Log.e("SearchHelper.class", "JSONException: " + e);
+        }
+        return null;
+    }
+
+    private Podcast buildPodcast(JSONObject object) {
+        try {
+            Podcast podcast = new Podcast.PodcastBuilder()
+                    .setCollectionName(object.getString(ItunesJsonKeys.COLLECTIONNAME.getValue()))
+                    .setCensoredName(object.getString
+                            (ItunesJsonKeys.COLLECTIONCENSOREDNAME.getValue()))
+                    .setCollectionId(Integer.valueOf(object.getString
+                            (ItunesJsonKeys.COLLECTIONID.getValue())))
+                    .setArtistName(object.getString(ItunesJsonKeys.ARTISTNAME.getValue()))
+                    .setArtworkUrl30(object.getString(ItunesJsonKeys.ARTWORKURL30.getValue()))
+                    .setArtworkUrl60(object.getString(ItunesJsonKeys.ARTWORKURL60.getValue()))
+                    .setArtworkUrl100(object.getString(ItunesJsonKeys.ARTWORKURL100.getValue()))
+                    .setArtworkUrl600(object.getString(ItunesJsonKeys.ARTWORKURL600.getValue()))
+                    .build();
+
+            return podcast;
         } catch (JSONException e) {
             Log.e("SearchHelper.class", "JSONException: " + e);
         }

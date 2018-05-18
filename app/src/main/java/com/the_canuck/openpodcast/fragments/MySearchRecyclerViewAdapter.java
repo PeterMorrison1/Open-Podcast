@@ -10,6 +10,7 @@ import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.SearchFragment.OnListFragmentInteractionListener;
 
+import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -38,8 +39,8 @@ public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRe
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).getId());
-        holder.mContentView.setText(mValues.get(position).getTitle());
+        holder.mIdView.setText(Integer.toString(mValues.get(position).getCollectionId()));
+        holder.mContentView.setText(mValues.get(position).getCollectionName());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
