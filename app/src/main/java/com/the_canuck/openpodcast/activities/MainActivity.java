@@ -18,9 +18,9 @@ import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
+import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.SearchFragment;
-import com.the_canuck.openpodcast.fragments.dummy.DummyContent;
 
 public class MainActivity extends AppCompatActivity implements SearchFragment.OnListFragmentInteractionListener {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -79,13 +79,15 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
             Log.v(LOG_TAG, "handleIntent(): query = " + query);
             //TODO: Do stuff with the query info, likely send to search fragment in bundle
             Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
-//            Bundle bundle = new Bundle();
-//            bundle.putString("query", query);
+            Bundle bundle = new Bundle();
+            bundle.putString("query", query);
+
+            SearchFragment searchFragment = new SearchFragment();
+            searchFragment.setArguments(bundle);
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.search_fragment, new SearchFragment());
+            transaction.add(R.id.search_fragment, searchFragment);
             transaction.commit();
-
         }
     }
 
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(Podcast item) {
 
     }
 }

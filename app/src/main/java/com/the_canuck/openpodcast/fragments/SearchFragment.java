@@ -3,16 +3,21 @@ package com.the_canuck.openpodcast.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
+import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.fragments.dummy.DummyContent;
-import com.the_canuck.openpodcast.fragments.dummy.DummyContent.DummyItem;
+import com.the_canuck.openpodcast.activities.MainActivity;
+import com.the_canuck.openpodcast.search.SearchHelper;
 
 import java.util.List;
 
@@ -29,6 +34,7 @@ public class SearchFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private String query;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -50,7 +56,10 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            query = bundle.getString("query", "test");
+        }
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
@@ -70,9 +79,21 @@ public class SearchFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(SearchPodcasts(query), mListener));
         }
         return view;
+    }
+
+    /**
+     * Runs the SearchHelper and returns the podcast list.
+     *
+     * @param query term entered by user to search for
+     * @return the list of podcast objects
+     */
+    public List<Podcast> SearchPodcasts(String query) {
+        SearchHelper searchHelper = new SearchHelper(query);
+        searchHelper.runSearch();
+        return searchHelper.populatePodcastList();
     }
 
 
@@ -105,6 +126,6 @@ public class SearchFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(Podcast item);
     }
 }

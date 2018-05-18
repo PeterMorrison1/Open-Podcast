@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.SearchFragment.OnListFragmentInteractionListener;
 import com.the_canuck.openpodcast.fragments.dummy.DummyContent.DummyItem;
@@ -19,10 +20,11 @@ import java.util.List;
  */
 public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+//    private final List<DummyItem> mValues;
+    private final List<Podcast> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MySearchRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public MySearchRecyclerViewAdapter(List<Podcast> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -37,8 +39,8 @@ public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRe
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        holder.mIdView.setText(mValues.get(position).getId());
+        holder.mContentView.setText(mValues.get(position).getTitle());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,7 +63,8 @@ public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRe
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
-        public DummyItem mItem;
+//        public DummyItem mItem;
+        public Podcast mItem;
 
         public ViewHolder(View view) {
             super(view);
