@@ -1,6 +1,7 @@
 package com.the_canuck.openpodcast.fragments;
 
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,6 @@ import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.SearchFragment.OnListFragmentInteractionListener;
 
-import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -35,7 +35,7 @@ public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRe
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_search, parent, false);
+                .inflate(R.layout.search_list_row, parent, false);
         return new ViewHolder(view);
     }
 
@@ -53,7 +53,12 @@ public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRe
                 .apply(myOptions)
                 .into(holder.mImageView);
 
-        holder.mContentView.setText(mValues.get(position).getCollectionName());
+        holder.mTitleView.setText(mValues.get(position).getCollectionName());
+        holder.mTitleView.setEllipsize(TextUtils.TruncateAt.END);
+        holder.mTitleView.setMaxLines(1);
+        holder.mAuthorView.setText(mValues.get(position).getArtistName());
+        holder.mAuthorView.setEllipsize(TextUtils.TruncateAt.END);
+        holder.mAuthorView.setMaxLines(1);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,19 +80,21 @@ public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRe
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final ImageView mImageView;
-        public final TextView mContentView;
+        public final TextView mTitleView;
+        public final TextView mAuthorView;
         public Podcast mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mImageView = view.findViewById(R.id.podcast_image);
-            mContentView = view.findViewById(R.id.content);
+            mImageView = view.findViewById(R.id.pod_image);
+            mTitleView = view.findViewById(R.id.pod_title);
+            mAuthorView = view.findViewById(R.id.pod_author);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + mTitleView.getText() + "'";
         }
     }
 }

@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
 
         SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setSubmitButtonEnabled(true);
+//        searchView.setSubmitButtonEnabled(true);
 
         // This code below can change the icons of the search bar
 //        ImageView searchCloseIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
