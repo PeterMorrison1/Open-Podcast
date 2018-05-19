@@ -33,6 +33,7 @@ public class SearchHelper {
         UrlBuilder urlBuilder = new UrlBuilder(query);
 
         String url = urlBuilder.getSearchUrl();
+        Log.d("Test URL", "Test url entered: " + url);
         new HttpTask().execute(url);
         try {
             while (holder.getResults() == null) {
@@ -101,7 +102,7 @@ public class SearchHelper {
             HttpURLConnection connection = null;
             BufferedReader bufferedReader = null;
             try {
-                URL url = new URL(strings[0]);
+                URL url = new URL(strings[0].replace("%2B", "+"));
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
 
