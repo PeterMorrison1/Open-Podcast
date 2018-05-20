@@ -46,52 +46,10 @@ public class SearchHelper {
         Log.v("Results", "Test Results: " + holder.getResults());
     }
 
-    /**
-     * Creates a list of podcast objects created from json response in holder.
-     *
-     * @return list of podcasts
-     */
-    public List<Podcast> populatePodcastList() {
-        try {
-        List<Podcast> podcasts = new ArrayList<>();
-        JSONObject response = new JSONObject(holder.getResults());
-        JSONArray jsonArray = response.getJSONArray("results");
-
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject object = jsonArray.getJSONObject(i);
-            Log.d("JSON TEST", "Test: " + i + "Title= " +
-                    object.getString("trackName"));
-
-            podcasts.add(buildPodcast(object));
-        }
-        return podcasts;
-        } catch (JSONException e) {
-            Log.e("SearchHelper.class", "JSONException: " + e);
-        }
-        return null;
+    public SearchResponseHolder getHolder() {
+        return holder;
     }
 
-    private Podcast buildPodcast(JSONObject object) {
-        try {
-            Podcast podcast = new Podcast.PodcastBuilder()
-                    .setCollectionName(object.getString(ItunesJsonKeys.COLLECTIONNAME.getValue()))
-                    .setCensoredName(object.getString
-                            (ItunesJsonKeys.COLLECTIONCENSOREDNAME.getValue()))
-                    .setCollectionId(Integer.valueOf(object.getString
-                            (ItunesJsonKeys.COLLECTIONID.getValue())))
-                    .setArtistName(object.getString(ItunesJsonKeys.ARTISTNAME.getValue()))
-                    .setArtworkUrl30(object.getString(ItunesJsonKeys.ARTWORKURL30.getValue()))
-                    .setArtworkUrl60(object.getString(ItunesJsonKeys.ARTWORKURL60.getValue()))
-                    .setArtworkUrl100(object.getString(ItunesJsonKeys.ARTWORKURL100.getValue()))
-                    .setArtworkUrl600(object.getString(ItunesJsonKeys.ARTWORKURL600.getValue()))
-                    .build();
-
-            return podcast;
-        } catch (JSONException e) {
-            Log.e("SearchHelper.class", "JSONException: " + e);
-        }
-        return null;
-    }
 
     /**
      * Connects to the itunes search api and sets the holder result value to the returned json info.

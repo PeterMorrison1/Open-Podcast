@@ -19,6 +19,7 @@ import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.activities.MainActivity;
 import com.the_canuck.openpodcast.search.SearchHelper;
+import com.the_canuck.openpodcast.search.SearchResultHelper;
 
 import java.util.List;
 
@@ -96,7 +97,7 @@ public class SearchFragment extends Fragment {
     public List<Podcast> SearchPodcasts(String query) {
         SearchHelper searchHelper = new SearchHelper(query);
         searchHelper.runSearch();
-        return searchHelper.populatePodcastList();
+        return SearchResultHelper.populatePodcastList(searchHelper.getHolder().getResults());
     }
 
 
