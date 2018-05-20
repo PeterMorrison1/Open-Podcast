@@ -30,9 +30,9 @@ public class SearchHelper {
     }
 
     public void runSearch() {
-        UrlBuilder urlBuilder = new UrlBuilder(query);
+        UrlBuilder urlBuilder = new UrlBuilder();
+        String url = urlBuilder.createQueryUrl(urlBuilder.encodeQueryTerms(query));
 
-        String url = urlBuilder.getSearchUrl();
         Log.d("Test URL", "Test url entered: " + url);
         new HttpTask().execute(url);
         try {
@@ -143,7 +143,6 @@ public class SearchHelper {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.v("results", "OnPostExecute s: " + s);
         }
     }
 

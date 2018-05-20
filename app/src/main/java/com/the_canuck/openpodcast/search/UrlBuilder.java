@@ -1,6 +1,5 @@
 package com.the_canuck.openpodcast.search;
 
-import android.util.Log;
 
 import com.the_canuck.openpodcast.search.enums.Queryable;
 
@@ -10,11 +9,8 @@ import java.net.URLEncoder;
 import okhttp3.HttpUrl;
 
 public class UrlBuilder {
-    private final String APPLE_API_ENDPOINT = "https://itunes.apple.com/search?";
-    private String query;
 
-    public UrlBuilder(String query) {
-        this.query = query;
+    public UrlBuilder() {
     }
 
     /**
@@ -22,14 +18,13 @@ public class UrlBuilder {
      *
      * @return encoded query terms
      */
-    private String encodeQueryTerms() {
+    public String encodeQueryTerms(String query) {
         // Not 100% if this is useful. TODO: Test if this is needed.
         String encodedTerms = "";
         try {
             encodedTerms = URLEncoder.encode(query, "UTF-8");
-            encodedTerms = encodedTerms.replace("%2B", "+");
         } catch (UnsupportedEncodingException e) {
-            Log.e("UrlBuilder.class", "UnsupportedEncodingException: " + e);
+            e.printStackTrace();
         }
         return encodedTerms;
     }
@@ -40,22 +35,23 @@ public class UrlBuilder {
      * @param query terms entered by user to search for
      * @return complete url for search terms on itunes
      */
-    private String createQueryUrl(String query) {
+    public String createQueryUrl(String query) {
         final String PODCAST = "podcast";
+        String APPLE_API_ENDPOINT = "https://itunes.apple.com/search?";
         HttpUrl.Builder builder = HttpUrl.parse(APPLE_API_ENDPOINT).newBuilder();
 
-        builder.addQueryParameter(Queryable.TERM.getValue(), query);
-        builder.addQueryParameter(Queryable.MEDIA.getValue(), PODCAST);
+        builder.addEncodedQueryParameter(Queryable.TERM.getValue(), query);
+        builder.addEncodedQueryParameter(Queryable.MEDIA.getValue(), PODCAST);
 
         return builder.build().toString();
     }
 
-    /**
-     * Runs the query term encoder and passes the result to create the query term url.
-     *
-     * @return complete url for search terms on itunes
-     */
-    public String getSearchUrl() {
-        return createQueryUrl(encodeQueryTerms());
-    }
+//    /**
+//     * Runs the query term encoder and passes the result to create the query term url.
+//     *
+//     * @return complete url for search terms on itunes
+//     */
+//    public String getSearchUrl(String query) {
+//        return createQueryUrl(encodeQueryTerms(query));
+//    }
 }
