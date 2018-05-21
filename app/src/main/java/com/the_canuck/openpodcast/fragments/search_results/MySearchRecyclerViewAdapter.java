@@ -1,4 +1,4 @@
-package com.the_canuck.openpodcast.fragments;
+package com.the_canuck.openpodcast.fragments.search_results;
 
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -12,7 +12,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.fragments.SearchFragment.OnListFragmentInteractionListener;
+import com.the_canuck.openpodcast.activities.MainActivity;
+import com.the_canuck.openpodcast.fragments.search_results.SearchFragment.OnListFragmentInteractionListener;
 
 import java.util.List;
 

@@ -1,9 +1,8 @@
-package com.the_canuck.openpodcast.fragments;
+package com.the_canuck.openpodcast.fragments.search_results;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,13 +10,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.activities.MainActivity;
 import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
 
@@ -99,7 +94,6 @@ public class SearchFragment extends Fragment {
         searchHelper.runSearch();
         return SearchResultHelper.populatePodcastList(searchHelper.getHolder().getResults());
     }
-
 
     @Override
     public void onAttach(Context context) {

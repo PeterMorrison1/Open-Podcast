@@ -11,19 +11,19 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
-import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.fragments.SearchFragment;
+import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
+import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 
-public class MainActivity extends AppCompatActivity implements SearchFragment.OnListFragmentInteractionListener {
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+public class MainActivity extends AppCompatActivity implements SearchFragment.OnListFragmentInteractionListener,
+PodcastListDialogFragment.Listener{
 
     private DrawerLayout mDrawerLayout;
 
@@ -76,9 +76,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Log.v(LOG_TAG, "handleIntent(): query = " + query);
-            //TODO: Do stuff with the query info, likely send to search fragment in bundle
-            Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
+
             Bundle bundle = new Bundle();
             bundle.putString("query", query);
 
@@ -120,7 +118,15 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
     }
 
     @Override
-    public void onListFragmentInteraction(Podcast item) {
+    public void onPodcastClicked(int position) {
 
+    }
+
+    @Override
+    public void onListFragmentInteraction(Podcast item) {
+        PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
+                item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
+                item.getCensoredName(), item.getTrackCount()).show(getSupportFragmentManager(),
+                "dialog");
     }
 }
