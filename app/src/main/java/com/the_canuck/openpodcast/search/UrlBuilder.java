@@ -45,13 +45,4 @@ public class UrlBuilder {
 
         return builder.build().toString();
     }
-
-//    /**
-//     * Runs the query term encoder and passes the result to create the query term url.
-//     *
-//     * @return complete url for search terms on itunes
-//     */
-//    public String getSearchUrl(String query) {
-//        return createQueryUrl(encodeQueryTerms(query));
-//    }
 }

@@ -22,8 +22,8 @@ import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 
-public class MainActivity extends AppCompatActivity implements SearchFragment.OnListFragmentInteractionListener,
-PodcastListDialogFragment.Listener{
+public class MainActivity extends AppCompatActivity implements
+        SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener{
 
     private DrawerLayout mDrawerLayout;
 
@@ -111,7 +111,8 @@ PodcastListDialogFragment.Listener{
 //        searchView.setSubmitButtonEnabled(true);
 
         // This code below can change the icons of the search bar
-//        ImageView searchCloseIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
+//        ImageView searchCloseIcon = searchView.findViewById
+//                (android.support.v7.appcompat.R.id.search_close_btn);
 //        searchCloseIcon.setImageResource(R.drawable.ic_close_white_24dp);
 
         return true;

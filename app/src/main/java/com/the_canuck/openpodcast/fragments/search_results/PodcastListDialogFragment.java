@@ -140,6 +140,15 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 .into(image);
     }
 
+    /**
+     * Gets the dominant colour swatch of the image and sets the constraint layout and text views
+     * with appropriate colours.
+     *
+     * @param resource bitmap of the podcast artwork
+     * @param title textview of the podcast title
+     * @param artist textview of the podcast artist
+     * @param constraintLayout layout holding the artwork, title, and artist in bottom sheet
+     */
     public void setBottomSheetColours(Bitmap resource, TextView title, TextView artist,
                                       ConstraintLayout constraintLayout) {
         if (resource != null) {

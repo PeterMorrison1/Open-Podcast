@@ -22,13 +22,15 @@ import java.util.List;
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MySearchRecyclerViewAdapter extends RecyclerView.Adapter<MySearchRecyclerViewAdapter.ViewHolder> {
+public class MySearchRecyclerViewAdapter extends
+        RecyclerView.Adapter<MySearchRecyclerViewAdapter.ViewHolder> {
 
 //    private final List<DummyItem> mValues;
     private final List<Podcast> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MySearchRecyclerViewAdapter(List<Podcast> items, OnListFragmentInteractionListener listener) {
+    public MySearchRecyclerViewAdapter(List<Podcast> items,
+                                       OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
