@@ -1,10 +1,15 @@
 package com.the_canuck.openpodcast.fragments.search_results;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.graphics.Palette;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -16,7 +21,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
 
@@ -75,33 +85,75 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         final RecyclerView recyclerView = view.findViewById(R.id.bottom_sheet_recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.setAdapter(new PodcastAdapter(30));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),
+                LinearLayoutManager.VERTICAL));
 
-        TextView title = view.findViewById(R.id.bottom_sheet_title);
+
+        final TextView title = view.findViewById(R.id.bottom_sheet_title);
         title.setEllipsize(TextUtils.TruncateAt.END);
         title.setMaxLines(1);
 
-        TextView artist = view.findViewById(R.id.bottom_sheet_artist);
+        final TextView artist = view.findViewById(R.id.bottom_sheet_artist);
         artist.setEllipsize(TextUtils.TruncateAt.END);
         artist.setMaxLines(1);
 
-        ImageView image = view.findViewById(R.id.bottom_sheet_image);
-        TextView description = view.findViewById(R.id.bottom_sheet_description);
+        final ImageView image = view.findViewById(R.id.bottom_sheet_image);
+        final TextView description = view.findViewById(R.id.bottom_sheet_description);
+
+        final ConstraintLayout constraintLayout = view.findViewById(R.id.bottom_sheet_constraint_colour);
 
         title.setText(collectionName);
         artist.setText(artistName);
-        RequestOptions myOptions = new RequestOptions()
+        final RequestOptions myOptions = new RequestOptions()
                 .fitCenter()
                 .placeholder(R.drawable.ic_image_black_48dp)
                 .error(R.drawable.ic_error_black_24dp)
                 .override(600, 600);
+
         Glide.with(view.getContext())
+                .asBitmap()
                 .load(artwork600)
+                .thumbnail(0.1f)
+                .listener(new RequestListener<Bitmap>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model,
+                                                Target<Bitmap> target, boolean isFirstResource) {
+                        Glide.with(view.getContext()).load(artwork100).apply(myOptions).into(image);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Bitmap resource, Object model,
+                                                   Target<Bitmap> target, DataSource dataSource,
+                                                   boolean isFirstResource) {
+                        startPostponedEnterTransition();
+                        setBottomSheetColours(resource, title, artist, constraintLayout);
+                        return false;
+                    }
+                })
                 .apply(myOptions)
                 .into(image);
+    }
+
+    public void setBottomSheetColours(Bitmap resource, TextView title, TextView artist,
+                                      ConstraintLayout constraintLayout) {
+        if (resource != null) {
+            int defaultColour = 0x000000;
+            Palette palette = Palette.from(resource).generate();
+            Palette.Swatch dominantSwatch = palette.getDominantSwatch();
+            if (dominantSwatch != null) {
+                constraintLayout.setBackgroundColor(dominantSwatch.getRgb());
+                title.setTextColor(dominantSwatch.getTitleTextColor());
+                artist.setTextColor(dominantSwatch.getBodyTextColor());
+            } else {
+                constraintLayout.setBackgroundColor(defaultColour);
+            }
+        }
     }
 
     @Override
@@ -119,15 +171,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     public void onDetach() {
         mListener = null;
         super.onDetach();
-    }
-
-    public int getTrackCount() {
-        return trackCount;
-    }
-
-    public PodcastListDialogFragment setTrackCount(int trackCount) {
-        PodcastListDialogFragment.trackCount = trackCount;
-        return this;
     }
 
     public interface Listener {
@@ -171,7 +214,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            holder.episode.setText(String.valueOf(position));
+            String episodeNum = String.valueOf(position);
+            holder.episode.setText("Episode: " + episodeNum);
         }
 
         @Override
