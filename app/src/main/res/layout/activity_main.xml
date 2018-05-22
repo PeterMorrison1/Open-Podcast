@@ -6,16 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
-    <!--<include layout="@layout/fragment_container" />-->
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-    <!--FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/search_fragment"
-        android:orientation="vertical" /-->
+    <include layout="@layout/fragment_container" />
 
     <FrameLayout
         android:id="@+id/content_frame"
