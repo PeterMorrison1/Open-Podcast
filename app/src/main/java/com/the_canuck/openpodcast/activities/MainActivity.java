@@ -1,10 +1,12 @@
 package com.the_canuck.openpodcast.activities;
 
+import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,20 +14,24 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
+import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
 import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 
 public class MainActivity extends AppCompatActivity implements
-        SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener{
+        SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
+        LibraryFragment.OnListFragmentInteractionListener {
 
     private DrawerLayout mDrawerLayout;
+    final String LIBRARY_TAG = "library";
+    final String SEARCH_TAG = "search";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +41,16 @@ public class MainActivity extends AppCompatActivity implements
         handleIntent(getIntent());
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        
+
+        // Sets the fragment container as library fragment on startup
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
+            Fragment libraryFragment = new LibraryFragment();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.fragment_container, libraryFragment);
+            transaction.addToBackStack(LIBRARY_TAG);
+            transaction.commit();
+        }
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -44,13 +59,25 @@ public class MainActivity extends AppCompatActivity implements
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setCheckedItem(R.id.nav_subscribed);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        navigationView.setNavigationItemSelectedListener
+                (new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 item.setChecked(true);
 
                 switch (item.getItemId()) {
                     case R.id.nav_subscribed:
+                        Fragment f = getSupportFragmentManager().findFragmentById
+                                (R.id.fragment_container);
+                        if (f instanceof LibraryFragment) {
+                            mDrawerLayout.closeDrawers();
+                            return true;
+                        } else {
+                            getSupportFragmentManager().popBackStack(LIBRARY_TAG,
+                                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                            Fragment libraryFrag = new LibraryFragment();
+                            replaceFragment(libraryFrag, LIBRARY_TAG);
+                        }
                         mDrawerLayout.closeDrawers();
                         return true;
 
@@ -61,6 +88,16 @@ public class MainActivity extends AppCompatActivity implements
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() == 1) {
+            finish();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -82,10 +119,7 @@ public class MainActivity extends AppCompatActivity implements
 
             SearchFragment searchFragment = new SearchFragment();
             searchFragment.setArguments(bundle);
-
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.search_fragment, searchFragment);
-            transaction.commit();
+            replaceFragment(searchFragment, SEARCH_TAG);
         }
     }
 
@@ -100,15 +134,45 @@ public class MainActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Swaps out current fragment in fragment container for new fragment, adds old to backstack.
+     *
+     * @param newFragment new fragment being created/put in view
+     * @param tag tag of the fragment for possible query later
+     */
+    public void replaceFragment(Fragment newFragment, String tag) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, newFragment);
+        transaction.addToBackStack(tag);
+        transaction.commit();
+    }
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 //        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // closes the search menu so you don't have to hit backbutton 3 times to go back
+                searchItem.collapseActionView();
+                getSupportFragmentManager().popBackStack(SEARCH_TAG,
+                        FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         // This code below can change the icons of the search bar
 //        ImageView searchCloseIcon = searchView.findViewById
@@ -129,5 +193,10 @@ public class MainActivity extends AppCompatActivity implements
                 item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
                 item.getCensoredName(), item.getTrackCount()).show(getSupportFragmentManager(),
                 "dialog");
+    }
+
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
     }
 }

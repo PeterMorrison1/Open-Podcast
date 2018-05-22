@@ -1,9 +1,8 @@
-package com.the_canuck.openpodcast.fragments.search_results;
+package com.the_canuck.openpodcast.fragments.library;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,10 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.search.SearchHelper;
-import com.the_canuck.openpodcast.search.SearchResultHelper;
+import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
+import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent.DummyItem;
 
 import java.util.List;
 
@@ -24,26 +22,25 @@ import java.util.List;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class SearchFragment extends Fragment {
+public class LibraryFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
-    private int mColumnCount = 1;
+    private int mColumnCount = 3;
     private OnListFragmentInteractionListener mListener;
-    private String query;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public SearchFragment() {
+    public LibraryFragment() {
     }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static SearchFragment newInstance(int columnCount) {
-        SearchFragment fragment = new SearchFragment();
+    public static LibraryFragment newInstance(int columnCount) {
+        LibraryFragment fragment = new LibraryFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -53,10 +50,7 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            query = bundle.getString("query", "test");
-        }
+
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
@@ -65,36 +59,22 @@ public class SearchFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_search_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_library_list, container, false);
 
         // Set the adapter
-        if (view.findViewById(R.id.recycler_view) instanceof RecyclerView) {
+        if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
-            recyclerView.requestFocus();
+            RecyclerView recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(SearchPodcasts(query), mListener));
-            recyclerView.addItemDecoration(new DividerItemDecoration
-                    (view.getContext(), LinearLayoutManager.VERTICAL));
+            recyclerView.setAdapter(new MyLibraryRecyclerViewAdapter(DummyContent.ITEMS, mListener));
         }
         return view;
     }
 
-    /**
-     * Runs the SearchHelper and returns the podcast list.
-     *
-     * @param query term entered by user to search for
-     * @return the list of podcast objects
-     */
-    public List<Podcast> SearchPodcasts(String query) {
-        SearchHelper searchHelper = new SearchHelper(query);
-        searchHelper.runSearch();
-        return SearchResultHelper.populatePodcastList(searchHelper.getHolder().getResults());
-    }
 
     @Override
     public void onAttach(Context context) {
@@ -125,6 +105,6 @@ public class SearchFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(Podcast item);
+        void onListFragmentInteraction(DummyItem item);
     }
 }
