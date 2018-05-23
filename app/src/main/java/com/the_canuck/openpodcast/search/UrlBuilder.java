@@ -35,12 +35,18 @@ public class UrlBuilder {
      * @param query terms entered by user to search for
      * @return complete url for search terms on itunes
      */
-    public String createQueryUrl(String query) {
+    public String createQueryUrl(String query, boolean isGenre) {
         final String PODCAST = "podcast";
         String APPLE_API_ENDPOINT = "https://itunes.apple.com/search?";
         HttpUrl.Builder builder = HttpUrl.parse(APPLE_API_ENDPOINT).newBuilder();
 
-        builder.addEncodedQueryParameter(Queryable.TERM.getValue(), query);
+        if (!isGenre) {
+            builder.addEncodedQueryParameter(Queryable.TERM.getValue(), query);
+        } else {
+            builder.addQueryParameter(Queryable.GENREID.getValue(), query);
+            builder.addQueryParameter(Queryable.TERM.getValue(), "podcast");
+        }
+
         builder.addEncodedQueryParameter(Queryable.MEDIA.getValue(), PODCAST);
 
         return builder.build().toString();

@@ -77,7 +77,7 @@ public class SearchFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(SearchPodcasts(query), mListener));
+            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(searchPodcasts(query), mListener));
             recyclerView.addItemDecoration(new DividerItemDecoration
                     (view.getContext(), LinearLayoutManager.VERTICAL));
         }
@@ -90,7 +90,7 @@ public class SearchFragment extends Fragment {
      * @param query term entered by user to search for
      * @return the list of podcast objects
      */
-    public List<Podcast> SearchPodcasts(String query) {
+    public List<Podcast> searchPodcasts(String query) {
         SearchHelper searchHelper = new SearchHelper(query);
         searchHelper.runSearch();
         return SearchResultHelper.populatePodcastList(searchHelper.getHolder().getResults());

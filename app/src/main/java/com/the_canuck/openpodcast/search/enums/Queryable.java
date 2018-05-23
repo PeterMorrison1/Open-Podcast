@@ -4,7 +4,8 @@ public enum Queryable {
     MEDIA("media"),
     TERM("term"),
     LANGUAGE("language"),
-    COUNTRY("country");
+    COUNTRY("country"),
+    GENREID("genreId");
 
     private final String value;
     Queryable(String value) {

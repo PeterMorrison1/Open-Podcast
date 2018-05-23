@@ -21,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
+import com.the_canuck.openpodcast.fragments.discover.MyDiscoverRecyclerViewAdapter;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
 import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
@@ -214,8 +215,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onListFragmentInteraction(com.the_canuck.openpodcast.fragments.discover.
-                                                      dummy.DummyContent.DummyItem item) {
-
+    public void onFragmentInteraction(Podcast item) {
+        PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
+                item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
+                item.getCensoredName(), item.getTrackCount()).show(getSupportFragmentManager(),
+                "dialog");
     }
 }

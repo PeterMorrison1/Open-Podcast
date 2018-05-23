@@ -1,6 +1,7 @@
 package com.the_canuck.openpodcast.search;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.the_canuck.openpodcast.SearchResponseHolder;
 
@@ -15,9 +16,16 @@ import java.net.URL;
 public class SearchHelper {
     private String query;
     private SearchResponseHolder holder = new SearchResponseHolder();
+    private String genreId;
+    private boolean isGenre = false;
 
     public SearchHelper(String query) {
         this.query = query;
+    }
+
+    public SearchHelper(String genreId, boolean isGenre) {
+        this.genreId = genreId;
+        this.isGenre = isGenre;
     }
 
     /**
@@ -25,8 +33,12 @@ public class SearchHelper {
      */
     public void runSearch() {
         UrlBuilder urlBuilder = new UrlBuilder();
-        String url = urlBuilder.createQueryUrl(urlBuilder.encodeQueryTerms(query));
-
+        String url = "";
+        if (!isGenre) {
+            url = urlBuilder.createQueryUrl(urlBuilder.encodeQueryTerms(query), isGenre);
+        } else {
+            url = urlBuilder.createQueryUrl(urlBuilder.encodeQueryTerms(genreId), isGenre);
+        }
         new HttpTask().execute(url);
         try {
             while (holder.getResults() == null) {
@@ -54,6 +66,7 @@ public class SearchHelper {
             HttpURLConnection connection = null;
             BufferedReader bufferedReader = null;
             try {
+                Log.d("Test", "Test url: " + strings[0]);
                 URL url = new URL(strings[0].replace("%2B", "+"));
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();

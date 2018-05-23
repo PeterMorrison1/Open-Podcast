@@ -3,6 +3,7 @@ package com.the_canuck.openpodcast.fragments.discover;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,9 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.discover.dummy.DummyContent;
 import com.the_canuck.openpodcast.fragments.discover.dummy.DummyContent.DummyItem;
+import com.the_canuck.openpodcast.search.SearchHelper;
+import com.the_canuck.openpodcast.search.SearchResultHelper;
+import com.the_canuck.openpodcast.search.enums.GenreIds;
 
 import java.util.List;
 
@@ -59,22 +64,37 @@ public class DiscoverFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_discover_list, container, false);
+        // this is the view of the constraint layout
+        View view = inflater.inflate(R.layout.fragment_discover_constraint, container, false);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager
+                (view.getContext(), LinearLayoutManager.HORIZONTAL, false);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+        // not sure if im going to use the decoration yet
+        RecyclerView.ItemDecoration decoration = new DividerItemDecoration(view.getContext(),
+                RecyclerView.VERTICAL);
+
+        // Set the first recycler view and its adapter
+        if (view.findViewById(R.id.discover_list) instanceof RecyclerView) {
+            final int GENRE_ARTS = 1;
+            RecyclerView recyclerView = view.findViewById(R.id.discover_list);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(searchPodcastGenre(GENRE_ARTS), mListener));
         }
         return view;
     }
 
+    public List<Podcast> searchPodcastGenre(int genre) {
+        SearchHelper searchHelper;
+        List<Podcast> podcastList = null;
+        switch (genre) {
+            case 1:
+                searchHelper = new SearchHelper(String.valueOf(GenreIds.ARTS.getValue()), true);
+                searchHelper.runSearch();
+                podcastList = SearchResultHelper.populatePodcastList(searchHelper.getHolder().getResults());
+
+        }
+        return podcastList;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -105,6 +125,6 @@ public class DiscoverFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onFragmentInteraction(Podcast item);
     }
 }
