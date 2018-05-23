@@ -20,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
 import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
@@ -27,11 +28,13 @@ import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 
 public class MainActivity extends AppCompatActivity implements
         SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
-        LibraryFragment.OnListFragmentInteractionListener {
+        LibraryFragment.OnListFragmentInteractionListener,
+        DiscoverFragment.OnListFragmentInteractionListener {
 
     private DrawerLayout mDrawerLayout;
     final String LIBRARY_TAG = "library";
     final String SEARCH_TAG = "search";
+    final String DISCOVER_TAG = "discover";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,16 +68,17 @@ public class MainActivity extends AppCompatActivity implements
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 item.setChecked(true);
 
+                Fragment container = getSupportFragmentManager().findFragmentById
+                        (R.id.fragment_container);
                 switch (item.getItemId()) {
                     case R.id.nav_subscribed:
-                        Fragment f = getSupportFragmentManager().findFragmentById
-                                (R.id.fragment_container);
-                        if (f instanceof LibraryFragment) {
+                        if (container instanceof LibraryFragment) {
                             mDrawerLayout.closeDrawers();
                             return true;
                         } else {
                             getSupportFragmentManager().popBackStack(LIBRARY_TAG,
                                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
                             Fragment libraryFrag = new LibraryFragment();
                             replaceFragment(libraryFrag, LIBRARY_TAG);
                         }
@@ -82,6 +86,16 @@ public class MainActivity extends AppCompatActivity implements
                         return true;
 
                     case R.id.nav_search:
+                        if (container instanceof DiscoverFragment) {
+                            mDrawerLayout.closeDrawers();
+                            return true;
+                        } else {
+                            getSupportFragmentManager().popBackStack(DISCOVER_TAG,
+                                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+                            Fragment discoverFrag = new DiscoverFragment();
+                            replaceFragment(discoverFrag, DISCOVER_TAG);
+                        }
                         mDrawerLayout.closeDrawers();
                         return true;
                 }
@@ -92,8 +106,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        if (fragmentManager.getBackStackEntryCount() == 1) {
+        if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
             finish();
         } else {
             super.onBackPressed();
@@ -197,6 +210,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
+    }
+
+    @Override
+    public void onListFragmentInteraction(com.the_canuck.openpodcast.fragments.discover.
+                                                      dummy.DummyContent.DummyItem item) {
 
     }
 }
