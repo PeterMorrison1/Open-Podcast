@@ -1,7 +1,7 @@
 package com.the_canuck.openpodcast;
 
 public class SearchResponseHolder {
-    private String results;
+    private String results = null;
 
     public String getResults() {
         return results;

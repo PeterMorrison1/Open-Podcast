@@ -1,6 +1,7 @@
 package com.the_canuck.openpodcast.fragments.search_results;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
@@ -32,6 +33,7 @@ public class SearchFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private String query;
+    private RecyclerView recyclerView = null;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -70,32 +72,57 @@ public class SearchFragment extends Fragment {
         // Set the adapter
         if (view.findViewById(R.id.recycler_view) instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+            recyclerView = view.findViewById(R.id.recycler_view);
             recyclerView.requestFocus();
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(searchPodcasts(query), mListener));
+//            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(searchPodcasts(query), mListener));
             recyclerView.addItemDecoration(new DividerItemDecoration
                     (view.getContext(), LinearLayoutManager.VERTICAL));
+            new SearchTask().execute(query);
         }
         return view;
     }
 
-    /**
-     * Runs the SearchHelper and returns the podcast list.
-     *
-     * @param query term entered by user to search for
-     * @return the list of podcast objects
-     */
-    public List<Podcast> searchPodcasts(String query) {
-        SearchHelper searchHelper = new SearchHelper(query);
-        SearchResultHelper resultHelper = new SearchResultHelper();
+//    /**
+//     * Runs the SearchHelper and returns the podcast list.
+//     *
+//     * @param query term entered by user to search for
+//     * @return the list of podcast objects
+//     */
+//    public List<Podcast> searchPodcasts(String query) {
+//        SearchHelper searchHelper = new SearchHelper(query);
+//        SearchResultHelper resultHelper = new SearchResultHelper();
+//
+//        searchHelper.runSearch();
+////        return resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
+//        return resultHelper.populatePodcastList(searchHelper.runSearch());
+//
+//    }
 
-        searchHelper.runSearch();
-        return resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
+    /**
+     * Runs the SearchHelper and returns the podcast list and sets the recyclerview adapter.
+     */
+    private class SearchTask extends AsyncTask<String, Void, List<Podcast>> {
+        @Override
+        protected List<Podcast> doInBackground(String... strings) {
+            SearchHelper searchHelper;
+            List<Podcast> podcastList = null;
+            searchHelper = new SearchHelper(strings[0]);
+            SearchResultHelper resultHelper = new SearchResultHelper();
+            podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
+    //            podcastList = resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
+
+            return podcastList;
+        }
+
+        @Override
+        protected void onPostExecute(List<Podcast> podcasts) {
+            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(podcasts, mListener));
+        }
     }
 
     @Override

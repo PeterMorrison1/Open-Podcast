@@ -1,21 +1,18 @@
 package com.the_canuck.openpodcast.fragments.discover;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.fragments.discover.dummy.DummyContent;
-import com.the_canuck.openpodcast.fragments.discover.dummy.DummyContent.DummyItem;
 import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
 import com.the_canuck.openpodcast.search.enums.GenreIds;
@@ -35,6 +32,7 @@ public class DiscoverFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private RecyclerView recyclerView = null;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -43,15 +41,23 @@ public class DiscoverFragment extends Fragment {
     public DiscoverFragment() {
     }
 
+//    // TODO: Customize parameter initialization
+//    @SuppressWarnings("unused")
+//    public static DiscoverFragment newInstance(int columnCount) {
+//        DiscoverFragment fragment = new DiscoverFragment();
+//        Bundle args = new Bundle();
+//        args.putInt(ARG_COLUMN_COUNT, columnCount);
+//        fragment.setArguments(args);
+//        return fragment;
+//    }
+
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static DiscoverFragment newInstance(int columnCount) {
+    public static DiscoverFragment newInstance() {
         DiscoverFragment fragment = new DiscoverFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
         return fragment;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,24 +83,36 @@ public class DiscoverFragment extends Fragment {
         // Set the first recycler view and its adapter
         if (view.findViewById(R.id.discover_list) instanceof RecyclerView) {
             final int GENRE_ARTS = 1;
-            RecyclerView recyclerView = view.findViewById(R.id.discover_list);
+            recyclerView = view.findViewById(R.id.discover_list);
             recyclerView.setLayoutManager(layoutManager);
-            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(searchPodcastGenre(GENRE_ARTS), mListener));
+//            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(searchPodcastGenre(GENRE_ARTS), mListener));
+            new SearchTask().execute(GENRE_ARTS);
         }
         return view;
     }
 
-    public List<Podcast> searchPodcastGenre(int genre) {
-        SearchHelper searchHelper;
-        List<Podcast> podcastList = null;
-        switch (genre) {
-            case 1:
-                searchHelper = new SearchHelper(String.valueOf(GenreIds.ARTS.getValue()), true);
-                SearchResultHelper resultHelper = new SearchResultHelper();
-                searchHelper.runSearch();
-                podcastList = resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
+    /**
+     * Runs the SearchHelper and returns the podcast list and sets the recyclerview adapter.
+     */
+    private class SearchTask extends AsyncTask<Integer, Void, List<Podcast>> {
+        @Override
+        protected List<Podcast> doInBackground(Integer... integers) {
+            SearchHelper searchHelper;
+            List<Podcast> podcastList = null;
+            switch (integers[0]) {
+                case 1:
+                    searchHelper = new SearchHelper(String.valueOf(GenreIds.ARTS.getValue()), true);
+                    SearchResultHelper resultHelper = new SearchResultHelper();
+//                    podcastList = resultHelper.buildPodcastList(searchHelper.runSearch());
+                    podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
+            }
+            return podcastList;
         }
-        return podcastList;
+
+        @Override
+        protected void onPostExecute(List<Podcast> podcasts) {
+            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+        }
     }
 
     @Override

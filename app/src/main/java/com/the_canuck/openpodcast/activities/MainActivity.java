@@ -21,7 +21,6 @@ import android.support.v7.widget.Toolbar;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
-import com.the_canuck.openpodcast.fragments.discover.MyDiscoverRecyclerViewAdapter;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
 import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
@@ -71,6 +70,10 @@ public class MainActivity extends AppCompatActivity implements
 
                 Fragment container = getSupportFragmentManager().findFragmentById
                         (R.id.fragment_container);
+
+                Fragment newFragment = null;
+                String fragTag = null;
+
                 switch (item.getItemId()) {
                     case R.id.nav_subscribed:
                         if (container instanceof LibraryFragment) {
@@ -80,11 +83,10 @@ public class MainActivity extends AppCompatActivity implements
                             getSupportFragmentManager().popBackStack(LIBRARY_TAG,
                                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
-                            Fragment libraryFrag = new LibraryFragment();
-                            replaceFragment(libraryFrag, LIBRARY_TAG);
+                            newFragment = new LibraryFragment();
+                            fragTag = LIBRARY_TAG;
                         }
-                        mDrawerLayout.closeDrawers();
-                        return true;
+                        break;
 
                     case R.id.nav_search:
                         if (container instanceof DiscoverFragment) {
@@ -94,12 +96,16 @@ public class MainActivity extends AppCompatActivity implements
                             getSupportFragmentManager().popBackStack(DISCOVER_TAG,
                                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
-                            Fragment discoverFrag = new DiscoverFragment();
-                            replaceFragment(discoverFrag, DISCOVER_TAG);
+                            newFragment = new DiscoverFragment();
+                            fragTag = DISCOVER_TAG;
                         }
-                        mDrawerLayout.closeDrawers();
-                        return true;
+
+                        break;
                 }
+                if (newFragment != null) {
+                    replaceFragment(newFragment, fragTag);
+                }
+                mDrawerLayout.closeDrawers();
                 return true;
             }
         });
