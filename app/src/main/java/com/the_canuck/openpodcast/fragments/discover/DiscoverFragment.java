@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
@@ -33,6 +34,7 @@ public class DiscoverFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private RecyclerView recyclerView = null;
+    private ProgressBar progressBar;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -76,6 +78,9 @@ public class DiscoverFragment extends Fragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager
                 (view.getContext(), LinearLayoutManager.HORIZONTAL, false);
 
+        progressBar = view.findViewById(R.id.discover_progress_bar);
+        progressBar.setVisibility(View.GONE);
+
         // not sure if im going to use the decoration yet
         RecyclerView.ItemDecoration decoration = new DividerItemDecoration(view.getContext(),
                 RecyclerView.VERTICAL);
@@ -86,6 +91,8 @@ public class DiscoverFragment extends Fragment {
             recyclerView = view.findViewById(R.id.discover_list);
             recyclerView.setLayoutManager(layoutManager);
 //            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(searchPodcastGenre(GENRE_ARTS), mListener));
+
+            progressBar.setVisibility(View.VISIBLE);
             new SearchTask().execute(GENRE_ARTS);
         }
         return view;
@@ -112,6 +119,7 @@ public class DiscoverFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Podcast> podcasts) {
             recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+            progressBar.setVisibility(View.GONE);
         }
     }
 

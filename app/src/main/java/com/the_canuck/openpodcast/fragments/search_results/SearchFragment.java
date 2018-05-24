@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
@@ -34,6 +35,7 @@ public class SearchFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private String query;
     private RecyclerView recyclerView = null;
+    private ProgressBar progressBar;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -69,6 +71,9 @@ public class SearchFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search_list, container, false);
 
+        progressBar = view.findViewById(R.id.search_progress_bar);
+        progressBar.setVisibility(View.GONE);
+
         // Set the adapter
         if (view.findViewById(R.id.recycler_view) instanceof RecyclerView) {
             Context context = view.getContext();
@@ -82,6 +87,8 @@ public class SearchFragment extends Fragment {
 //            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(searchPodcasts(query), mListener));
             recyclerView.addItemDecoration(new DividerItemDecoration
                     (view.getContext(), LinearLayoutManager.VERTICAL));
+
+            progressBar.setVisibility(View.VISIBLE);
             new SearchTask().execute(query);
         }
         return view;
@@ -122,6 +129,7 @@ public class SearchFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Podcast> podcasts) {
             recyclerView.setAdapter(new MySearchRecyclerViewAdapter(podcasts, mListener));
+            progressBar.setVisibility(View.GONE);
         }
     }
 
