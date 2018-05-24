@@ -50,9 +50,9 @@ public class MySearchRecyclerViewAdapter extends
                 .fitCenter()
                 .placeholder(R.drawable.ic_image_black_48dp)
                 .error(R.drawable.ic_error_black_24dp)
-                .override(250, 250);
+                .override(150, 150);
         Glide.with(holder.mView.getContext())
-                .load(mValues.get(position).getArtworkUrl600())
+                .load(mValues.get(position).getArtworkUrl100())
                 .apply(myOptions)
                 .into(holder.mImageView);
 

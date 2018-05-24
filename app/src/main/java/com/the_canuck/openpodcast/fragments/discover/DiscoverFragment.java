@@ -7,6 +7,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,9 +90,9 @@ public class DiscoverFragment extends Fragment {
         switch (genre) {
             case 1:
                 searchHelper = new SearchHelper(String.valueOf(GenreIds.ARTS.getValue()), true);
+                SearchResultHelper resultHelper = new SearchResultHelper();
                 searchHelper.runSearch();
-                podcastList = SearchResultHelper.populatePodcastList(searchHelper.getHolder().getResults());
-
+                podcastList = resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
         }
         return podcastList;
     }

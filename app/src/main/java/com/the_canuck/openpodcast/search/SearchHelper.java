@@ -32,6 +32,7 @@ public class SearchHelper {
      * Builds url based on user input and runs the url in HttpTask to return json results.
      */
     public void runSearch() {
+        Log.d("Skipping", "runSearch start");
         UrlBuilder urlBuilder = new UrlBuilder();
         String url = "";
         if (!isGenre) {
@@ -39,9 +40,12 @@ public class SearchHelper {
         } else {
             url = urlBuilder.createQueryUrl(urlBuilder.encodeQueryTerms(genreId), isGenre);
         }
+        Log.d("Skipping", "runSearch after urlbuilder.createqueryurl");
+
         new HttpTask().execute(url);
         try {
             while (holder.getResults() == null) {
+                Log.d("Skipping", "runSearch thread.sleep");
                 Thread.sleep(500);
             }
         } catch (InterruptedException e) {
@@ -63,6 +67,7 @@ public class SearchHelper {
     private class HttpTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strings) {
+            Log.d("Skipping", "Do in background start");
             HttpURLConnection connection = null;
             BufferedReader bufferedReader = null;
             try {
@@ -82,6 +87,7 @@ public class SearchHelper {
                     buffer.append(line);
                 }
                 holder.setResults(buffer.toString());
+                Log.d("Skipping", "Do in background end");
                 return buffer.toString();
 
             } catch (MalformedURLException e) {
@@ -105,6 +111,7 @@ public class SearchHelper {
 
         @Override
         protected void onPostExecute(String s) {
+            Log.d("Skipping", "Do in background PostExecute");
             super.onPostExecute(s);
         }
     }

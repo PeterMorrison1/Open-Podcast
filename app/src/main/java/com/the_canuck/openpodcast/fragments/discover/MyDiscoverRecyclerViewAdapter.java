@@ -45,15 +45,15 @@ public class MyDiscoverRecyclerViewAdapter extends
         holder.mIdView.setText(mValues.get(position).getCollectionName());
         holder.mContentView.setText(mValues.get(position).getArtistName());
 
-        RequestOptions myOptions = new RequestOptions()
-                .fitCenter()
-                .placeholder(R.drawable.ic_image_black_48dp)
-                .error(R.drawable.ic_error_black_24dp)
-                .override(600, 600);
-        Glide.with(holder.mView.getContext())
-                .load(mValues.get(position).getArtworkUrl600())
-                .apply(myOptions)
-                .into(holder.mImageView);
+//        RequestOptions myOptions = new RequestOptions()
+//                .fitCenter()
+//                .placeholder(R.drawable.ic_image_black_48dp)
+//                .error(R.drawable.ic_error_black_24dp)
+//                .override(600, 600);
+//        Glide.with(holder.mView.getContext())
+//                .load(mValues.get(position).getArtworkUrl600())
+//                .apply(myOptions)
+//                .into(holder.mImageView);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override

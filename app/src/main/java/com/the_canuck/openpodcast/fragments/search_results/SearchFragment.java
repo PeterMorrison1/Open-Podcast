@@ -92,8 +92,10 @@ public class SearchFragment extends Fragment {
      */
     public List<Podcast> searchPodcasts(String query) {
         SearchHelper searchHelper = new SearchHelper(query);
+        SearchResultHelper resultHelper = new SearchResultHelper();
+
         searchHelper.runSearch();
-        return SearchResultHelper.populatePodcastList(searchHelper.getHolder().getResults());
+        return resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
     }
 
     @Override
