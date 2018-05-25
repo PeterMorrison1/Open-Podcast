@@ -5,4 +5,8 @@
     <string name="header_title">Open Podcast</string>
     <string name="search_title">New title or author to search</string>
     <string name="pod_image_description">Image of the podcast</string>
+    <string name="more_podcasts">More</string>
+    <string name="arts">Arts</string>
+    <string name="business">Business</string>
+    <string name="comedy">Comedy</string>
 </resources>

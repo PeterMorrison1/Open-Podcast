@@ -10,6 +10,7 @@ public class Podcast {
     private String artworkUrl100;
     private String artworkUrl600;
     private String censoredName;
+    private int groupingGenre;
 
 
     public Podcast(PodcastBuilder builder) {
@@ -22,6 +23,15 @@ public class Podcast {
         artworkUrl100 = builder.artworkUrl100;
         artworkUrl600 = builder.artworkUrl600;
         censoredName = builder.censoredName;
+    }
+
+    public int getGroupingGenre() {
+        return groupingGenre;
+    }
+
+    public Podcast setGroupingGenre(int groupingGenre) {
+        this.groupingGenre = groupingGenre;
+        return this;
     }
 
     public int getCollectionId() {
