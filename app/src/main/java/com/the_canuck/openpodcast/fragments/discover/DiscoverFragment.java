@@ -119,7 +119,7 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
         List<View> views = createViewList(view);
 
-//        buttons = createButtonList(view);
+        buttons = createButtonList(view);
         genres = createGenreList();
 
         // set layout manager and execute searchtask for each recyclerview in the list
@@ -138,11 +138,12 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         }
 
         // set onclicklistener for each button in list
-//        for (int i = 0; i < buttons.size(); i++) {
-//            buttons.get(i).setOnClickListener(this);
-//        }
+        for (int i = 0; i < buttons.size(); i++) {
+            buttons.get(i).setOnClickListener(this);
+        }
 
         // TODO: Delete this huge collection of "if" statements below if above loop for sure works
+
 //
 //        // Art Recycler view
 //        if (view.findViewById(R.id.discover_arts_recycler) instanceof RecyclerView) {
