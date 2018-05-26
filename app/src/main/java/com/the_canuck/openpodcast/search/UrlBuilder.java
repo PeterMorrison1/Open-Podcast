@@ -38,6 +38,7 @@ public class UrlBuilder {
      */
     public String createQueryUrl(String query, boolean isGenre) {
         final String PODCAST = "podcast";
+        final String LIMIT = "15";
         String APPLE_API_ENDPOINT = "https://itunes.apple.com/search?";
         HttpUrl.Builder builder = HttpUrl.parse(APPLE_API_ENDPOINT).newBuilder();
 
@@ -45,7 +46,8 @@ public class UrlBuilder {
             builder.addEncodedQueryParameter(Queryable.TERM.getValue(), query);
         } else {
             builder.addQueryParameter(Queryable.GENREID.getValue(), query);
-            builder.addQueryParameter(Queryable.TERM.getValue(), "podcast");
+            builder.addQueryParameter(Queryable.TERM.getValue(), PODCAST);
+            builder.addQueryParameter(Queryable.LIMIT.getValue(),LIMIT);
         }
 
         builder.addEncodedQueryParameter(Queryable.MEDIA.getValue(), PODCAST);

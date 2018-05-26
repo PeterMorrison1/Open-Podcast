@@ -35,22 +35,23 @@ public class DiscoverFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
 
-    private RecyclerView artRecyclerView;
-    private RecyclerView businessRecyclerView = null;
-    private RecyclerView comedyRecyclerView = null;
-    private RecyclerView educationRecyclerView = null;
-    private RecyclerView gamesRecyclerView = null;
-    private RecyclerView govRecyclerView = null;
-    private RecyclerView healthRecyclerView = null;
-    private RecyclerView familyRecyclerView = null;
-    private RecyclerView musicRecyclerView = null;
-    private RecyclerView newsRecyclerView = null;
-    private RecyclerView religionRecyclerView = null;
-    private RecyclerView scienceRecyclerView = null;
-    private RecyclerView societyRecyclerView = null;
-    private RecyclerView sportsRecyclerView = null;
-    private RecyclerView technologyRecyclerView = null;
-    private RecyclerView tvRecyclerView = null;
+    // TODO: Delete these when you delete the huge amount of if statements below
+//    private RecyclerView artRecyclerView;
+//    private RecyclerView businessRecyclerView = null;
+//    private RecyclerView comedyRecyclerView = null;
+//    private RecyclerView educationRecyclerView = null;
+//    private RecyclerView gamesRecyclerView = null;
+//    private RecyclerView govRecyclerView = null;
+//    private RecyclerView healthRecyclerView = null;
+//    private RecyclerView familyRecyclerView = null;
+//    private RecyclerView musicRecyclerView = null;
+//    private RecyclerView newsRecyclerView = null;
+//    private RecyclerView religionRecyclerView = null;
+//    private RecyclerView scienceRecyclerView = null;
+//    private RecyclerView societyRecyclerView = null;
+//    private RecyclerView sportsRecyclerView = null;
+//    private RecyclerView technologyRecyclerView = null;
+//    private RecyclerView tvRecyclerView = null;
     private List<RecyclerView> recyclerViews = new ArrayList<>();
 
 
@@ -106,14 +107,7 @@ public class DiscoverFragment extends Fragment {
         RecyclerView.ItemDecoration decoration = new DividerItemDecoration(view.getContext(),
                 RecyclerView.VERTICAL);
 
-//        recyclerViews.add(artRecyclerView);
-//        recyclerViews.add(businessRecyclerView);
-//        recyclerViews.add(comedyRecyclerView);
-//        recyclerViews.add(educationRecyclerView);
-//        recyclerViews.add(gamesRecyclerView);
-//        recyclerViews.add(govRecyclerView);
-//        recyclerViews.add(healthRecyclerView);
-
+        // Create list of views used in genre screen
         List<View> views = new ArrayList<>();
         views.add(view.findViewById(R.id.discover_arts_recycler));
         views.add(view.findViewById(R.id.discover_business_recycler));
@@ -122,15 +116,35 @@ public class DiscoverFragment extends Fragment {
         views.add(view.findViewById(R.id.discover_hobbies_recycler));
         views.add(view.findViewById(R.id.discover_gov_recycler));
         views.add(view.findViewById(R.id.discover_health_recycler));
+        views.add(view.findViewById(R.id.discover_family_recycler));
+        views.add(view.findViewById(R.id.discover_music_recycler));
+        views.add(view.findViewById(R.id.discover_politics_recycler));
+        views.add(view.findViewById(R.id.discover_religion_recycler));
+        views.add(view.findViewById(R.id.discover_science_recycler));
+        views.add(view.findViewById(R.id.discover_society_recycler));
+        views.add(view.findViewById(R.id.discover_sports_recycler));
+        views.add(view.findViewById(R.id.discover_technology_recycler));
+        views.add(view.findViewById(R.id.discover_film_recycler));
 
+        // create list of genre values used
         List<Integer> genres = new ArrayList<>();
         genres.add(GenreIds.ARTS.getValue());
         genres.add(GenreIds.BUSINESS.getValue());
         genres.add(GenreIds.COMEDY.getValue());
         genres.add(GenreIds.EDUCATION.getValue());
-        genres.add(GenreIds.GAMESANDHOBBIES.getValue());
-        genres.add(GenreIds.GOVERNMENTANDORGANIZATIONS.getValue());
+        genres.add(GenreIds.GAMES_AND_HOBBIES.getValue());
+        genres.add(GenreIds.GOVERNMENT_AND_ORGANIZATIONS.getValue());
         genres.add(GenreIds.HEALTH.getValue());
+        genres.add(GenreIds.KIDS_AND_FAMILY.getValue());
+        genres.add(GenreIds.MUSIC.getValue());
+        genres.add(GenreIds.NEWS_AND_POLITICS.getValue());
+        genres.add(GenreIds.RELIGION_AND_SPIRITUALITY.getValue());
+        genres.add(GenreIds.SCIENCE_AND_MEDICINE.getValue());
+        genres.add(GenreIds.SOCIETY_AND_CULTURE.getValue());
+        genres.add(GenreIds.SPORTS_AND_RECREATION.getValue());
+        genres.add(GenreIds.TECHNOLOGY.getValue());
+        genres.add(GenreIds.TV_AND_FILM.getValue());
+
 
         for (int i = 0; i < views.size(); i++) {
             if (view.findViewById(views.get(i).getId()) instanceof RecyclerView) {
@@ -192,7 +206,7 @@ public class DiscoverFragment extends Fragment {
 //
 //            gamesRecyclerView = view.findViewById(R.id.discover_hobbies_recycler);
 //            gamesRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.GAMESANDHOBBIES.getValue());
+//            new SearchTask().execute(GenreIds.GAMES_AND_HOBBIES.getValue());
 //        }
 //
 //        // Government Recycler view
@@ -201,7 +215,7 @@ public class DiscoverFragment extends Fragment {
 //
 //            govRecyclerView = view.findViewById(R.id.discover_gov_recycler);
 //            govRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.GOVERNMENTANDORGANIZATIONS.getValue());
+//            new SearchTask().execute(GenreIds.GOVERNMENT_AND_ORGANIZATIONS.getValue());
 //        }
 //
 //        // Health Recycler view
@@ -271,6 +285,41 @@ public class DiscoverFragment extends Fragment {
 //                    healthRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
                     break;
 
+                case 1305:
+                    recyclerViews.get(7).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1310:
+                    recyclerViews.get(8).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1311:
+                    recyclerViews.get(9).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1314:
+                    recyclerViews.get(10).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1315:
+                    recyclerViews.get(11).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1324:
+                    recyclerViews.get(12).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1316:
+                    recyclerViews.get(13).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1318:
+                    recyclerViews.get(14).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1309:
+                    recyclerViews.get(15).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
             }
             progressBar.setVisibility(View.GONE);
         }

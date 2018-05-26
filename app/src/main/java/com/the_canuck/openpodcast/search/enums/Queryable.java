@@ -5,7 +5,8 @@ public enum Queryable {
     TERM("term"),
     LANGUAGE("language"),
     COUNTRY("country"),
-    GENREID("genreId");
+    GENREID("genreId"),
+    LIMIT("limit");
 
     private final String value;
     Queryable(String value) {
