@@ -18,6 +18,7 @@ import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
 import com.the_canuck.openpodcast.search.enums.GenreIds;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,9 +34,26 @@ public class DiscoverFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
-    private RecyclerView artRecyclerView = null;
+
+    private RecyclerView artRecyclerView;
     private RecyclerView businessRecyclerView = null;
     private RecyclerView comedyRecyclerView = null;
+    private RecyclerView educationRecyclerView = null;
+    private RecyclerView gamesRecyclerView = null;
+    private RecyclerView govRecyclerView = null;
+    private RecyclerView healthRecyclerView = null;
+    private RecyclerView familyRecyclerView = null;
+    private RecyclerView musicRecyclerView = null;
+    private RecyclerView newsRecyclerView = null;
+    private RecyclerView religionRecyclerView = null;
+    private RecyclerView scienceRecyclerView = null;
+    private RecyclerView societyRecyclerView = null;
+    private RecyclerView sportsRecyclerView = null;
+    private RecyclerView technologyRecyclerView = null;
+    private RecyclerView tvRecyclerView = null;
+    private List<RecyclerView> recyclerViews = new ArrayList<>();
+
+
     private ProgressBar progressBar;
 
     /**
@@ -88,37 +106,112 @@ public class DiscoverFragment extends Fragment {
         RecyclerView.ItemDecoration decoration = new DividerItemDecoration(view.getContext(),
                 RecyclerView.VERTICAL);
 
-        // Art Recycler view
-        if (view.findViewById(R.id.discover_arts_recycler) instanceof RecyclerView) {
-            final int GENRE_ARTS = 1;
-            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//        recyclerViews.add(artRecyclerView);
+//        recyclerViews.add(businessRecyclerView);
+//        recyclerViews.add(comedyRecyclerView);
+//        recyclerViews.add(educationRecyclerView);
+//        recyclerViews.add(gamesRecyclerView);
+//        recyclerViews.add(govRecyclerView);
+//        recyclerViews.add(healthRecyclerView);
 
-            artRecyclerView = view.findViewById(R.id.discover_arts_recycler);
-            artRecyclerView.setLayoutManager(layoutManager);
-//            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(searchPodcastGenre(GENRE_ARTS), mListener));
+        List<View> views = new ArrayList<>();
+        views.add(view.findViewById(R.id.discover_arts_recycler));
+        views.add(view.findViewById(R.id.discover_business_recycler));
+        views.add(view.findViewById(R.id.discover_comedy_recycler));
+        views.add(view.findViewById(R.id.discover_education_recycler));
+        views.add(view.findViewById(R.id.discover_hobbies_recycler));
+        views.add(view.findViewById(R.id.discover_gov_recycler));
+        views.add(view.findViewById(R.id.discover_health_recycler));
 
-            progressBar.setVisibility(View.VISIBLE);
-            new SearchTask().execute(GENRE_ARTS);
+        List<Integer> genres = new ArrayList<>();
+        genres.add(GenreIds.ARTS.getValue());
+        genres.add(GenreIds.BUSINESS.getValue());
+        genres.add(GenreIds.COMEDY.getValue());
+        genres.add(GenreIds.EDUCATION.getValue());
+        genres.add(GenreIds.GAMESANDHOBBIES.getValue());
+        genres.add(GenreIds.GOVERNMENTANDORGANIZATIONS.getValue());
+        genres.add(GenreIds.HEALTH.getValue());
+
+        for (int i = 0; i < views.size(); i++) {
+            if (view.findViewById(views.get(i).getId()) instanceof RecyclerView) {
+                layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+
+                RecyclerView recyclerView = view.findViewById(views.get(i).getId());
+
+                recyclerView.setLayoutManager(layoutManager);
+
+                recyclerViews.add(recyclerView);
+
+                new SearchTask().execute(genres.get(i));
+            }
         }
-        // Business Recycler view
-        if (view.findViewById(R.id.discover_business_recycler) instanceof RecyclerView) {
-            final int GENRE_BUSINESS = 2;
-            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-
-            businessRecyclerView = view.findViewById(R.id.discover_business_recycler);
-            businessRecyclerView.setLayoutManager(layoutManager);
-            new SearchTask().execute(GENRE_BUSINESS);
-        }
-
-        // Comedy Recycler view
-        if (view.findViewById(R.id.discover_comedy_recycler) instanceof RecyclerView) {
-            final int GENRE_COMEDY = 3;
-            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-
-            comedyRecyclerView = view.findViewById(R.id.discover_comedy_recycler);
-            comedyRecyclerView.setLayoutManager(layoutManager);
-            new SearchTask().execute(GENRE_COMEDY);
-        }
+        // TODO: Delete this huge collection of "if" statements below if above loop for sure works
+//
+//        // Art Recycler view
+//        if (view.findViewById(R.id.discover_arts_recycler) instanceof RecyclerView) {
+//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//
+//            artRecyclerView = view.findViewById(R.id.discover_arts_recycler);
+//            artRecyclerView.setLayoutManager(layoutManager);
+////            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(searchPodcastGenre(GENRE_ARTS), mListener));
+//
+//            progressBar.setVisibility(View.VISIBLE);
+//            new SearchTask().execute(GenreIds.ARTS.getValue());
+//        }
+//
+//        // Business Recycler view
+//        if (view.findViewById(R.id.discover_business_recycler) instanceof RecyclerView) {
+//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//
+//            businessRecyclerView = view.findViewById(R.id.discover_business_recycler);
+//            businessRecyclerView.setLayoutManager(layoutManager);
+//            new SearchTask().execute(GenreIds.BUSINESS.getValue());
+//        }
+//
+//        // Comedy Recycler view
+//        if (view.findViewById(R.id.discover_comedy_recycler) instanceof RecyclerView) {
+//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//
+//            comedyRecyclerView = view.findViewById(R.id.discover_comedy_recycler);
+//            comedyRecyclerView.setLayoutManager(layoutManager);
+//            new SearchTask().execute(GenreIds.COMEDY.getValue());
+//        }
+//
+//        // Education Recycler view
+//        if (view.findViewById(R.id.discover_education_recycler) instanceof RecyclerView) {
+//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//
+//            educationRecyclerView = view.findViewById(R.id.discover_education_recycler);
+//            educationRecyclerView.setLayoutManager(layoutManager);
+//            new SearchTask().execute(GenreIds.EDUCATION.getValue());
+//        }
+//
+//        // Games and Hobbies Recycler view
+//        if (view.findViewById(R.id.discover_hobbies_recycler) instanceof RecyclerView) {
+//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//
+//            gamesRecyclerView = view.findViewById(R.id.discover_hobbies_recycler);
+//            gamesRecyclerView.setLayoutManager(layoutManager);
+//            new SearchTask().execute(GenreIds.GAMESANDHOBBIES.getValue());
+//        }
+//
+//        // Government Recycler view
+//        if (view.findViewById(R.id.discover_gov_recycler) instanceof RecyclerView) {
+//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//
+//            govRecyclerView = view.findViewById(R.id.discover_gov_recycler);
+//            govRecyclerView.setLayoutManager(layoutManager);
+//            new SearchTask().execute(GenreIds.GOVERNMENTANDORGANIZATIONS.getValue());
+//        }
+//
+//        // Health Recycler view
+//        if (view.findViewById(R.id.discover_health_recycler) instanceof RecyclerView) {
+//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+//
+//            healthRecyclerView = view.findViewById(R.id.discover_health_recycler);
+//            healthRecyclerView.setLayoutManager(layoutManager);
+//            new SearchTask().execute(GenreIds.HEALTH.getValue());
+//        }
         return view;
     }
 
@@ -131,29 +224,11 @@ public class DiscoverFragment extends Fragment {
             SearchHelper searchHelper;
             SearchResultHelper resultHelper = null;
             List<Podcast> podcastList = null;
-            switch (integers[0]) {
-                case 1:
-                    searchHelper = new SearchHelper(String.valueOf(GenreIds.ARTS.getValue()), true);
-                    resultHelper = new SearchResultHelper();
-//                    podcastList = resultHelper.buildPodcastList(searchHelper.runSearch());
-                    podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
-                    podcastList.get(0).setGroupingGenre(GenreIds.ARTS.getValue());
-                    break;
 
-                case 2:
-                    searchHelper = new SearchHelper((String.valueOf(GenreIds.BUSINESS.getValue())), true);
-                    resultHelper = new SearchResultHelper();
-                    podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
-                    podcastList.get(0).setGroupingGenre(GenreIds.BUSINESS.getValue());
-                    break;
-
-                case 3:
-                    searchHelper = new SearchHelper((String.valueOf(GenreIds.COMEDY.getValue())), true);
-                    resultHelper = new SearchResultHelper();
-                    podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
-                    podcastList.get(0).setGroupingGenre(GenreIds.COMEDY.getValue());
-                    break;
-            }
+            searchHelper = new SearchHelper((String.valueOf(integers[0])), true);
+            resultHelper = new SearchResultHelper();
+            podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
+            podcastList.get(0).setGroupingGenre(integers[0]);
             return podcastList;
         }
 
@@ -161,16 +236,41 @@ public class DiscoverFragment extends Fragment {
         protected void onPostExecute(List<Podcast> podcasts) {
             switch (podcasts.get(0).getGroupingGenre()) {
                 case 1301:
-                    artRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    recyclerViews.get(0).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    // TODO: delete this commented out line when you delete above huge if statement
+//                    artRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
                     break;
 
                 case 1321:
-                    businessRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    recyclerViews.get(1).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    businessRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
                     break;
 
                 case 1303:
-                    comedyRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    recyclerViews.get(2).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    comedyRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
                     break;
+
+                case 1304:
+                    recyclerViews.get(3).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    educationRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1323:
+                    recyclerViews.get(4).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    gamesRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1325:
+                    recyclerViews.get(5).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    govRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
+                case 1307:
+                    recyclerViews.get(6).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    healthRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    break;
+
             }
             progressBar.setVisibility(View.GONE);
         }
