@@ -17,6 +17,7 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
@@ -132,15 +133,27 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-
             Bundle bundle = new Bundle();
+
+            String query = intent.getStringExtra(SearchManager.QUERY);
             bundle.putString("query", query);
+            bundle.putBoolean("isGenre", false);
 
             SearchFragment searchFragment = new SearchFragment();
             searchFragment.setArguments(bundle);
             replaceFragment(searchFragment, SEARCH_TAG);
         }
+    }
+
+    public void genreSearchIntent(Intent intent) {
+        Bundle bundle = new Bundle();
+
+        String query = intent.getStringExtra("query");
+        bundle.putString("query", query);
+        bundle.putBoolean("isGenre", intent.getBooleanExtra("isGenre", false));
+        SearchFragment searchFragment = new SearchFragment();
+        searchFragment.setArguments(bundle);
+        replaceFragment(searchFragment, SEARCH_TAG);
     }
 
     @Override

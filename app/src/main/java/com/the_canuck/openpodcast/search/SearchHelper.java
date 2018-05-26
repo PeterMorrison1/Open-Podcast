@@ -14,7 +14,7 @@ public class SearchHelper {
     private String query;
     private SearchResponseHolder holder = new SearchResponseHolder();
     private String genreId;
-    private boolean isGenre = false;
+    private boolean isGenre;
 
     public SearchHelper(String query) {
         this.query = query;

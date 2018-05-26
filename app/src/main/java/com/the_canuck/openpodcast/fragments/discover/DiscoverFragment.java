@@ -1,19 +1,25 @@
 package com.the_canuck.openpodcast.fragments.discover;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.activities.MainActivity;
+import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
 import com.the_canuck.openpodcast.search.enums.GenreIds;
@@ -27,7 +33,7 @@ import java.util.List;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class DiscoverFragment extends Fragment {
+public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -53,6 +59,8 @@ public class DiscoverFragment extends Fragment {
 //    private RecyclerView technologyRecyclerView = null;
 //    private RecyclerView tvRecyclerView = null;
     private List<RecyclerView> recyclerViews = new ArrayList<>();
+    List<Button> buttons;
+    List<Integer> genres;
 
 
     private ProgressBar progressBar;
@@ -107,45 +115,14 @@ public class DiscoverFragment extends Fragment {
         RecyclerView.ItemDecoration decoration = new DividerItemDecoration(view.getContext(),
                 RecyclerView.VERTICAL);
 
-        // Create list of views used in genre screen
-        List<View> views = new ArrayList<>();
-        views.add(view.findViewById(R.id.discover_arts_recycler));
-        views.add(view.findViewById(R.id.discover_business_recycler));
-        views.add(view.findViewById(R.id.discover_comedy_recycler));
-        views.add(view.findViewById(R.id.discover_education_recycler));
-        views.add(view.findViewById(R.id.discover_hobbies_recycler));
-        views.add(view.findViewById(R.id.discover_gov_recycler));
-        views.add(view.findViewById(R.id.discover_health_recycler));
-        views.add(view.findViewById(R.id.discover_family_recycler));
-        views.add(view.findViewById(R.id.discover_music_recycler));
-        views.add(view.findViewById(R.id.discover_politics_recycler));
-        views.add(view.findViewById(R.id.discover_religion_recycler));
-        views.add(view.findViewById(R.id.discover_science_recycler));
-        views.add(view.findViewById(R.id.discover_society_recycler));
-        views.add(view.findViewById(R.id.discover_sports_recycler));
-        views.add(view.findViewById(R.id.discover_technology_recycler));
-        views.add(view.findViewById(R.id.discover_film_recycler));
-
-        // create list of genre values used
-        List<Integer> genres = new ArrayList<>();
-        genres.add(GenreIds.ARTS.getValue());
-        genres.add(GenreIds.BUSINESS.getValue());
-        genres.add(GenreIds.COMEDY.getValue());
-        genres.add(GenreIds.EDUCATION.getValue());
-        genres.add(GenreIds.GAMES_AND_HOBBIES.getValue());
-        genres.add(GenreIds.GOVERNMENT_AND_ORGANIZATIONS.getValue());
-        genres.add(GenreIds.HEALTH.getValue());
-        genres.add(GenreIds.KIDS_AND_FAMILY.getValue());
-        genres.add(GenreIds.MUSIC.getValue());
-        genres.add(GenreIds.NEWS_AND_POLITICS.getValue());
-        genres.add(GenreIds.RELIGION_AND_SPIRITUALITY.getValue());
-        genres.add(GenreIds.SCIENCE_AND_MEDICINE.getValue());
-        genres.add(GenreIds.SOCIETY_AND_CULTURE.getValue());
-        genres.add(GenreIds.SPORTS_AND_RECREATION.getValue());
-        genres.add(GenreIds.TECHNOLOGY.getValue());
-        genres.add(GenreIds.TV_AND_FILM.getValue());
 
 
+        List<View> views = createViewList(view);
+
+//        buttons = createButtonList(view);
+        genres = createGenreList();
+
+        // set layout manager and execute searchtask for each recyclerview in the list
         for (int i = 0; i < views.size(); i++) {
             if (view.findViewById(views.get(i).getId()) instanceof RecyclerView) {
                 layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
@@ -153,12 +130,18 @@ public class DiscoverFragment extends Fragment {
                 RecyclerView recyclerView = view.findViewById(views.get(i).getId());
 
                 recyclerView.setLayoutManager(layoutManager);
-
+//
                 recyclerViews.add(recyclerView);
 
                 new SearchTask().execute(genres.get(i));
             }
         }
+
+        // set onclicklistener for each button in list
+//        for (int i = 0; i < buttons.size(); i++) {
+//            buttons.get(i).setOnClickListener(this);
+//        }
+
         // TODO: Delete this huge collection of "if" statements below if above loop for sure works
 //
 //        // Art Recycler view
@@ -227,6 +210,153 @@ public class DiscoverFragment extends Fragment {
 //            new SearchTask().execute(GenreIds.HEALTH.getValue());
 //        }
         return view;
+    }
+
+    public List<Button> createButtonList(View view) {
+        // Create list of views used in genre screen
+        List<Button> views = new ArrayList<>();
+        views.add((Button) view.findViewById(R.id.arts_button));
+        views.add((Button) view.findViewById(R.id.business_button));
+        views.add((Button) view.findViewById(R.id.comedy_button));
+        views.add((Button) view.findViewById(R.id.education_button));
+        views.add((Button) view.findViewById(R.id.hobbies_button));
+        views.add((Button) view.findViewById(R.id.gov_button));
+        views.add((Button) view.findViewById(R.id.health_button));
+        views.add((Button) view.findViewById(R.id.family_button));
+        views.add((Button) view.findViewById(R.id.music_button));
+        views.add((Button) view.findViewById(R.id.politics_button));
+        views.add((Button) view.findViewById(R.id.religion_button));
+        views.add((Button) view.findViewById(R.id.science_button));
+        views.add((Button) view.findViewById(R.id.society_button));
+        views.add((Button) view.findViewById(R.id.sports_button));
+        views.add((Button) view.findViewById(R.id.technology_button));
+        views.add((Button) view.findViewById(R.id.film_button));
+
+        return views;
+    }
+
+    public List<View> createViewList(View view) {
+        // Create list of views used in genre screen
+        List<View> views = new ArrayList<>();
+        views.add(view.findViewById(R.id.discover_arts_recycler));
+        views.add(view.findViewById(R.id.discover_business_recycler));
+        views.add(view.findViewById(R.id.discover_comedy_recycler));
+        views.add(view.findViewById(R.id.discover_education_recycler));
+        views.add(view.findViewById(R.id.discover_hobbies_recycler));
+        views.add(view.findViewById(R.id.discover_gov_recycler));
+        views.add(view.findViewById(R.id.discover_health_recycler));
+        views.add(view.findViewById(R.id.discover_family_recycler));
+        views.add(view.findViewById(R.id.discover_music_recycler));
+        views.add(view.findViewById(R.id.discover_politics_recycler));
+        views.add(view.findViewById(R.id.discover_religion_recycler));
+        views.add(view.findViewById(R.id.discover_science_recycler));
+        views.add(view.findViewById(R.id.discover_society_recycler));
+        views.add(view.findViewById(R.id.discover_sports_recycler));
+        views.add(view.findViewById(R.id.discover_technology_recycler));
+        views.add(view.findViewById(R.id.discover_film_recycler));
+
+        return views;
+    }
+
+    public List<Integer> createGenreList() {
+        // create list of genre values used
+        List<Integer> genres = new ArrayList<>();
+        genres.add(GenreIds.ARTS.getValue());
+        genres.add(GenreIds.BUSINESS.getValue());
+        genres.add(GenreIds.COMEDY.getValue());
+        genres.add(GenreIds.EDUCATION.getValue());
+        genres.add(GenreIds.GAMES_AND_HOBBIES.getValue());
+        genres.add(GenreIds.GOVERNMENT_AND_ORGANIZATIONS.getValue());
+        genres.add(GenreIds.HEALTH.getValue());
+        genres.add(GenreIds.KIDS_AND_FAMILY.getValue());
+        genres.add(GenreIds.MUSIC.getValue());
+        genres.add(GenreIds.NEWS_AND_POLITICS.getValue());
+        genres.add(GenreIds.RELIGION_AND_SPIRITUALITY.getValue());
+        genres.add(GenreIds.SCIENCE_AND_MEDICINE.getValue());
+        genres.add(GenreIds.SOCIETY_AND_CULTURE.getValue());
+        genres.add(GenreIds.SPORTS_AND_RECREATION.getValue());
+        genres.add(GenreIds.TECHNOLOGY.getValue());
+        genres.add(GenreIds.TV_AND_FILM.getValue());
+
+        return genres;
+    }
+
+    @Override
+    public void onClick(View v) {
+        String genreId = null;
+
+        int i = 0;
+        boolean isFound = false;
+        while (!isFound && i < buttons.size()) {
+            if (v.getId() == buttons.get(i).getId()) {
+                genreId = Integer.toString(genres.get(i));
+                isFound = true;
+            }
+            i++;
+        }
+
+        Intent intent = new Intent(v.getContext(), MainActivity.class);
+        intent.putExtra("query", genreId);
+        intent.putExtra("isGenre", true);
+//        SearchFragment searchFragment = new SearchFragment();
+//        ((MainActivity)getActivity()).replaceFragment(searchFragment, "search");
+        ((MainActivity)getActivity()).genreSearchIntent(intent);
+        // maybe replace this switch statement with a loop, if its not too inefficient
+//        switch (v.getId()) {
+//            case R.id.arts_button:
+//                genreId = Integer.toString(GenreIds.ARTS.getValue());
+//                break;
+//
+//            case R.id.business_button:
+//                genreId = Integer.toString(GenreIds.BUSINESS.getValue());
+//                break;
+//
+//            case R.id.comedy_button:
+//                genreId = Integer.toString(GenreIds.COMEDY.getValue());
+//                break;
+//
+//            case R.id.education_button:
+//                genreId = Integer.toString(GenreIds.EDUCATION.getValue());
+//                break;
+//
+//            case R.id.hobbies_button:
+//                genreId = Integer.toString(GenreIds.GAMES_AND_HOBBIES.getValue());
+//                break;
+//
+//            case R.id.gov_button:
+//                genreId = Integer.toString(GenreIds.GOVERNMENT_AND_ORGANIZATIONS.getValue());
+//                break;
+//
+//            case R.id.health_button:
+//                genreId = Integer.toString(GenreIds.HEALTH.getValue());
+//                break;
+//
+//            case R.id.family_button:
+//                genreId = Integer.toString(GenreIds.KIDS_AND_FAMILY.getValue());
+//                break;
+//
+//            case R.id.music_button:
+//                genreId = Integer.toString(GenreIds.MUSIC.getValue());
+//                break;
+//
+//            case R.id.politics_button:
+//                genreId = Integer.toString(GenreIds.NEWS_AND_POLITICS.getValue());
+//                break;
+//
+//            case R.id.religion_button:
+//                genreId = Integer.toString(GenreIds.RELIGION_AND_SPIRITUALITY.getValue());
+//                break;
+//
+//            case R.id.science_button:
+//                genreId = Integer.toString(GenreIds.SCIENCE_AND_MEDICINE.getValue());
+//                break;
+//
+//            case R.id.society_button:
+//                genreId = Integer.toString(GenreIds.SOCIETY_AND_CULTURE.getValue());
+//                break;
+
+
+
     }
 
     /**

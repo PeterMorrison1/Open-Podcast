@@ -34,6 +34,7 @@ public class SearchFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private String query;
+    private boolean isGenre;
     private RecyclerView recyclerView = null;
     private ProgressBar progressBar;
 
@@ -60,6 +61,7 @@ public class SearchFragment extends Fragment {
         Bundle bundle = this.getArguments();
         if (bundle != null) {
             query = bundle.getString("query", "test");
+            isGenre = bundle.getBoolean("isGenre");
         }
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
@@ -118,7 +120,11 @@ public class SearchFragment extends Fragment {
         protected List<Podcast> doInBackground(String... strings) {
             SearchHelper searchHelper;
             List<Podcast> podcastList = null;
-            searchHelper = new SearchHelper(strings[0]);
+            if (isGenre) {
+                searchHelper = new SearchHelper(strings[0], isGenre);
+            } else {
+                searchHelper = new SearchHelper(strings[0]);
+            }
             SearchResultHelper resultHelper = new SearchResultHelper();
             podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
     //            podcastList = resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
