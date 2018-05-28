@@ -78,7 +78,7 @@ public class MyDiscoverRecyclerViewAdapter extends
                 .apply(myOptions)
                 .into(holder.mImageView);
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
+        holder.mConstraintView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (null != mListener) {

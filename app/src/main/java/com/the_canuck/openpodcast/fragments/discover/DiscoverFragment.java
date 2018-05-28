@@ -299,9 +299,21 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         Intent intent = new Intent(v.getContext(), MainActivity.class);
         intent.putExtra("query", genreId);
         intent.putExtra("isGenre", true);
+        SearchFragment searchFragment = new SearchFragment();
+        ((MainActivity)getActivity()).replaceFragment(searchFragment, "search");
+//        ((MainActivity)getActivity()).genreSearchIntent(intent);
+
+//        Bundle bundle = new Bundle();
+//        bundle.putString("query", genreId);
+//        bundle.putBoolean("isGenre", true);
 //        SearchFragment searchFragment = new SearchFragment();
-//        ((MainActivity)getActivity()).replaceFragment(searchFragment, "search");
-        ((MainActivity)getActivity()).genreSearchIntent(intent);
+//        searchFragment.setArguments(bundle);
+//        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//        transaction.replace(R.id.fragment_container, searchFragment);
+//        transaction.addToBackStack("search");
+//        transaction.commit();
+
+
         // maybe replace this switch statement with a loop, if its not too inefficient
 //        switch (v.getId()) {
 //            case R.id.arts_button:
@@ -355,9 +367,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 //            case R.id.society_button:
 //                genreId = Integer.toString(GenreIds.SOCIETY_AND_CULTURE.getValue());
 //                break;
-
-
-
     }
 
     /**
