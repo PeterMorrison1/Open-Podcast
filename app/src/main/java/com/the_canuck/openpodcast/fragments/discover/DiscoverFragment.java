@@ -58,7 +58,7 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 //    private RecyclerView sportsRecyclerView = null;
 //    private RecyclerView technologyRecyclerView = null;
 //    private RecyclerView tvRecyclerView = null;
-    private List<RecyclerView> recyclerViews = new ArrayList<>();
+    private List<RecyclerView> recyclerViews = null;
     List<Button> buttons;
     List<Integer> genres;
 
@@ -115,15 +115,18 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         RecyclerView.ItemDecoration decoration = new DividerItemDecoration(view.getContext(),
                 RecyclerView.VERTICAL);
 
-
-
+        // Create recyclerViews list (empty) which will be filled by for loop below
+        recyclerViews = new ArrayList<>();
         List<View> views = createViewList(view);
 
         buttons = createButtonList(view);
         genres = createGenreList();
 
-        // set layout manager and execute searchtask for each recyclerview in the list
+        /* Set layout manager and execute searchtask for each recyclerview in the list
+           then adds the newly made recyclerview into the recyclerview list
+          */
         for (int i = 0; i < views.size(); i++) {
+
             if (view.findViewById(views.get(i).getId()) instanceof RecyclerView) {
                 layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
 
