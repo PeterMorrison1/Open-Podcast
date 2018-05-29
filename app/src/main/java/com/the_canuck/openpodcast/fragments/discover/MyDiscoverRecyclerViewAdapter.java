@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,6 +88,16 @@ public class MyDiscoverRecyclerViewAdapter extends
             }
         });
     }
+
+    /**
+     * Gets the dominant colour swatch of the image and sets the constraint layout and text views
+     * with appropriate colours.
+     *
+     * @param resource bitmap of the podcast artwork
+     * @param title textview of the podcast title
+     * @param artist textview of the podcast artist
+     * @param constraintLayout layout holding the artwork, title, and artist in bottom sheet
+     */
     public void setCardViewColours(Bitmap resource, TextView title, TextView artist,
                                       ConstraintLayout constraintLayout) {
         if (resource != null) {
@@ -115,7 +124,6 @@ public class MyDiscoverRecyclerViewAdapter extends
         public final TextView mIdView;
         public final TextView mContentView;
         public final ImageView mImageView;
-//        public final CardView mCardView;
         public final ConstraintLayout mConstraintView;
         public Podcast mItem;
 
@@ -125,7 +133,6 @@ public class MyDiscoverRecyclerViewAdapter extends
             mIdView = view.findViewById(R.id.discover_title);
             mContentView = view.findViewById(R.id.discover_artist);
             mImageView = view.findViewById(R.id.discover_image);
-//            mCardView = view.findViewById(R.id.card_view);
             mConstraintView = view.findViewById(R.id.card_view_constraint);
         }
 

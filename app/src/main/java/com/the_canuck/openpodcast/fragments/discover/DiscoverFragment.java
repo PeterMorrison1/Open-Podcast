@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
@@ -35,29 +33,9 @@ import java.util.List;
  */
 public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
-    // TODO: Customize parameter argument names
-    private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
-    private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
 
     // TODO: Delete these when you delete the huge amount of if statements below
-//    private RecyclerView artRecyclerView;
-//    private RecyclerView businessRecyclerView = null;
-//    private RecyclerView comedyRecyclerView = null;
-//    private RecyclerView educationRecyclerView = null;
-//    private RecyclerView gamesRecyclerView = null;
-//    private RecyclerView govRecyclerView = null;
-//    private RecyclerView healthRecyclerView = null;
-//    private RecyclerView familyRecyclerView = null;
-//    private RecyclerView musicRecyclerView = null;
-//    private RecyclerView newsRecyclerView = null;
-//    private RecyclerView religionRecyclerView = null;
-//    private RecyclerView scienceRecyclerView = null;
-//    private RecyclerView societyRecyclerView = null;
-//    private RecyclerView sportsRecyclerView = null;
-//    private RecyclerView technologyRecyclerView = null;
-//    private RecyclerView tvRecyclerView = null;
     private List<RecyclerView> recyclerViews = null;
     List<Button> buttons;
     List<Integer> genres;
@@ -72,16 +50,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
     public DiscoverFragment() {
     }
 
-//    // TODO: Customize parameter initialization
-//    @SuppressWarnings("unused")
-//    public static DiscoverFragment newInstance(int columnCount) {
-//        DiscoverFragment fragment = new DiscoverFragment();
-//        Bundle args = new Bundle();
-//        args.putInt(ARG_COLUMN_COUNT, columnCount);
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
-
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static DiscoverFragment newInstance() {
@@ -93,10 +61,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
-        }
     }
 
     @Override
@@ -104,10 +68,12 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         // this is the view of the constraint layout
         View view = inflater.inflate(R.layout.fragment_discover_constraint, container, false);
-//        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager
-//                (view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-        RecyclerView.LayoutManager layoutManager = null;
 
+        RecyclerView.LayoutManager layoutManager;
+
+        /* Set a progress bar while recyclerviews load. Might change this in the future since
+        its hidden behind card views
+         */
         progressBar = view.findViewById(R.id.discover_progress_bar);
         progressBar.setVisibility(View.GONE);
 
@@ -119,7 +85,10 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         recyclerViews = new ArrayList<>();
         List<View> views = createViewList(view);
 
+        // Create button list for every categories buttons
         buttons = createButtonList(view);
+
+        // Create genre list to store genres for searching
         genres = createGenreList();
 
         /* Set layout manager and execute searchtask for each recyclerview in the list
@@ -145,77 +114,15 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
             buttons.get(i).setOnClickListener(this);
         }
 
-        // TODO: Delete this huge collection of "if" statements below if above loop for sure works
-
-//
-//        // Art Recycler view
-//        if (view.findViewById(R.id.discover_arts_recycler) instanceof RecyclerView) {
-//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-//
-//            artRecyclerView = view.findViewById(R.id.discover_arts_recycler);
-//            artRecyclerView.setLayoutManager(layoutManager);
-////            recyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(searchPodcastGenre(GENRE_ARTS), mListener));
-//
-//            progressBar.setVisibility(View.VISIBLE);
-//            new SearchTask().execute(GenreIds.ARTS.getValue());
-//        }
-//
-//        // Business Recycler view
-//        if (view.findViewById(R.id.discover_business_recycler) instanceof RecyclerView) {
-//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-//
-//            businessRecyclerView = view.findViewById(R.id.discover_business_recycler);
-//            businessRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.BUSINESS.getValue());
-//        }
-//
-//        // Comedy Recycler view
-//        if (view.findViewById(R.id.discover_comedy_recycler) instanceof RecyclerView) {
-//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-//
-//            comedyRecyclerView = view.findViewById(R.id.discover_comedy_recycler);
-//            comedyRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.COMEDY.getValue());
-//        }
-//
-//        // Education Recycler view
-//        if (view.findViewById(R.id.discover_education_recycler) instanceof RecyclerView) {
-//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-//
-//            educationRecyclerView = view.findViewById(R.id.discover_education_recycler);
-//            educationRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.EDUCATION.getValue());
-//        }
-//
-//        // Games and Hobbies Recycler view
-//        if (view.findViewById(R.id.discover_hobbies_recycler) instanceof RecyclerView) {
-//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-//
-//            gamesRecyclerView = view.findViewById(R.id.discover_hobbies_recycler);
-//            gamesRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.GAMES_AND_HOBBIES.getValue());
-//        }
-//
-//        // Government Recycler view
-//        if (view.findViewById(R.id.discover_gov_recycler) instanceof RecyclerView) {
-//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-//
-//            govRecyclerView = view.findViewById(R.id.discover_gov_recycler);
-//            govRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.GOVERNMENT_AND_ORGANIZATIONS.getValue());
-//        }
-//
-//        // Health Recycler view
-//        if (view.findViewById(R.id.discover_health_recycler) instanceof RecyclerView) {
-//            layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-//
-//            healthRecyclerView = view.findViewById(R.id.discover_health_recycler);
-//            healthRecyclerView.setLayoutManager(layoutManager);
-//            new SearchTask().execute(GenreIds.HEALTH.getValue());
-//        }
         return view;
     }
 
+    /**
+     * Create list of button views for each genre's "more" button.
+     *
+     * @param view layout view
+     * @return list of every more button
+     */
     public List<Button> createButtonList(View view) {
         // Create list of views used in genre screen
         List<Button> views = new ArrayList<>();
@@ -239,6 +146,12 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         return views;
     }
 
+    /**
+     * Create list of views for each recycler view in layout.
+     *
+     * @param view layout view
+     * @return list of every recycler view
+     */
     public List<View> createViewList(View view) {
         // Create list of views used in genre screen
         List<View> views = new ArrayList<>();
@@ -262,6 +175,11 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         return views;
     }
 
+    /**
+     * Create a list of genre ids for each category.
+     *
+     * @return list of every genre id
+     */
     public List<Integer> createGenreList() {
         // create list of genre values used
         List<Integer> genres = new ArrayList<>();
@@ -291,6 +209,7 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
         int i = 0;
         boolean isFound = false;
+        // determines which "more" button is clicked, ends when clicked one is found
         while (!isFound && i < buttons.size()) {
             if (v.getId() == buttons.get(i).getId()) {
                 genreId = Integer.toString(genres.get(i));
@@ -299,13 +218,16 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
             i++;
         }
 
+        // Sends an intent to genreSearchIntent() in main activity to start search fragment
         Intent intent = new Intent(v.getContext(), MainActivity.class);
         intent.putExtra("query", genreId);
         intent.putExtra("isGenre", true);
-        SearchFragment searchFragment = new SearchFragment();
-//        ((MainActivity)getActivity()).replaceFragment(searchFragment, "search");
         ((MainActivity)getActivity()).genreSearchIntent(intent);
 
+        /* This is the same as above except doesn't interact with main activity, starts search
+        fragment from this fragment. Not sure which solution to use so I'm keeping it for now, but
+        commented out.
+         */
 //        Bundle bundle = new Bundle();
 //        bundle.putString("query", genreId);
 //        bundle.putBoolean("isGenre", true);
@@ -315,61 +237,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 //        transaction.replace(R.id.fragment_container, searchFragment);
 //        transaction.addToBackStack("search");
 //        transaction.commit();
-
-
-        // maybe replace this switch statement with a loop, if its not too inefficient
-//        switch (v.getId()) {
-//            case R.id.arts_button:
-//                genreId = Integer.toString(GenreIds.ARTS.getValue());
-//                break;
-//
-//            case R.id.business_button:
-//                genreId = Integer.toString(GenreIds.BUSINESS.getValue());
-//                break;
-//
-//            case R.id.comedy_button:
-//                genreId = Integer.toString(GenreIds.COMEDY.getValue());
-//                break;
-//
-//            case R.id.education_button:
-//                genreId = Integer.toString(GenreIds.EDUCATION.getValue());
-//                break;
-//
-//            case R.id.hobbies_button:
-//                genreId = Integer.toString(GenreIds.GAMES_AND_HOBBIES.getValue());
-//                break;
-//
-//            case R.id.gov_button:
-//                genreId = Integer.toString(GenreIds.GOVERNMENT_AND_ORGANIZATIONS.getValue());
-//                break;
-//
-//            case R.id.health_button:
-//                genreId = Integer.toString(GenreIds.HEALTH.getValue());
-//                break;
-//
-//            case R.id.family_button:
-//                genreId = Integer.toString(GenreIds.KIDS_AND_FAMILY.getValue());
-//                break;
-//
-//            case R.id.music_button:
-//                genreId = Integer.toString(GenreIds.MUSIC.getValue());
-//                break;
-//
-//            case R.id.politics_button:
-//                genreId = Integer.toString(GenreIds.NEWS_AND_POLITICS.getValue());
-//                break;
-//
-//            case R.id.religion_button:
-//                genreId = Integer.toString(GenreIds.RELIGION_AND_SPIRITUALITY.getValue());
-//                break;
-//
-//            case R.id.science_button:
-//                genreId = Integer.toString(GenreIds.SCIENCE_AND_MEDICINE.getValue());
-//                break;
-//
-//            case R.id.society_button:
-//                genreId = Integer.toString(GenreIds.SOCIETY_AND_CULTURE.getValue());
-//                break;
     }
 
     /**
@@ -379,8 +246,8 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         @Override
         protected List<Podcast> doInBackground(Integer... integers) {
             SearchHelper searchHelper;
-            SearchResultHelper resultHelper = null;
-            List<Podcast> podcastList = null;
+            SearchResultHelper resultHelper;
+            List<Podcast> podcastList;
 
             searchHelper = new SearchHelper((String.valueOf(integers[0])), true);
             resultHelper = new SearchResultHelper();
@@ -391,79 +258,82 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
         @Override
         protected void onPostExecute(List<Podcast> podcasts) {
-            switch (podcasts.get(0).getGroupingGenre()) {
-                case 1301:
-                    recyclerViews.get(0).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    // TODO: delete this commented out line when you delete above huge if statement
-//                    artRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1321:
-                    recyclerViews.get(1).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    businessRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1303:
-                    recyclerViews.get(2).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    comedyRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1304:
-                    recyclerViews.get(3).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    educationRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1323:
-                    recyclerViews.get(4).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    gamesRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1325:
-                    recyclerViews.get(5).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    govRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1307:
-                    recyclerViews.get(6).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    healthRecyclerView.setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1305:
-                    recyclerViews.get(7).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1310:
-                    recyclerViews.get(8).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1311:
-                    recyclerViews.get(9).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1314:
-                    recyclerViews.get(10).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1315:
-                    recyclerViews.get(11).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1324:
-                    recyclerViews.get(12).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1316:
-                    recyclerViews.get(13).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1318:
-                    recyclerViews.get(14).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
-
-                case 1309:
-                    recyclerViews.get(15).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-                    break;
+            int i = 0;
+            boolean isFound = false;
+            // Checks which genre is being set to an adapter and sets it
+            while (i < genres.size() && !isFound) {
+                if (podcasts.get(0).getGroupingGenre() == genres.get(i)) {
+                    recyclerViews.get(i).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    isFound = true;
+                }
+                i++;
             }
+            // TODO: Delete this huge switch statment later when im sure the above loop works.
+//            switch (podcasts.get(0).getGroupingGenre()) {
+//                case 1301:
+//                    recyclerViews.get(0).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1321:
+//                    recyclerViews.get(1).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1303:
+//                    recyclerViews.get(2).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1304:
+//                    recyclerViews.get(3).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1323:
+//                    recyclerViews.get(4).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1325:
+//                    recyclerViews.get(5).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1307:
+//                    recyclerViews.get(6).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1305:
+//                    recyclerViews.get(7).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1310:
+//                    recyclerViews.get(8).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1311:
+//                    recyclerViews.get(9).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1314:
+//                    recyclerViews.get(10).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1315:
+//                    recyclerViews.get(11).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1324:
+//                    recyclerViews.get(12).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1316:
+//                    recyclerViews.get(13).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1318:
+//                    recyclerViews.get(14).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//
+//                case 1309:
+//                    recyclerViews.get(15).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+//                    break;
+//            }
             progressBar.setVisibility(View.GONE);
         }
     }
