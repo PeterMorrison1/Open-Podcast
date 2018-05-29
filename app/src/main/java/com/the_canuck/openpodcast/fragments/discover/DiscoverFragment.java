@@ -300,8 +300,8 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         intent.putExtra("query", genreId);
         intent.putExtra("isGenre", true);
         SearchFragment searchFragment = new SearchFragment();
-        ((MainActivity)getActivity()).replaceFragment(searchFragment, "search");
-//        ((MainActivity)getActivity()).genreSearchIntent(intent);
+//        ((MainActivity)getActivity()).replaceFragment(searchFragment, "search");
+        ((MainActivity)getActivity()).genreSearchIntent(intent);
 
 //        Bundle bundle = new Bundle();
 //        bundle.putString("query", genreId);
