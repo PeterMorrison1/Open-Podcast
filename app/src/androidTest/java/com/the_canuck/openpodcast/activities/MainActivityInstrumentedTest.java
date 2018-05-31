@@ -56,12 +56,11 @@ public class MainActivityInstrumentedTest {
     }
 
     @Test
-    public void testSearchFunction() throws InterruptedException {
+    public void testSearchFunction() {
         onView(withId(R.id.action_search)).perform(click());
         onView(withId(android.support.design.R.id.search_src_text))
                 .perform(typeText("adventure zone$!?"), ViewActions.closeSoftKeyboard());
         onView(withId(android.support.design.R.id.search_src_text)).perform(pressImeActionButton());
-        Thread.sleep(2000);
 
         onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.scrollToPosition(0)).
                 check(matches(hasDescendant(withId(R.id.pod_title))));

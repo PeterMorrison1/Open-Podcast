@@ -17,7 +17,6 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;

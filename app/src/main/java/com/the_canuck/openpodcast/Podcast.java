@@ -75,17 +75,6 @@ public class Podcast {
                 artworkUrl600, censoredName;
         int trackCount, collectionId;
 
-//        public PodcastBuilder(int collectionId, String collectionName, String artistName, String artworkUrl30, String artworkUrl60, String artworkUrl100, String artworkUrl600, int trackCount) {
-//            this.collectionId = collectionId;
-//            this.collectionName = collectionName;
-//            this.artistName = artistName;
-//            this.artworkUrl30 = artworkUrl30;
-//            this.artworkUrl60 = artworkUrl60;
-//            this.artworkUrl100 = artworkUrl100;
-//            this.artworkUrl600 = artworkUrl600;
-//            this.trackCount = trackCount;
-//        }
-
         public PodcastBuilder setCollectionId(int collectionId) {
             this.collectionId = collectionId;
             return this;

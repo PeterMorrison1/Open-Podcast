@@ -96,22 +96,6 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
-//    /**
-//     * Runs the SearchHelper and returns the podcast list.
-//     *
-//     * @param query term entered by user to search for
-//     * @return the list of podcast objects
-//     */
-//    public List<Podcast> searchPodcasts(String query) {
-//        SearchHelper searchHelper = new SearchHelper(query);
-//        SearchResultHelper resultHelper = new SearchResultHelper();
-//
-//        searchHelper.runSearch();
-////        return resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
-//        return resultHelper.populatePodcastList(searchHelper.runSearch());
-//
-//    }
-
     /**
      * Runs the SearchHelper and returns the podcast list and sets the recyclerview adapter.
      */

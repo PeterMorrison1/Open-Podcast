@@ -17,7 +17,6 @@ import android.widget.ProgressBar;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.activities.MainActivity;
-import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
 import com.the_canuck.openpodcast.search.enums.GenreIds;
