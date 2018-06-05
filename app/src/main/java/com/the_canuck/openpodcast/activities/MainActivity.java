@@ -25,6 +25,7 @@ import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
 import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
+import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity implements
         SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements
     final String LIBRARY_TAG = "library";
     final String SEARCH_TAG = "search";
     final String DISCOVER_TAG = "discover";
+    final String SETTINGS_TAG = "settings";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,8 +101,19 @@ public class MainActivity extends AppCompatActivity implements
                             newFragment = new DiscoverFragment();
                             fragTag = DISCOVER_TAG;
                         }
-
                         break;
+
+                    case R.id.nav_settings:
+                        if (container instanceof SettingsFragment) {
+                            mDrawerLayout.closeDrawers();
+                            return true;
+                        } else {
+                            getSupportFragmentManager().popBackStack(SETTINGS_TAG,
+                                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+                            newFragment = new SettingsFragment();
+                            fragTag = SETTINGS_TAG;
+                        }
                 }
                 if (newFragment != null) {
                     replaceFragment(newFragment, fragTag);

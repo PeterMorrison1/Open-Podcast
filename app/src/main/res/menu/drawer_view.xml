@@ -9,6 +9,9 @@
             android:id="@+id/nav_search"
             android:icon="@drawable/ic_search_white_24dp"
             android:title="@string/search" />
+        <item
+            android:id="@+id/nav_settings"
+            android:title="Settings" />
     </group>
 
     <!--Add new group and more items for settings and new releases etc-->

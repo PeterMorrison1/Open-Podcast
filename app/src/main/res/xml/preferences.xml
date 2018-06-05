@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:key="pref_external"
+        android:title="@string/pref_external"
+        android:summary="@string/pref_external_sum"
+        android:defaultValue="false"/>
+</PreferenceScreen>
