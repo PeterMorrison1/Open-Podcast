@@ -56,6 +56,7 @@ public class SearchResultHelper {
                 .setArtworkUrl60(object.getString(ItunesJsonKeys.ARTWORKURL60.getValue()))
                 .setArtworkUrl100(object.getString(ItunesJsonKeys.ARTWORKURL100.getValue()))
                 .setArtworkUrl600(object.getString(ItunesJsonKeys.ARTWORKURL600.getValue()))
+                .setFeedUrl(object.getString(ItunesJsonKeys.FEEDURL.getValue()))
                 .build();
 
         } catch (JSONException e) {

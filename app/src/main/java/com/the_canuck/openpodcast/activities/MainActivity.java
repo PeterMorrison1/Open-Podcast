@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onListFragmentInteraction(Podcast item) {
         PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
                 item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
-                item.getCensoredName(), item.getTrackCount()).show(getSupportFragmentManager(),
+                item.getCensoredName(), item.getTrackCount(), item.getFeedUrl()).show(getSupportFragmentManager(),
                 "dialog");
     }
 
@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onFragmentInteraction(Podcast item) {
         PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
                 item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
-                item.getCensoredName(), item.getTrackCount()).show(getSupportFragmentManager(),
+                item.getCensoredName(), item.getTrackCount(), item.getFeedUrl()).show(getSupportFragmentManager(),
                 "dialog");
     }
 }

@@ -11,6 +11,7 @@ public class Podcast {
     private String artworkUrl600;
     private String censoredName;
     private int groupingGenre;
+    private String feedUrl;
 
 
     public Podcast(PodcastBuilder builder) {
@@ -23,6 +24,7 @@ public class Podcast {
         artworkUrl100 = builder.artworkUrl100;
         artworkUrl600 = builder.artworkUrl600;
         censoredName = builder.censoredName;
+        feedUrl = builder.feedUrl;
     }
 
     public int getGroupingGenre() {
@@ -70,9 +72,13 @@ public class Podcast {
         return censoredName;
     }
 
+    public String getFeedUrl() {
+        return feedUrl;
+    }
+
     public static class PodcastBuilder {
         String collectionName, artistName, artworkUrl30, artworkUrl60, artworkUrl100,
-                artworkUrl600, censoredName;
+                artworkUrl600, censoredName, feedUrl;
         int trackCount, collectionId;
 
         public PodcastBuilder setCollectionId(int collectionId) {
@@ -120,6 +126,11 @@ public class Podcast {
             return this;
         }
 
+        public PodcastBuilder setFeedUrl(String feedUrl) {
+            this.feedUrl = feedUrl;
+            return this;
+        }
+
         public Podcast build() {
             return new Podcast(this);
         }
@@ -136,6 +147,7 @@ public class Podcast {
                 ", artworkUrl100='" + artworkUrl100 + '\'' +
                 ", artworkUrl600='" + artworkUrl600 + '\'' +
                 ", censoredName='" + censoredName + '\'' +
+                ", feedUrl='" + feedUrl + '\'' +
                 '}';
     }
 }

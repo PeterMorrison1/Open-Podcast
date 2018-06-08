@@ -2,6 +2,7 @@ package com.the_canuck.openpodcast.fragments.search_results;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -25,8 +27,13 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.search.RssReader;
+import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
+
+import java.util.List;
 
 /**
  * <p>A fragment that shows a list of items as a modal bottom sheet.</p>
@@ -47,12 +54,16 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private static String collectionName;
     private static String censoredName;
     private static int trackCount;
+    private static String feedUrl;
+//    private List<RSSItem> episodes;
+    private List<Episode> episodes;
+    RssReader reader;
 
     // TODO: Customize parameters
     public static PodcastListDialogFragment newInstance(int collectionId, String artistName,
                                                  String artwork600, String artwork100,
                                                  String collectionName, String censoredName,
-                                                 int trackCount) {
+                                                 int trackCount, String feedUrl) {
         PodcastListDialogFragment.collectionId = collectionId;
         PodcastListDialogFragment.artistName = artistName;
         PodcastListDialogFragment.artwork600 = artwork600;
@@ -60,6 +71,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         PodcastListDialogFragment.collectionName = collectionName;
         PodcastListDialogFragment.censoredName = censoredName;
         PodcastListDialogFragment.trackCount = trackCount;
+        PodcastListDialogFragment.feedUrl = feedUrl;
+
         final PodcastListDialogFragment fragment = new PodcastListDialogFragment();
         final Bundle args = new Bundle();
         Log.d("Test", "Title main: " + collectionName);
@@ -71,6 +84,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         args.putString(ItunesJsonKeys.COLLECTIONNAME.getValue(), collectionName);
         args.putString(ItunesJsonKeys.TRACKCENSOREDNAME.getValue(), censoredName);
         args.putInt(ItunesJsonKeys.TRACKCOUNT.getValue(), trackCount);
+        args.putString(ItunesJsonKeys.FEEDURL.getValue(), feedUrl);
         fragment.setArguments(args);
         return fragment;
     }
@@ -86,11 +100,27 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         final RecyclerView recyclerView = view.findViewById(R.id.bottom_sheet_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        recyclerView.setAdapter(new PodcastAdapter(30));
-        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(new PodcastAdapter());
+        recyclerView.setHasFixedSize(false);
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),
                 LinearLayoutManager.VERTICAL));
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                reader = new RssReader(feedUrl);
+                episodes = reader.createEpisodeList();
+            }
+        }).start();
+
+        while (episodes == null) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        Toast.makeText(getContext(), Integer.toString(episodes.size()), Toast.LENGTH_SHORT).show();
 
         final TextView title = view.findViewById(R.id.bottom_sheet_title);
         title.setEllipsize(TextUtils.TruncateAt.END);
@@ -107,6 +137,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
         title.setText(collectionName);
         artist.setText(artistName);
+        description.setText(reader.getPodcastDescription());
         final RequestOptions myOptions = new RequestOptions()
                 .fitCenter()
                 .placeholder(R.drawable.ic_image_black_48dp)
@@ -208,10 +239,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
     private class PodcastAdapter extends RecyclerView.Adapter<ViewHolder> {
 
-        private final int mItemCount;
-
-        PodcastAdapter(int itemCount) {
-            mItemCount = itemCount;
+        PodcastAdapter() {
         }
 
         @Override
@@ -221,15 +249,13 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            String episodeNum = String.valueOf(position);
-            holder.episode.setText("Episode: " + episodeNum);
+            holder.episode.setText(episodes.get(position).getTitle());
         }
 
         @Override
         public int getItemCount() {
-            return mItemCount;
+            return episodes.size();
         }
 
     }
-
 }

@@ -16,6 +16,9 @@ public class SearchHelper {
     private String genreId;
     private boolean isGenre;
 
+    public SearchHelper() {
+    }
+
     public SearchHelper(String query) {
         this.query = query;
     }
@@ -39,6 +42,16 @@ public class SearchHelper {
 
         String results = httpTask(url);
         return results;
+    }
+
+    /**
+     * Runs httpTask for rss feeds (instead of creating a url a url is simply passed in)
+     *
+     * @param url feed url for the podcast
+     * @return result from the feed
+     */
+    public String parseRss(String url) {
+        return httpTask(url);
     }
 
     /**

@@ -126,7 +126,7 @@ public class DiscoverFragRecordedTest {
         onView(
             allOf(
                 withId(R.id.episode),
-                withText("Episode: 0"),
+                withText("com.the_canuck.openpodcast.Episode: 0"),
                 childAtPosition(childAtPosition(withId(R.id.bottom_sheet_recyclerview), 0), 0),
                 isDisplayed()));
     appCompatTextView.perform(click());
