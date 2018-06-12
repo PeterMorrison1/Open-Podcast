@@ -13,6 +13,8 @@ public class Podcast {
     private int groupingGenre;
     private String feedUrl;
 
+    public Podcast() {
+    }
 
     public Podcast(PodcastBuilder builder) {
         collectionId = builder.collectionId;
