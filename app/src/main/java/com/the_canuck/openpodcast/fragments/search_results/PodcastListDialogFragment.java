@@ -2,21 +2,22 @@ package com.the_canuck.openpodcast.fragments.search_results;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +31,10 @@ import com.bumptech.glide.request.target.Target;
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.search.RssReader;
-import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
 
 import java.util.List;
+
 
 /**
  * <p>A fragment that shows a list of items as a modal bottom sheet.</p>
@@ -55,11 +56,10 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private static String censoredName;
     private static int trackCount;
     private static String feedUrl;
-//    private List<RSSItem> episodes;
     private List<Episode> episodes;
     RssReader reader;
+    Bitmap bitmapResource;
 
-    // TODO: Customize parameters
     public static PodcastListDialogFragment newInstance(int collectionId, String artistName,
                                                  String artwork600, String artwork100,
                                                  String collectionName, String censoredName,
@@ -75,8 +75,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
         final PodcastListDialogFragment fragment = new PodcastListDialogFragment();
         final Bundle args = new Bundle();
-        Log.d("Test", "Title main: " + collectionName);
 
+        // TODO: Can probably remove these at some time honestly
         args.putInt(ItunesJsonKeys.COLLECTIONID.getValue(), collectionId);
         args.putString(ItunesJsonKeys.ARTISTNAME.getValue(), artistName);
         args.putString(ItunesJsonKeys.ARTWORKURL600.getValue(), artwork600);
@@ -134,16 +134,49 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         final TextView description = view.findViewById(R.id.bottom_sheet_description);
 
         final ConstraintLayout constraintLayout = view.findViewById(R.id.bottom_sheet_constraint_colour);
+        final ConstraintLayout descriptionLayout = view.findViewById(R.id.description_layout);
+        final Button subscribeButton = view.findViewById(R.id.description_button_subscribe);
+        final Button unsubscribeButton = view.findViewById(R.id.description_button_unsubscribe);
 
+        // set unsubscribe button to invisible on creation
+        unsubscribeButton.setVisibility(View.GONE);
+
+        // TODO: Create if statement to read if current podcast is subbed or not, and set visibility
+
+        // when subscribe button is clicked it bceomes invisible and the unsubscribe button visible
+        // TODO: Consider making an animation for button press
+        subscribeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: Insert code to add podcast to subscription list
+                subscribeButton.setVisibility(View.GONE);
+                unsubscribeButton.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // when unsubscribe button is clicked it becomes invisible and the subscribe button visible
+        unsubscribeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: Insert code to remove podcast from subscription list
+                subscribeButton.setVisibility(View.VISIBLE);
+                unsubscribeButton.setVisibility(View.GONE);
+            }
+        });
+
+        // Set text for title, artist, and description
         title.setText(collectionName);
         artist.setText(artistName);
         description.setText(reader.getPodcastDescription());
+
+        // set options for Glide
         final RequestOptions myOptions = new RequestOptions()
                 .fitCenter()
                 .placeholder(R.drawable.ic_image_black_48dp)
                 .error(R.drawable.ic_error_black_24dp)
                 .override(600, 600);
 
+        // load image content and set colours for bottom sheet using palette and the image
         Glide.with(view.getContext())
                 .asBitmap()
                 .load(artwork600)
@@ -161,12 +194,31 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                                    Target<Bitmap> target, DataSource dataSource,
                                                    boolean isFirstResource) {
                         startPostponedEnterTransition();
-                        setBottomSheetColours(resource, title, artist, constraintLayout);
+                        bitmapResource = resource;
+                        setBottomSheetColours(resource, title, artist, constraintLayout,
+                                description, descriptionLayout);
+                        setButtonColours(bitmapResource, subscribeButton, getResources().getDrawable(R.drawable.ic_add_circle_outline_black_24dp));
+                        setButtonColours(bitmapResource, unsubscribeButton, getResources().getDrawable(R.drawable.ic_check_circle_black_24dp));
                         return false;
                     }
                 })
                 .apply(myOptions)
                 .into(image);
+    }
+
+    public void setButtonColours(Bitmap resource, Button button, Drawable buttonDrawable) {
+        // TODO: Getting the palette each time will probably slow things down, fix later
+        if (resource != null) {
+            Palette palette = Palette.from(resource).generate();
+            Palette.Swatch dominantSwatch = palette.getDominantSwatch();
+            if (dominantSwatch != null) {
+                // pass in current drawable for subscribe button (sub or unsub) and tint it
+                Drawable drawable = buttonDrawable;
+                drawable = DrawableCompat.wrap(drawable);
+                DrawableCompat.setTint(drawable, dominantSwatch.getTitleTextColor());
+                button.setCompoundDrawables(null, drawable, null, null);
+            }
+        }
     }
 
     /**
@@ -177,19 +229,28 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
      * @param title textview of the podcast title
      * @param artist textview of the podcast artist
      * @param constraintLayout layout holding the artwork, title, and artist in bottom sheet
+     * @param descrpitonText textview of the podcast description
+     * @param descriptionLayout layout holding the description and (un)subscribe buttons
      */
     public void setBottomSheetColours(Bitmap resource, TextView title, TextView artist,
-                                      ConstraintLayout constraintLayout) {
+                                      ConstraintLayout constraintLayout, TextView descrpitonText,
+                                      ConstraintLayout descriptionLayout) {
         if (resource != null) {
             int defaultColour = 0x000000;
             Palette palette = Palette.from(resource).generate();
             Palette.Swatch dominantSwatch = palette.getDominantSwatch();
             if (dominantSwatch != null) {
+                // title, artist, and constraint colours
                 constraintLayout.setBackgroundColor(dominantSwatch.getRgb());
                 title.setTextColor(dominantSwatch.getTitleTextColor());
                 artist.setTextColor(dominantSwatch.getBodyTextColor());
+
+                // description and constraint colours
+                descriptionLayout.setBackgroundColor(dominantSwatch.getRgb());
+                descrpitonText.setTextColor(dominantSwatch.getBodyTextColor());
             } else {
                 constraintLayout.setBackgroundColor(defaultColour);
+                descriptionLayout.setBackgroundColor(defaultColour);
             }
         }
     }

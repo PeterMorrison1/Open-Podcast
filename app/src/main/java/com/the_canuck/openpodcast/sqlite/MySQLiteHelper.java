@@ -18,16 +18,16 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     // subscribed podcasts table & columns
-    public static final String TABLE_SUBSCRIBED = "subscribed";
-    public static final String COLUMN_ID = "id";
-    public static final String COLUMN_TITLE = "title";
-    public static final String COLUMN_CENSORED_TITLE = "censored_title";
-    public static final String COLUMN_ARTIST = "artist";
-    public static final String COLUMN_COLLECTION_ID = "collection_id";
-    public static final String COLUMN_FEED_URL = "feed_url";
-    public static final String COLUMN_ART_100 = "art_100";
-    public static final String COLUMN_ART_600 = "art_600";
-    public static final String COLUMN_AUTO_UPDATE = "auto_update";
+    private static final String TABLE_SUBSCRIBED = "subscribed";
+    private static final String COLUMN_ID = "id";
+    private static final String COLUMN_TITLE = "title";
+    private static final String COLUMN_CENSORED_TITLE = "censored_title";
+    private static final String COLUMN_ARTIST = "artist";
+    private static final String COLUMN_COLLECTION_ID = "collection_id";
+    private static final String COLUMN_FEED_URL = "feed_url";
+    private static final String COLUMN_ART_100 = "art_100";
+    private static final String COLUMN_ART_600 = "art_600";
+    private static final String COLUMN_AUTO_UPDATE = "auto_update";
 
     private static final String CREATE_SUB_TABLE = "CREATE TABLE " + TABLE_SUBSCRIBED + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
