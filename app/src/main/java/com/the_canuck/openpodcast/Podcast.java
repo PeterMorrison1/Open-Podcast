@@ -1,5 +1,7 @@
 package com.the_canuck.openpodcast;
 
+import android.support.v7.widget.RecyclerView;
+
 public class Podcast {
     private int collectionId;
     private String collectionName;
@@ -12,6 +14,8 @@ public class Podcast {
     private String censoredName;
     private int groupingGenre;
     private String feedUrl;
+    private RecyclerView recyclerView;
+    private int position;
 
     public Podcast() {
     }
@@ -27,6 +31,24 @@ public class Podcast {
         artworkUrl600 = builder.artworkUrl600;
         censoredName = builder.censoredName;
         feedUrl = builder.feedUrl;
+    }
+
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
+    }
+
+    public Podcast setRecyclerView(RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
+        return this;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public Podcast setPosition(int position) {
+        this.position = position;
+        return this;
     }
 
     public int getGroupingGenre() {

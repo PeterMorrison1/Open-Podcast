@@ -241,7 +241,13 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onListFragmentInteractionLibrary(Podcast item) {
-
+        PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
+                item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
+                item.getCensoredName(), item.getTrackCount(),
+                item.getFeedUrl())
+                .setLibraryRecyclerView(item.getRecyclerView())
+                .setPosition(item.getPosition())
+                .show(getSupportFragmentManager(),"dialog");
     }
 
     @Override

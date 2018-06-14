@@ -28,11 +28,14 @@ public class MyLibraryRecyclerViewAdapter extends
 
     private final List<Podcast> mValues;
     private final OnListFragmentInteractionListener mListener;
+    private RecyclerView recyclerView;
 
     public MyLibraryRecyclerViewAdapter(List<Podcast> items,
-                                        OnListFragmentInteractionListener listener) {
+                                        OnListFragmentInteractionListener listener,
+                                        RecyclerView recyclerView) {
         mValues = items;
         mListener = listener;
+        this.recyclerView = recyclerView;
     }
 
     @Override
@@ -43,7 +46,7 @@ public class MyLibraryRecyclerViewAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.mItem = mValues.get(position);
 
         if (!getConnectivityStatus(holder.mView.getContext())) {
@@ -71,6 +74,8 @@ public class MyLibraryRecyclerViewAdapter extends
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
+                    holder.mItem.setRecyclerView(recyclerView);
+                    holder.mItem.setPosition(holder.getAdapterPosition());
                     mListener.onListFragmentInteractionLibrary(holder.mItem);
                 }
             }

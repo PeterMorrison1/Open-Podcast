@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.DividerItemDecoration;
@@ -31,6 +32,9 @@ import com.bumptech.glide.request.target.Target;
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.activities.MainActivity;
+import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
+import com.the_canuck.openpodcast.fragments.library.MyLibraryRecyclerViewAdapter;
 import com.the_canuck.openpodcast.search.RssReader;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
@@ -59,10 +63,13 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private static String censoredName;
     private static int trackCount;
     private static String feedUrl;
+
     private List<Episode> episodes;
     private RssReader reader;
     private Bitmap bitmapResource;
     private MySQLiteHelper sqLiteHelper;
+    private RecyclerView libraryRecyclerView;
+    private int position = -1;
 
     public static PodcastListDialogFragment newInstance(int collectionId, String artistName,
                                                  String artwork600, String artwork100,
@@ -91,6 +98,16 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         args.putString(ItunesJsonKeys.FEEDURL.getValue(), feedUrl);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public PodcastListDialogFragment setLibraryRecyclerView(RecyclerView libraryRecyclerView) {
+        this.libraryRecyclerView = libraryRecyclerView;
+        return this;
+    }
+
+    public PodcastListDialogFragment setPosition(int position) {
+        this.position = position;
+        return this;
     }
 
     @Nullable
@@ -173,6 +190,16 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 sqLiteHelper.unsubscribe(podcast);
                 subscribeButton.setVisibility(View.VISIBLE);
                 unsubscribeButton.setVisibility(View.GONE);
+
+                /* removes podcast from library recycler view if unsubbed
+                -1 is the default value for position, since bottomsheet is called from non-library
+                fragments
+                 */
+                if (position != -1) {
+                    libraryRecyclerView.removeViewAt(position);
+                    libraryRecyclerView.getAdapter().notifyItemRemoved(position);
+                    dismiss();
+                }
             }
         });
 

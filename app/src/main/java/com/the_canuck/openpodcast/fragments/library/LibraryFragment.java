@@ -73,7 +73,7 @@ public class LibraryFragment extends Fragment {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
             recyclerView.setAdapter(new MyLibraryRecyclerViewAdapter
-                    (sqLiteHelper.getSubscribedPodcasts(), mListener));
+                    (sqLiteHelper.getSubscribedPodcasts(), mListener, recyclerView));
         }
         return view;
     }
