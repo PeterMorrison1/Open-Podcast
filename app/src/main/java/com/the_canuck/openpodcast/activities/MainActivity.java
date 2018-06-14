@@ -22,8 +22,7 @@ import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
-import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
-import com.the_canuck.openpodcast.fragments.search_results.PodcastListDialogFragment;
+import com.the_canuck.openpodcast.fragments.bottom_sheet.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
 
@@ -236,8 +235,8 @@ public class MainActivity extends AppCompatActivity implements
     public void onListFragmentInteraction(Podcast item) {
         PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
                 item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
-                item.getCensoredName(), item.getTrackCount(), item.getFeedUrl()).show(getSupportFragmentManager(),
-                "dialog");
+                item.getCensoredName(), item.getTrackCount(),
+                item.getFeedUrl()).show(getSupportFragmentManager(),"dialog");
     }
 
     @Override
@@ -249,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onFragmentInteraction(Podcast item) {
         PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
                 item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
-                item.getCensoredName(), item.getTrackCount(), item.getFeedUrl()).show(getSupportFragmentManager(),
-                "dialog");
+                item.getCensoredName(), item.getTrackCount(),
+                item.getFeedUrl()).show(getSupportFragmentManager(),"dialog");
     }
 }

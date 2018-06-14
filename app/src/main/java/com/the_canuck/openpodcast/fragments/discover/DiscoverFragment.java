@@ -66,7 +66,8 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // this is the view of the constraint layout
-        View view = inflater.inflate(R.layout.fragment_discover_constraint, container, false);
+        View view = inflater.inflate(R.layout.fragment_discover_constraint, container,
+                false);
 
         RecyclerView.LayoutManager layoutManager;
 
@@ -96,7 +97,8 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
         for (int i = 0; i < views.size(); i++) {
 
             if (view.findViewById(views.get(i).getId()) instanceof RecyclerView) {
-                layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+                layoutManager = new LinearLayoutManager(view.getContext(),
+                        LinearLayoutManager.HORIZONTAL, false);
 
                 RecyclerView recyclerView = view.findViewById(views.get(i).getId());
 
@@ -262,77 +264,12 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
             // Checks which genre is being set to an adapter and sets it
             while (i < genres.size() && !isFound) {
                 if (podcasts.get(0).getGroupingGenre() == genres.get(i)) {
-                    recyclerViews.get(i).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+                    recyclerViews.get(i).setAdapter(new
+                            MyDiscoverRecyclerViewAdapter(podcasts, mListener));
                     isFound = true;
                 }
                 i++;
             }
-            // TODO: Delete this huge switch statment later when im sure the above loop works.
-//            switch (podcasts.get(0).getGroupingGenre()) {
-//                case 1301:
-//                    recyclerViews.get(0).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1321:
-//                    recyclerViews.get(1).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1303:
-//                    recyclerViews.get(2).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1304:
-//                    recyclerViews.get(3).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1323:
-//                    recyclerViews.get(4).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1325:
-//                    recyclerViews.get(5).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1307:
-//                    recyclerViews.get(6).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1305:
-//                    recyclerViews.get(7).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1310:
-//                    recyclerViews.get(8).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1311:
-//                    recyclerViews.get(9).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1314:
-//                    recyclerViews.get(10).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1315:
-//                    recyclerViews.get(11).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1324:
-//                    recyclerViews.get(12).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1316:
-//                    recyclerViews.get(13).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1318:
-//                    recyclerViews.get(14).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//
-//                case 1309:
-//                    recyclerViews.get(15).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
-//                    break;
-//            }
             progressBar.setVisibility(View.GONE);
         }
     }

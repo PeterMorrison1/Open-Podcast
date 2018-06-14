@@ -63,14 +63,19 @@ public class MyDiscoverRecyclerViewAdapter extends
                 .load(mValues.get(position).getArtworkUrl600())
                 .listener(new RequestListener<Bitmap>() {
                     @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        Glide.with(holder.mView.getContext()).load(holder.mItem.getArtworkUrl100()).apply(myOptions).into(holder.mImageView);
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model,
+                                                Target<Bitmap> target, boolean isFirstResource) {
+                        Glide.with(holder.mView.getContext()).load(holder.mItem.getArtworkUrl100())
+                                .apply(myOptions).into(holder.mImageView);
                         return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        setCardViewColours(resource, holder.mIdView, holder.mContentView, holder.mConstraintView);
+                    public boolean onResourceReady(Bitmap resource, Object model,
+                                                   Target<Bitmap> target, DataSource dataSource,
+                                                   boolean isFirstResource) {
+                        setCardViewColours(resource, holder.mIdView, holder.mContentView,
+                                holder.mConstraintView);
                         return false;
                     }
                 })

@@ -132,12 +132,16 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         while (!cursor.isAfterLast()) {
             Podcast podcast = new Podcast.PodcastBuilder()
                     .setCollectionName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE)))
-                    .setCensoredName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CENSORED_TITLE)))
+                    .setCensoredName(cursor.getString
+                            (cursor.getColumnIndexOrThrow(COLUMN_CENSORED_TITLE)))
                     .setArtistName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ARTIST)))
-                    .setCollectionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COLLECTION_ID)))
+                    .setCollectionId(cursor.getInt
+                            (cursor.getColumnIndexOrThrow(COLUMN_COLLECTION_ID)))
                     .setFeedUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEED_URL)))
-                    .setArtworkUrl100(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ART_100)))
-                    .setArtworkUrl600(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ART_600)))
+                    .setArtworkUrl100(cursor.getString
+                            (cursor.getColumnIndexOrThrow(COLUMN_ART_100)))
+                    .setArtworkUrl600(cursor.getString
+                            (cursor.getColumnIndexOrThrow(COLUMN_ART_600)))
                     .build();
 
             podcasts.add(podcast);

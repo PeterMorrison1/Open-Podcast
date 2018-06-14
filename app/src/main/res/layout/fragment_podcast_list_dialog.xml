@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layoutManager="LinearLayoutManager"
-    tools:context=".fragments.search_results.PodcastListDialogFragment">
+    tools:context=".fragments.bottom_sheet.PodcastListDialogFragment">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/bottom_sheet_recyclerview"

@@ -16,22 +16,21 @@ import com.bumptech.glide.request.RequestOptions;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment.OnListFragmentInteractionListener;
-import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent.DummyItem;
 
 import java.util.List;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link Podcast} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
  */
-public class MyLibraryRecyclerViewAdapter extends RecyclerView.Adapter<MyLibraryRecyclerViewAdapter.ViewHolder> {
+public class MyLibraryRecyclerViewAdapter extends
+        RecyclerView.Adapter<MyLibraryRecyclerViewAdapter.ViewHolder> {
 
-//    private final List<DummyItem> mValues;
     private final List<Podcast> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyLibraryRecyclerViewAdapter(List<Podcast> items, OnListFragmentInteractionListener listener) {
+    public MyLibraryRecyclerViewAdapter(List<Podcast> items,
+                                        OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -46,12 +45,6 @@ public class MyLibraryRecyclerViewAdapter extends RecyclerView.Adapter<MyLibrary
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-
-//        holder.mIdView.setText(mValues.get(position).getCollectionName());
-//        holder.mIdView.setEllipsize(TextUtils.TruncateAt.END);
-//        holder.mIdView.setMaxLines(1);
-//
-//        holder.mContentView.setText("test");
 
         if (!getConnectivityStatus(holder.mView.getContext())) {
             holder.mTitleView.setText(mValues.get(position).getCollectionName());
@@ -84,7 +77,13 @@ public class MyLibraryRecyclerViewAdapter extends RecyclerView.Adapter<MyLibrary
         });
     }
 
-    public boolean getConnectivityStatus(Context context) {
+    /**
+     * Checks if the device is connected to the internet or not and returns true if so.
+     *
+     * @param context app context
+     * @return boolean of connectivity status
+     */
+    private boolean getConnectivityStatus(Context context) {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
@@ -99,7 +98,6 @@ public class MyLibraryRecyclerViewAdapter extends RecyclerView.Adapter<MyLibrary
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mTitleView;
-//        public final TextView mContentView;
         public final ImageView mImageView;
         public Podcast mItem;
 
@@ -107,13 +105,12 @@ public class MyLibraryRecyclerViewAdapter extends RecyclerView.Adapter<MyLibrary
             super(view);
             mView = view;
             mTitleView = view.findViewById(R.id.library_title);
-//            mContentView = view.findViewById(R.id.content);
             mImageView = view.findViewById(R.id.library_podcast_image);
         }
 
-//        @Override
-//        public String toString() {
-//            return super.toString() + " '" + mContentView.getText() + "'";
-//        }
+        @Override
+        public String toString() {
+            return super.toString() + " '" + mTitleView.getText() + "'";
+        }
     }
 }

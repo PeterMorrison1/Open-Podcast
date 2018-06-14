@@ -1,4 +1,4 @@
-package com.the_canuck.openpodcast.fragments.search_results;
+package com.the_canuck.openpodcast.fragments.bottom_sheet;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -97,7 +97,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_podcast_list_dialog, container, false);
+        return inflater.inflate(R.layout.fragment_podcast_list_dialog, container,false);
     }
 
     @Override
@@ -140,7 +140,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         final ImageView image = view.findViewById(R.id.bottom_sheet_image);
         final TextView description = view.findViewById(R.id.bottom_sheet_description);
 
-        final ConstraintLayout constraintLayout = view.findViewById(R.id.bottom_sheet_constraint_colour);
+        final ConstraintLayout constraintLayout =
+                view.findViewById(R.id.bottom_sheet_constraint_colour);
         final ConstraintLayout descriptionLayout = view.findViewById(R.id.description_layout);
         final Button subscribeButton = view.findViewById(R.id.description_button_subscribe);
         final Button unsubscribeButton = view.findViewById(R.id.description_button_unsubscribe);
@@ -159,7 +160,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         subscribeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Insert code to add podcast to subscription list
                 sqLiteHelper.subscribe(podcast, 1);
                 subscribeButton.setVisibility(View.GONE);
                 unsubscribeButton.setVisibility(View.VISIBLE);
@@ -170,7 +170,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         unsubscribeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Insert code to remove podcast from subscription list
                 sqLiteHelper.unsubscribe(podcast);
                 subscribeButton.setVisibility(View.VISIBLE);
                 unsubscribeButton.setVisibility(View.GONE);
@@ -210,8 +209,10 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                         bitmapResource = resource;
                         setBottomSheetColours(resource, title, artist, constraintLayout,
                                 description, descriptionLayout);
-                        setButtonColours(bitmapResource, subscribeButton, getResources().getDrawable(R.drawable.ic_add_circle_outline_black_24dp));
-                        setButtonColours(bitmapResource, unsubscribeButton, getResources().getDrawable(R.drawable.ic_check_circle_black_24dp));
+                        setButtonColours(bitmapResource, subscribeButton, getResources().getDrawable
+                                (R.drawable.ic_add_circle_outline_black_24dp));
+                        setButtonColours(bitmapResource, unsubscribeButton,
+                                getResources().getDrawable(R.drawable.ic_check_circle_black_24dp));
                         return false;
                     }
                 })
@@ -219,6 +220,14 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 .into(image);
     }
 
+    /**
+     * Gets the dominant colour swatch of the image and sets the (un)subscribe buttons to the
+     * appropriate colours.
+     *
+     * @param resource bitmap of the podcast artwork
+     * @param button (un)subscribe button being coloured
+     * @param buttonDrawable drawable being used for the button being passed in
+     */
     public void setButtonColours(Bitmap resource, Button button, Drawable buttonDrawable) {
         // TODO: Getting the palette each time will probably slow things down, fix later
         if (resource != null) {
@@ -268,8 +277,12 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         }
     }
 
-    // builds a podcast object for current bottom sheet item
     // TODO: Refactor to serialize podcast and send to this class instead of rebuilding podcast obj
+    /**
+     * Builds a podcast object with information for currently clicked podcast.
+     *
+     * @return podcast object.
+     */
     private Podcast buildPodcast() {
         Podcast newPodcast;
         newPodcast = new Podcast.PodcastBuilder()
@@ -313,7 +326,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
         ViewHolder(LayoutInflater inflater, ViewGroup parent) {
             // TODO: Customize the item layout
-            super(inflater.inflate(R.layout.fragment_podcast_list_dialog_item, parent, false));
+            super(inflater.inflate
+                    (R.layout.fragment_podcast_list_dialog_item, parent, false));
             episode = itemView.findViewById(R.id.episode);
             // maybe use this if i implement clicking episodes in this bottom sheet view
             episode.setOnClickListener(new View.OnClickListener() {

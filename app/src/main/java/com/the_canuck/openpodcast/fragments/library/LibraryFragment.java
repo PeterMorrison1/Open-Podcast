@@ -12,11 +12,8 @@ import android.view.ViewGroup;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
-import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent.DummyItem;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -75,7 +72,8 @@ public class LibraryFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyLibraryRecyclerViewAdapter(sqLiteHelper.getSubscribedPodcasts(), mListener));
+            recyclerView.setAdapter(new MyLibraryRecyclerViewAdapter
+                    (sqLiteHelper.getSubscribedPodcasts(), mListener));
         }
         return view;
     }

@@ -86,7 +86,6 @@ public class SearchFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-//            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(searchPodcasts(query), mListener));
             recyclerView.addItemDecoration(new DividerItemDecoration
                     (view.getContext(), LinearLayoutManager.VERTICAL));
 
@@ -111,7 +110,6 @@ public class SearchFragment extends Fragment {
             }
             SearchResultHelper resultHelper = new SearchResultHelper();
             podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
-    //            podcastList = resultHelper.buildPodcastList(searchHelper.getHolder().getResults());
 
             return podcastList;
         }
