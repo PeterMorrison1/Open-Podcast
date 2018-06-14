@@ -10,9 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent;
 import com.the_canuck.openpodcast.fragments.library.dummy.DummyContent.DummyItem;
+import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import java.util.List;
 
@@ -29,6 +31,7 @@ public class LibraryFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 3;
     private OnListFragmentInteractionListener mListener;
+    private MySQLiteHelper sqLiteHelper;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -61,6 +64,8 @@ public class LibraryFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library_list, container, false);
 
+        sqLiteHelper = new MySQLiteHelper(getContext());
+
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
@@ -70,7 +75,7 @@ public class LibraryFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyLibraryRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new MyLibraryRecyclerViewAdapter(sqLiteHelper.getSubscribedPodcasts(), mListener));
         }
         return view;
     }
@@ -89,6 +94,7 @@ public class LibraryFragment extends Fragment {
 
     @Override
     public void onDetach() {
+        sqLiteHelper.close();
         super.onDetach();
         mListener = null;
     }
@@ -105,6 +111,6 @@ public class LibraryFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteractionLibrary(Podcast item);
     }
 }

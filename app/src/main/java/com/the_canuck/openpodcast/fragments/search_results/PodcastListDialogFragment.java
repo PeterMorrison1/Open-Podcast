@@ -29,9 +29,12 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.search.RssReader;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
+import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
+
 
 import java.util.List;
 
@@ -57,8 +60,9 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private static int trackCount;
     private static String feedUrl;
     private List<Episode> episodes;
-    RssReader reader;
-    Bitmap bitmapResource;
+    private RssReader reader;
+    private Bitmap bitmapResource;
+    private MySQLiteHelper sqLiteHelper;
 
     public static PodcastListDialogFragment newInstance(int collectionId, String artistName,
                                                  String artwork600, String artwork100,
@@ -98,6 +102,9 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+        final Podcast podcast = buildPodcast();
+        sqLiteHelper = new MySQLiteHelper(getContext());
+
         final RecyclerView recyclerView = view.findViewById(R.id.bottom_sheet_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.setAdapter(new PodcastAdapter());
@@ -138,10 +145,14 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         final Button subscribeButton = view.findViewById(R.id.description_button_subscribe);
         final Button unsubscribeButton = view.findViewById(R.id.description_button_unsubscribe);
 
-        // set unsubscribe button to invisible on creation
-        unsubscribeButton.setVisibility(View.GONE);
-
-        // TODO: Create if statement to read if current podcast is subbed or not, and set visibility
+        // check if the podcast clicked is already subscribed, then set (un)sub buttons accordingly
+        if (sqLiteHelper.doesPodcastExist(podcast)) {
+            unsubscribeButton.setVisibility(View.VISIBLE);
+            subscribeButton.setVisibility(View.GONE);
+        } else {
+            unsubscribeButton.setVisibility(View.GONE);
+            subscribeButton.setVisibility(View.VISIBLE);
+        }
 
         // when subscribe button is clicked it bceomes invisible and the unsubscribe button visible
         // TODO: Consider making an animation for button press
@@ -149,6 +160,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 // TODO: Insert code to add podcast to subscription list
+                sqLiteHelper.subscribe(podcast, 1);
                 subscribeButton.setVisibility(View.GONE);
                 unsubscribeButton.setVisibility(View.VISIBLE);
             }
@@ -159,6 +171,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 // TODO: Insert code to remove podcast from subscription list
+                sqLiteHelper.unsubscribe(podcast);
                 subscribeButton.setVisibility(View.VISIBLE);
                 unsubscribeButton.setVisibility(View.GONE);
             }
@@ -255,6 +268,23 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         }
     }
 
+    // builds a podcast object for current bottom sheet item
+    // TODO: Refactor to serialize podcast and send to this class instead of rebuilding podcast obj
+    private Podcast buildPodcast() {
+        Podcast newPodcast;
+        newPodcast = new Podcast.PodcastBuilder()
+                .setCollectionName(collectionName)
+                .setCensoredName(censoredName)
+                .setCollectionId(collectionId)
+                .setArtistName(artistName)
+                .setTrackCount(trackCount)
+                .setArtworkUrl100(artwork100)
+                .setArtworkUrl600(artwork600)
+                .setFeedUrl(feedUrl)
+                .build();
+        return newPodcast;
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -269,6 +299,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onDetach() {
         mListener = null;
+        sqLiteHelper.close();
         super.onDetach();
     }
 

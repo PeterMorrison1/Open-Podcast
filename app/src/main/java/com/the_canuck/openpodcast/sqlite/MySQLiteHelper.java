@@ -88,7 +88,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      */
     public void unsubscribe(Podcast podcast) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_SUBSCRIBED, COLUMN_ID + "=?",
+        db.delete(TABLE_SUBSCRIBED, COLUMN_COLLECTION_ID + "=?",
                 new String[]{String.valueOf(podcast.getCollectionId())});
     }
 
@@ -145,5 +145,21 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return podcasts;
+    }
+
+    public boolean doesPodcastExist(Podcast podcast) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        boolean podcastExists;
+
+        // check subscribed table for matching podcast collection IDs
+        String query = "select " + COLUMN_COLLECTION_ID + " from " +
+                TABLE_SUBSCRIBED + " where " + COLUMN_COLLECTION_ID + "= '" +
+                podcast.getCollectionId() + "'";
+        Cursor cursor = db.rawQuery(query, null);
+
+        // if matching collection id return true
+        podcastExists = cursor.getCount() > 0;
+        cursor.close();
+        return podcastExists;
     }
 }
