@@ -95,6 +95,17 @@ public class MyLibraryRecyclerViewAdapter extends
         return networkInfo != null && networkInfo.isConnected();
     }
 
+    /**
+     * Removes the podcast item at the adapter position.
+     *
+     * @param position current adapter position in recyclerview
+     */
+    public void removePodcastAt(int position) {
+        mValues.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, mValues.size());
+    }
+
     @Override
     public int getItemCount() {
         return mValues.size();

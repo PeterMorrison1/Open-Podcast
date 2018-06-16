@@ -196,8 +196,9 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 fragments
                  */
                 if (position != -1) {
-                    libraryRecyclerView.removeViewAt(position);
-                    libraryRecyclerView.getAdapter().notifyItemRemoved(position);
+                    RecyclerView.Adapter adapter = libraryRecyclerView.getAdapter();
+                    ((MyLibraryRecyclerViewAdapter)adapter).removePodcastAt(position);
+
                     dismiss();
                 }
             }
