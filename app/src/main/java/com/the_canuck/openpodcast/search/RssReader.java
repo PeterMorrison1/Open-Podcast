@@ -21,6 +21,7 @@ public class RssReader {
     static final String ITEM = "item";
     static final String PUB_DATE = "pubDate";
     static final String CHANNEL = "channel";
+    static final String MEDIA_URL = "enclosure";
 
     public RssReader(String url) {
         this.url = url;
@@ -69,6 +70,9 @@ public class RssReader {
                                 item.setPubDate(xmlParser.nextText());
                             } else if (name.equalsIgnoreCase(TITLE)) {
                                 item.setTitle(xmlParser.nextText().trim());
+                            } else if (name.equalsIgnoreCase(MEDIA_URL)) {
+                                item.setMediaUrl(xmlParser.getAttributeValue
+                                        (null, "url"));
                             }
                         }
                         break;

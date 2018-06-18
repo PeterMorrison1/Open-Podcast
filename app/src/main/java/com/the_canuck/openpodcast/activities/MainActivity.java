@@ -1,11 +1,13 @@
 package com.the_canuck.openpodcast.activities;
 
+import android.Manifest;
 import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -18,8 +20,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
 
+import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.download.DownloadHelper;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.bottom_sheet.PodcastListDialogFragment;
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements
     final String SEARCH_TAG = "search";
     final String DISCOVER_TAG = "discover";
     final String SETTINGS_TAG = "settings";
+    private static final int REQUEST_WRITE_STORAGE_REQUEST_CODE = 112;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
         handleIntent(getIntent());
+
+        // TODO: Make this based on android version
+        requestAppPermissions();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -121,6 +129,14 @@ public class MainActivity extends AppCompatActivity implements
                 return true;
             }
         });
+    }
+
+    private void requestAppPermissions() {
+        ActivityCompat.requestPermissions(this,
+                new String[] {
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                }, REQUEST_WRITE_STORAGE_REQUEST_CODE); // your request code
     }
 
     @Override
@@ -227,8 +243,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPodcastClicked(int position) {
-
+    public void onPodcastClicked(Episode episode) {
+        DownloadHelper downloadHelper = new DownloadHelper(episode, this);
+        downloadHelper.downloadEpisode();
     }
 
     @Override

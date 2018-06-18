@@ -345,7 +345,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     }
 
     public interface Listener {
-        void onPodcastClicked(int position);
+        void onPodcastClicked(Episode episode);
     }
 
     private class ViewHolder extends RecyclerView.ViewHolder {
@@ -362,7 +362,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 @Override
                 public void onClick(View v) {
                     if (mListener != null) {
-                        mListener.onPodcastClicked(getAdapterPosition());
+                        mListener.onPodcastClicked(episodes.get(getAdapterPosition()));
                         dismiss();
                     }
                 }
