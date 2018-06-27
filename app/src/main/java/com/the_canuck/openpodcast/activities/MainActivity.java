@@ -5,6 +5,10 @@ import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -19,6 +23,7 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
@@ -51,6 +56,22 @@ public class MainActivity extends AppCompatActivity implements
 
         // TODO: Make this based on android version
         requestAppPermissions();
+
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse(Environment.DIRECTORY_PODCASTS)));
+
+        // TODO: THIS IS A TEST FOR QUERYING MEDIA
+//        Cursor cursor  = getContentResolver().query(
+//                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                null,
+//                MediaStore.Audio.Media.DATA + " like ? ",
+//                new String[] {"%Podcasts%"},
+//                MediaStore.Audio.Media.TITLE + " ASC");
+//        while (cursor.moveToNext()) {
+//            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+//            Toast.makeText(this, "Title: " + title, Toast.LENGTH_LONG).show();
+//        }
+//
+
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -244,8 +265,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPodcastClicked(Episode episode) {
-        DownloadHelper downloadHelper = new DownloadHelper(episode, this);
-        downloadHelper.downloadEpisode();
+
     }
 
     @Override

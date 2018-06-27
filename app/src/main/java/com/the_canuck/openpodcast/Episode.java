@@ -5,9 +5,12 @@ public class Episode {
     private String description;
     private String artist;
     private String mediaUrl;
-    private int length;
+    private String length;
     private String link;
     private String pubDate;
+    private int collectionId;
+    private String titleKey;
+    private boolean downloaded = false;
 
     public Episode() {
         // empty constructor
@@ -17,6 +20,33 @@ public class Episode {
         this.title = title;
         this.description = description;
         this.mediaUrl = mediaUrl;
+    }
+
+    public boolean isDownloaded() {
+        return downloaded;
+    }
+
+    public Episode setDownloaded(boolean downloaded) {
+        this.downloaded = downloaded;
+        return this;
+    }
+
+    public String getTitleKey() {
+        return titleKey;
+    }
+
+    public Episode setTitleKey(String titleKey) {
+        this.titleKey = titleKey;
+        return this;
+    }
+
+    public int getCollectionId() {
+        return collectionId;
+    }
+
+    public Episode setCollectionId(int collectionId) {
+        this.collectionId = collectionId;
+        return this;
     }
 
     public String getTitle() {
@@ -55,11 +85,11 @@ public class Episode {
         return this;
     }
 
-    public int getLength() {
+    public String getLength() {
         return length;
     }
 
-    public Episode setLength(int length) {
+    public Episode setLength(String length) {
         this.length = length;
         return this;
     }

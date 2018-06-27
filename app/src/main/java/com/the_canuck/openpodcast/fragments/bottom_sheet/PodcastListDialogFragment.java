@@ -1,6 +1,10 @@
 package com.the_canuck.openpodcast.fragments.bottom_sheet;
 
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -8,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.DividerItemDecoration;
@@ -32,15 +35,18 @@ import com.bumptech.glide.request.target.Target;
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
-import com.the_canuck.openpodcast.activities.MainActivity;
-import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
+import com.the_canuck.openpodcast.download.DownloadHelper;
 import com.the_canuck.openpodcast.fragments.library.MyLibraryRecyclerViewAdapter;
 import com.the_canuck.openpodcast.search.RssReader;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
-
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -70,6 +76,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private MySQLiteHelper sqLiteHelper;
     private RecyclerView libraryRecyclerView;
     private int position = -1;
+    private RecyclerView recyclerView;
 
     public static PodcastListDialogFragment newInstance(int collectionId, String artistName,
                                                  String artwork600, String artwork100,
@@ -120,23 +127,23 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         final Podcast podcast = buildPodcast();
-        sqLiteHelper = new MySQLiteHelper(getContext());
+        sqLiteHelper = new MySQLiteHelper(view.getContext());
 
-        final RecyclerView recyclerView = view.findViewById(R.id.bottom_sheet_recyclerview);
+        recyclerView = view.findViewById(R.id.bottom_sheet_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.setAdapter(new PodcastAdapter());
         recyclerView.setHasFixedSize(false);
-        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),
+        recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(),
                 LinearLayoutManager.VERTICAL));
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                reader = new RssReader(feedUrl);
-                episodes = reader.createEpisodeList();
+                episodeListInstantiator();
             }
         }).start();
 
+        // TODO: Replace later with a loading bar/circle while content not loaded
         while (episodes == null) {
             try {
                 Thread.sleep(100);
@@ -172,7 +179,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             subscribeButton.setVisibility(View.VISIBLE);
         }
 
-        // when subscribe button is clicked it bceomes invisible and the unsubscribe button visible
+        // when subscribe button is clicked it becomes invisible and the unsubscribe button visible
         // TODO: Consider making an animation for button press
         subscribeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -305,6 +312,33 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         }
     }
 
+    /**
+     * Creates an arraylist with downloaded episodes from database at the lowest # index,
+     * and sets the non-downloaded episodes from rssReader at higher # index than downloaded,
+     * sets the {@link PodcastListDialogFragment#episodes} to the combined list of downloaded and
+     * non-downloaded episodes.
+     */
+    private void episodeListInstantiator() {
+        reader = new RssReader(feedUrl);
+
+        List<Episode> rssEpisodeList = reader.createEpisodeList();
+        episodes = sqLiteHelper.getEpisodes(collectionId);
+
+        // sets the downloaded episodes to the top of the episode list then adds rss ones
+        if (!episodes.isEmpty()) {
+            for (Episode episodeObject : rssEpisodeList) {
+                if (!episodes.contains(episodeObject)) {
+                    episodes.add(episodeObject);
+                }
+            }
+        } else {
+            /* if no downloaded episodes found then use just rss episodes
+            might not hit here, but is a cheap backup to implement
+             */
+            episodes = rssEpisodeList;
+        }
+    }
+
     // TODO: Refactor to serialize podcast and send to this class instead of rebuilding podcast obj
     /**
      * Builds a podcast object with information for currently clicked podcast.
@@ -351,24 +385,138 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private class ViewHolder extends RecyclerView.ViewHolder {
 
         final TextView episode;
+        final Button downloadButton;
 
         ViewHolder(LayoutInflater inflater, ViewGroup parent) {
             // TODO: Customize the item layout
             super(inflater.inflate
                     (R.layout.fragment_podcast_list_dialog_item, parent, false));
+
             episode = itemView.findViewById(R.id.episode);
-            // maybe use this if i implement clicking episodes in this bottom sheet view
+            downloadButton = itemView.findViewById(R.id.download_button);
+
+
+            downloadButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+//                        mListener.onDownloadClicked(episodes.get(getAdapterPosition()));
+                        downloadButton.setVisibility(View.INVISIBLE);
+                        downloadButton.setEnabled(false);
+
+                        DownloadHelper downloadHelper = new
+                                DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
+                                v.getContext());
+                        downloadHelper.downloadEpisode();
+
+                        final int firstPosition = getAdapterPosition();
+
+                        final Episode movedEpisode = episodes.get(getAdapterPosition());
+                        movedEpisode.setDownloaded(true);
+
+                        episodes.remove(getAdapterPosition());
+
+                        int finalPosition = dateSorter(movedEpisode);
+                        if (finalPosition != -1) {
+                            recyclerView.getAdapter().notifyItemMoved(firstPosition, finalPosition);
+//                            recyclerView.getAdapter().notifyDataSetChanged();
+                        }
+
+                        // TODO: Put list sorter method inside this receiver, probably... maybe.
+                        BroadcastReceiver onComplete = new BroadcastReceiver() {
+                            @Override
+                            public void onReceive(Context context, Intent intent) {
+                                sqLiteHelper.addEpisode(movedEpisode, true);
+                                Toast.makeText(context, "Download Complete",
+                                        Toast.LENGTH_SHORT).show();
+                                // Title key apparently has issues, so does _ID.
+//                                Log.d("test", "Before Cursor");
+//                                Cursor cursor = context.getContentResolver().query(
+//                                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                                        null,
+//                                        MediaStore.Audio.Media.DATA + " like ? ",
+//                                        new String[] {"%Podcasts%" + collectionId},
+//                                        MediaStore.Audio.Media.TITLE + " ASC");
+//
+//                                String newTitle = movedEpisode.getTitle()
+//                                        .replaceAll(" ", "");
+//
+//
+//                                Log.d("test", "Before while loop");
+//                                while (cursor.moveToNext()) {
+//                                    Log.d("test", "Start of while loop");
+//                                    String title = cursor.getString(cursor.getColumnIndex
+//                                            (MediaStore.Audio.Media.TITLE));
+//                                    Toast.makeText(context, "Title: " +
+//                                            title, Toast.LENGTH_LONG).show();
+//
+//                                    String extensionFreeTitle =
+//                                            FilenameUtils.removeExtension(title);
+//
+//                                /* Title is only unique identifier for mediastore and raw eps
+//                                if there are duplicate titles in a podcast then it won't work.
+//                                 */
+//                                    if (newTitle.equalsIgnoreCase(extensionFreeTitle)) {
+//                                        movedEpisode.setTitleKey(cursor.getString(
+//                                                cursor.getColumnIndex
+//                                                        (MediaStore.Audio.Media.TITLE_KEY)));
+//                                        Toast.makeText(context, "Done" +
+//                                                title, Toast.LENGTH_LONG).show();
+//
+//                                        cursor.close();
+//                                    }
+//                                }
+                            }
+                        };
+
+                        v.getContext().registerReceiver(onComplete,
+                                new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                    }
+                }
+            });
+
             episode.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mListener != null) {
-                        mListener.onPodcastClicked(episodes.get(getAdapterPosition()));
-                        dismiss();
+//                        mListener.onPodcastClicked(episodes.get(getAdapterPosition()));
+//                        dismiss();
                     }
                 }
             });
         }
 
+        /**
+         * Sorts an episode into an arraylist based on publish date.
+         *
+         * @param mEpisode the episode being inserted into a new position
+         * @return index the episode was placed into
+         */
+        private int dateSorter(Episode mEpisode) {
+            // Checks to see which episode was published first, then sets the new pos
+            int finalPosition = -1;
+            Date currentEpisodeDate;
+            DateFormat formatter = new SimpleDateFormat
+                    ("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+            try {
+                currentEpisodeDate = formatter.parse
+                        (mEpisode.getPubDate());
+                for (int i = 0; i < episodes.size(); i++) {
+                    Date iterationDate = formatter.parse
+                            (episodes.get(i).getPubDate());
+
+                    if (currentEpisodeDate.compareTo(iterationDate) <= 0) {
+                        episodes.add(i, mEpisode);
+                        finalPosition = i;
+                        break;
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            return finalPosition;
+        }
     }
 
     private class PodcastAdapter extends RecyclerView.Adapter<ViewHolder> {
@@ -382,8 +530,20 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            holder.episode.setText(episodes.get(position).getTitle());
+        public void onBindViewHolder(ViewHolder holder, int itemPosition) {
+            holder.episode.setText(episodes.get(itemPosition).getTitle());
+
+            // Sets download button to invisible if ep is downloaded or pod is not subscribed
+            if (episodes.get(itemPosition).isDownloaded() || position == -1) {
+                holder.downloadButton.setVisibility(View.INVISIBLE);
+                holder.downloadButton.setEnabled(false);
+            } else {
+                holder.downloadButton.setVisibility(View.VISIBLE);
+                holder.downloadButton.setEnabled(true);
+            }
+//            holder.downloadButton.setVisibility
+//                    (episodes.get(itemPosition).isDownloaded() ? View.INVISIBLE : View.VISIBLE);
+//            holder.downloadButton.setEnabled(!episodes.get(itemPosition).isDownloaded());
         }
 
         @Override

@@ -15,13 +15,16 @@ import java.util.List;
 public class RssReader {
     private String url;
     private String podcastDescription;
+    private int collectionId;
     static final String TITLE = "title";
     static final String DESCRIPTION = "description";
     static final String LINK = "link";
     static final String ITEM = "item";
     static final String PUB_DATE = "pubDate";
     static final String CHANNEL = "channel";
-    static final String MEDIA_URL = "enclosure";
+    static final String MEDIA_ENCLOSURE = "enclosure";
+    static final String MEDIA_LENGTH = "length";
+    static final String MEDIA_URL = "url";
 
     public RssReader(String url) {
         this.url = url;
@@ -70,9 +73,11 @@ public class RssReader {
                                 item.setPubDate(xmlParser.nextText());
                             } else if (name.equalsIgnoreCase(TITLE)) {
                                 item.setTitle(xmlParser.nextText().trim());
-                            } else if (name.equalsIgnoreCase(MEDIA_URL)) {
+                            } else if (name.equalsIgnoreCase(MEDIA_ENCLOSURE)) {
                                 item.setMediaUrl(xmlParser.getAttributeValue
-                                        (null, "url"));
+                                        (null, MEDIA_URL));
+                                item.setLength(xmlParser.getAttributeValue
+                                        (null, MEDIA_LENGTH));
                             }
                         }
                         break;
@@ -91,6 +96,8 @@ public class RssReader {
                         // check for end of item or end of RSS feed
                         name = xmlParser.getName();
                         if (name.equalsIgnoreCase(ITEM) && item != null) {
+                            // sets the collectionId (podcast) for the episode
+                            item.setCollectionId(collectionId);
                             list.add(item);
                         } else if (name.equalsIgnoreCase(CHANNEL)) {
                             done = true;
@@ -121,5 +128,10 @@ public class RssReader {
      */
     public String getPodcastDescription() {
         return podcastDescription;
+    }
+
+    public RssReader setCollectionId(int collectionId) {
+        this.collectionId = collectionId;
+        return this;
     }
 }
