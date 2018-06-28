@@ -136,6 +136,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(),
                 LinearLayoutManager.VERTICAL));
 
+        // Creates the list of episodes for the episode list adapter
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -320,8 +321,9 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
      */
     private void episodeListInstantiator() {
         reader = new RssReader(feedUrl);
-
+        reader.setCollectionId(collectionId);
         List<Episode> rssEpisodeList = reader.createEpisodeList();
+
         episodes = sqLiteHelper.getEpisodes(collectionId);
 
         // sets the downloaded episodes to the top of the episode list then adds rss ones
@@ -404,7 +406,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                         downloadButton.setVisibility(View.INVISIBLE);
                         downloadButton.setEnabled(false);
 
-                        DownloadHelper downloadHelper = new
+                        final DownloadHelper downloadHelper = new
                                 DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
                                 v.getContext());
                         downloadHelper.downloadEpisode();
@@ -423,52 +425,26 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                         }
 
                         // TODO: Put list sorter method inside this receiver, probably... maybe.
-                        BroadcastReceiver onComplete = new BroadcastReceiver() {
+                        // Receives the download complete intent and adds episode to database
+                        final BroadcastReceiver onComplete = new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
-                                sqLiteHelper.addEpisode(movedEpisode, true);
-                                Toast.makeText(context, "Download Complete",
-                                        Toast.LENGTH_SHORT).show();
-                                // Title key apparently has issues, so does _ID.
-//                                Log.d("test", "Before Cursor");
-//                                Cursor cursor = context.getContentResolver().query(
-//                                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-//                                        null,
-//                                        MediaStore.Audio.Media.DATA + " like ? ",
-//                                        new String[] {"%Podcasts%" + collectionId},
-//                                        MediaStore.Audio.Media.TITLE + " ASC");
-//
-//                                String newTitle = movedEpisode.getTitle()
-//                                        .replaceAll(" ", "");
-//
-//
-//                                Log.d("test", "Before while loop");
-//                                while (cursor.moveToNext()) {
-//                                    Log.d("test", "Start of while loop");
-//                                    String title = cursor.getString(cursor.getColumnIndex
-//                                            (MediaStore.Audio.Media.TITLE));
-//                                    Toast.makeText(context, "Title: " +
-//                                            title, Toast.LENGTH_LONG).show();
-//
-//                                    String extensionFreeTitle =
-//                                            FilenameUtils.removeExtension(title);
-//
-//                                /* Title is only unique identifier for mediastore and raw eps
-//                                if there are duplicate titles in a podcast then it won't work.
-//                                 */
-//                                    if (newTitle.equalsIgnoreCase(extensionFreeTitle)) {
-//                                        movedEpisode.setTitleKey(cursor.getString(
-//                                                cursor.getColumnIndex
-//                                                        (MediaStore.Audio.Media.TITLE_KEY)));
-//                                        Toast.makeText(context, "Done" +
-//                                                title, Toast.LENGTH_LONG).show();
-//
-//                                        cursor.close();
-//                                    }
-//                                }
+                                boolean valid = downloadHelper.isDownloadValid();
+
+                                /* the valid check is needed because DownloadManager sends multiple
+                                ACTION_DOWNLOAD_COMPLETE intents while downloading, not just when
+                                finished the download.
+                                 */
+                                if (valid) {
+                                    sqLiteHelper.addEpisode(movedEpisode, true);
+                                    Toast.makeText(context, "Download Complete",
+                                            Toast.LENGTH_SHORT).show();
+                                    context.unregisterReceiver(this);
+                                }
                             }
                         };
 
+                        // Registers the above receiver (onComplete receiver)
                         v.getContext().registerReceiver(onComplete,
                                 new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
                     }
@@ -494,6 +470,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
          */
         private int dateSorter(Episode mEpisode) {
             // Checks to see which episode was published first, then sets the new pos
+            // TODO: Consider replacing with LinkHelper#addToListSorted
             int finalPosition = -1;
             Date currentEpisodeDate;
             DateFormat formatter = new SimpleDateFormat
@@ -541,9 +518,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 holder.downloadButton.setVisibility(View.VISIBLE);
                 holder.downloadButton.setEnabled(true);
             }
-//            holder.downloadButton.setVisibility
-//                    (episodes.get(itemPosition).isDownloaded() ? View.INVISIBLE : View.VISIBLE);
-//            holder.downloadButton.setEnabled(!episodes.get(itemPosition).isDownloaded());
         }
 
         @Override
@@ -553,3 +527,4 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
     }
 }
+

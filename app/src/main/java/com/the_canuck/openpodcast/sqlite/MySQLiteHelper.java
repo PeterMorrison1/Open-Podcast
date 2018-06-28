@@ -5,9 +5,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
+import com.the_canuck.openpodcast.misc_helpers.ListHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -253,15 +255,16 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
          */
         List<Episode> episodes = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
+        String mCollectionId = Integer.toString(collectionId);
 
         Cursor cursor = db.rawQuery("select * from " + TABLE_EPISODES + " where "
-                + COLUMN_COLLECTION_ID + "='" + collectionId + "'", null);
+                + COLUMN_COLLECTION_ID + "='" + mCollectionId + "'", null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             Episode episode = new Episode();
             episode.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE)));
-            episode.setCollectionId(collectionId);
+            episode.setCollectionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COLLECTION_ID)));
             episode.setDescription
                     (cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIPTION)));
             episode.setPubDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PUB_DATE)));
@@ -271,11 +274,14 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 //                episode.setTitleKey
 //                        (cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE_KEY)));
 //            }
+            Log.d("test", "Title: " + episode.getTitle() + "Collection Id: " + episode.getCollectionId());
             episode.setDownloaded(true);
-            episodes.add(episode);
+            episodes = ListHelper.addToListSorted(episode, episodes);
             cursor.moveToNext();
         }
         cursor.close();
         return episodes;
     }
+
+
 }

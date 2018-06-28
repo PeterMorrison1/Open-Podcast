@@ -2,6 +2,7 @@ package com.the_canuck.openpodcast.download;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
@@ -20,6 +21,8 @@ public class DownloadHelper {
     private Episode episode;
     private int collectionId;
     private Context context;
+    private long enqueue;
+    private DownloadManager downloadManager;
 
     // TODO: Remove collectionid param, its stored in episode now
     public DownloadHelper(Episode episode, int collectionId, Context context) {
@@ -32,24 +35,12 @@ public class DownloadHelper {
      * Downloads the specified podcast episode with download manager.
      */
     public void downloadEpisode() {
-        long enqueue;
-        String extension = getMimeType(episode.getMediaUrl());
-//        String pathName = null;
-//        try {
-//            pathName = URLEncoder.encode(episode.getTitle().replaceAll(" ", "")
-//                    + "." + FilenameUtils.getExtension(episode.getMediaUrl()), "utf-8");
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
-//        String encodedTitle = null;
-//        try {
-//            encodedTitle = URLEncoder.encode(episode.getTitle(), "utf-8");
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
-        String path = episode.getTitle().replaceAll("/", " ") + "." + FilenameUtils.getExtension(episode.getMediaUrl());
 
-        DownloadManager downloadManager = (DownloadManager) context.getSystemService
+        String mimeType = getMimeType(episode.getMediaUrl());
+        String path = episode.getTitle().replaceAll("/", " ") + "."
+                + FilenameUtils.getExtension(episode.getMediaUrl());
+
+        downloadManager = (DownloadManager) context.getSystemService
                 (Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(
                 Uri.parse(episode.getMediaUrl()));
@@ -58,14 +49,36 @@ public class DownloadHelper {
                 File.separator + collectionId + File.separator + path);
 
 
-        request.setMimeType(extension);
-        request.setTitle("Downloading " + "test" + ".mp3");
-        request.setDescription("Downloading " + "test" + ".mp3");
+        request.setMimeType(mimeType);
+        request.setTitle("Downloading " + episode.getTitle());
+        request.setDescription("Downloading " + episode.getTitle());
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
         enqueue = downloadManager.enqueue(request);
-
     }
 
+    /**
+     * Checks if the status of the downloaded is complete or in progress.
+     *
+     * @return if the download is completed (true) or not (false)
+     */
+    public boolean isDownloadValid() {
+        DownloadManager dm = (DownloadManager) context.getSystemService
+                (Context.DOWNLOAD_SERVICE);
+        Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(enqueue));
+
+        if (cursor.moveToFirst()) {
+            int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+            return status == DownloadManager.STATUS_SUCCESSFUL;
+        }
+        return false;
+    }
+
+    /**
+     * Gets the MIME type from the passed in url.
+     *
+     * @param url the file url being downloaded from
+     * @return the MIME type as a String
+     */
     private String getMimeType(String url) {
         String type = null;
         String extension = MimeTypeMap.getFileExtensionFromUrl(url);
