@@ -1,6 +1,12 @@
 package com.the_canuck.openpodcast;
 
 public class Episode {
+
+    // Constants for downloadedStatus
+    public static final int NOT_DOWNLOADED = 0;
+    public static final int IS_DOWNLOADED = 1;
+    public static final int CURRENTLY_DOWNLOADING = 2;
+
     private String title;
     private String description;
     private String artist;
@@ -9,8 +15,7 @@ public class Episode {
     private String link;
     private String pubDate;
     private int collectionId;
-    private String titleKey;
-    private boolean downloaded = false;
+    private int downloadStatus = NOT_DOWNLOADED;
 
     public Episode() {
         // empty constructor
@@ -22,22 +27,22 @@ public class Episode {
         this.mediaUrl = mediaUrl;
     }
 
-    public boolean isDownloaded() {
-        return downloaded;
+    /**
+     * Download status is if the episode is not downloaded (0), downloaded (1), or downloading (2).
+     *
+     * @return the int representing the status of the episode
+     */
+    public int getDownloadStatus() {
+        return downloadStatus;
     }
 
-    public Episode setDownloaded(boolean downloaded) {
-        this.downloaded = downloaded;
-        return this;
-    }
-
-    public String getTitleKey() {
-        return titleKey;
-    }
-
-    public Episode setTitleKey(String titleKey) {
-        this.titleKey = titleKey;
-        return this;
+    /**
+     * Download status is if the episode is not downloaded (0), downloaded (1), or downloading (2).
+     *
+     * @param downloadStatus the int representing the status of the episode
+     */
+    public void setDownloadStatus(int downloadStatus) {
+        this.downloadStatus = downloadStatus;
     }
 
     public int getCollectionId() {
@@ -110,5 +115,9 @@ public class Episode {
     public Episode setPubDate(String pubDate) {
         this.pubDate = pubDate;
         return this;
+    }
+
+    public boolean titleEquals(Episode episode) {
+        return title.equalsIgnoreCase(episode.getTitle());
     }
 }

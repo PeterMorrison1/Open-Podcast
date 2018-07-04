@@ -11,14 +11,19 @@ import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.misc_helpers.ListHelper;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     // Database name & version
     private static final String DATABASE_NAME = "podcasts.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     // tables
     private static final String TABLE_SUBSCRIBED = "subscribed";
@@ -42,7 +47,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_PUB_DATE = "pub_date";
     private static final String COLUMN_DOWNLOADED = "downloaded"; // (0 or 1) if ep is downloaded
     private static final String COLUMN_FILE_SIZE = "file_size";
-    private static final String COLUMN_TITLE_KEY = "title_key"; // for finding match in mediastore
+    private static final String COLUMN_LINK = "link";
+    private static final String COLUMN_MEDIA_URL = "media_url";
 
     private static final String CREATE_SUB_TABLE = "CREATE TABLE " + TABLE_SUBSCRIBED + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -59,12 +65,13 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String CREATE_EPISODE_TABLE = "CREATE TABLE " + TABLE_EPISODES + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
             + COLUMN_TITLE + " TEXT,"
-            + COLUMN_TITLE_KEY + " TEXT,"
             + COLUMN_COLLECTION_ID + " INTEGER,"
             + COLUMN_DESCRIPTION + " TEXT,"
             + COLUMN_PUB_DATE + " TEXT,"
             + COLUMN_DOWNLOADED + " INTEGER,"
-            + COLUMN_FILE_SIZE + " TEXT"
+            + COLUMN_FILE_SIZE + " TEXT,"
+            + COLUMN_LINK + " TEXT,"
+            + COLUMN_MEDIA_URL + " TEXT"
             + ")";
 
     public MySQLiteHelper(Context context) {
@@ -145,7 +152,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         // autoUpdate must be passed in and will be either 0 or 1 (bool)
         contentValues.put(COLUMN_AUTO_UPDATE, autoUpdate);
 
-        db.update(TABLE_SUBSCRIBED, contentValues, COLUMN_ID + "=?",
+        db.update(TABLE_SUBSCRIBED, contentValues, COLUMN_COLLECTION_ID + "=?",
                 new String[]{Integer.toString(podcast.getCollectionId())});
     }
 
@@ -204,16 +211,15 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * Called to add an episode into the episodes list.
      *
      * @param episode the episode to be added into the episodes table
-     * @param isDownloaded if the episode is downloaded, currently not implemented
      */
-    public void addEpisode(Episode episode, boolean isDownloaded) {
+    public void addEpisode(Episode episode) {
         /* set if the episode was downloaded. Pass in bool & convert to avoid future confusion
         1 = true, 0 = false. Might be removing isDownloaded in the future.
         Removing isDownloaded depends if its going to save all episode info for EVERY podcast
         subscribed to (or not subscribed if i later want).
         For the time being only episodes DOWNLOADED will have their meta data saved.
          */
-        int downloaded = isDownloaded ? 1 : 0;
+//        int downloaded = isDownloaded ? 1 : 0;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -221,26 +227,43 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_COLLECTION_ID, episode.getCollectionId());
         contentValues.put(COLUMN_DESCRIPTION, episode.getDescription());
         contentValues.put(COLUMN_PUB_DATE, episode.getPubDate());
-        contentValues.put(COLUMN_DOWNLOADED, downloaded);
+        contentValues.put(COLUMN_DOWNLOADED, episode.getDownloadStatus());
         contentValues.put(COLUMN_FILE_SIZE, episode.getLength());
-
-        if (isDownloaded) {
-            contentValues.put(COLUMN_TITLE_KEY, episode.getTitleKey());
-        }
+        contentValues.put(COLUMN_LINK, episode.getLink());
+        contentValues.put(COLUMN_MEDIA_URL, episode.getMediaUrl());
 
         db.insert(TABLE_EPISODES, null, contentValues);
     }
 
+    public void updateEpisode(Episode episode) {
+//        int downloaded = isDownloaded ? 1 : 0;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(COLUMN_TITLE, episode.getTitle());
+        contentValues.put(COLUMN_COLLECTION_ID, episode.getCollectionId());
+        contentValues.put(COLUMN_DESCRIPTION, episode.getDescription());
+        contentValues.put(COLUMN_PUB_DATE, episode.getPubDate());
+        contentValues.put(COLUMN_DOWNLOADED, episode.getDownloadStatus());
+        contentValues.put(COLUMN_FILE_SIZE, episode.getLength());
+        contentValues.put(COLUMN_LINK, episode.getLink());
+        contentValues.put(COLUMN_MEDIA_URL, episode.getMediaUrl());
+
+        db.update(TABLE_EPISODES, contentValues, COLUMN_TITLE + "=?",
+                new String[]{episode.getTitle()});
+
+    }
+
     /**
-     * Removes an episode from the episodes table, only works on DOWNLOADED episodes with title key.
+     * Removes an episode from the episodes table with the matching title.
      *
      * @param episode the downloaded episode to be deleted
      */
-    public void removeEpisodeDataWithKey(Episode episode) {
-        // TODO: If i make add episode for non-downloaded then make new removeEpisodeNoKey() method.
+    public void deleteEpisode(Episode episode) {
+        // TODO: Try and see if there's better way than matching title. Even matching title & size?
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_EPISODES, COLUMN_TITLE + "=?",
-                new String[]{episode.getTitleKey()});
+                new String[]{episode.getTitle()});
     }
 
     /**
@@ -251,7 +274,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      */
     public List<Episode> getEpisodes(int collectionId) {
         /* TODO: If I add non-itunes support there will need to be an adjustment since collection id
-            TODO: is an itunes variable. Probably an if statement inside this method
+             is an itunes variable. Probably an if statement inside this method
          */
         List<Episode> episodes = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
@@ -264,24 +287,36 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         while (!cursor.isAfterLast()) {
             Episode episode = new Episode();
             episode.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE)));
-            episode.setCollectionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COLLECTION_ID)));
+            episode.setCollectionId(cursor.getInt
+                    (cursor.getColumnIndexOrThrow(COLUMN_COLLECTION_ID)));
             episode.setDescription
                     (cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIPTION)));
             episode.setPubDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PUB_DATE)));
             episode.setLength(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FILE_SIZE)));
+            episode.setDownloadStatus(cursor.getInt
+                    (cursor.getColumnIndexOrThrow(COLUMN_DOWNLOADED)));
+            episode.setLink(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_LINK)));
+            episode.setMediaUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MEDIA_URL)));
 
-//            if (!cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE_KEY)).isEmpty()) {
-//                episode.setTitleKey
-//                        (cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE_KEY)));
-//            }
-            Log.d("test", "Title: " + episode.getTitle() + "Collection Id: " + episode.getCollectionId());
-            episode.setDownloaded(true);
-            episodes = ListHelper.addToListSorted(episode, episodes);
+            Log.d("test", "Title: " + episode.getTitle() + "Collection Id: "
+                    + episode.getCollectionId());
+
+            // Gets the position the episode belongs in (sorted by pubDate)
+            int index = ListHelper.getSortedIndex(episode, episodes);
+
+            // determines position based on index returned by sorted index
+            if (episodes.size() == 0) {
+                episodes.add(episode);
+            } else if (index == episodes.size()){
+                episodes.add(episode);
+            } else if (index == -1) {
+                episodes.add(episode);
+            } else {
+                episodes.add(index, episode);
+            }
             cursor.moveToNext();
         }
         cursor.close();
         return episodes;
     }
-
-
 }

@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +45,7 @@ import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -323,20 +325,28 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         reader = new RssReader(feedUrl);
         reader.setCollectionId(collectionId);
         List<Episode> rssEpisodeList = reader.createEpisodeList();
+        List<Episode> sqlEpisodeList = sqLiteHelper.getEpisodes(collectionId);
 
-        episodes = sqLiteHelper.getEpisodes(collectionId);
+        episodes = new ArrayList<>();
 
-        // sets the downloaded episodes to the top of the episode list then adds rss ones
-        if (!episodes.isEmpty()) {
-            for (Episode episodeObject : rssEpisodeList) {
-                if (!episodes.contains(episodeObject)) {
-                    episodes.add(episodeObject);
+        if (!sqlEpisodeList.isEmpty()) {
+            // deletes episodes from RSS list if they have matching title with the SQLite episode
+            for (Episode episodeSqlite : sqlEpisodeList) {
+                boolean found = false;
+                int i = 0;
+                while (i < rssEpisodeList.size() && !found) {
+                    if (rssEpisodeList.get(i).getTitle().equalsIgnoreCase(episodeSqlite.getTitle())) {
+                        rssEpisodeList.remove(i);
+                        found = true;
+                    } else {
+                        i++;
+                    }
                 }
             }
+            episodes.addAll(sqlEpisodeList);
+            episodes.addAll(rssEpisodeList);
+
         } else {
-            /* if no downloaded episodes found then use just rss episodes
-            might not hit here, but is a cheap backup to implement
-             */
             episodes = rssEpisodeList;
         }
     }
@@ -388,6 +398,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
         final TextView episode;
         final Button downloadButton;
+        final ProgressBar progressBar;
 
         ViewHolder(LayoutInflater inflater, ViewGroup parent) {
             // TODO: Customize the item layout
@@ -396,15 +407,18 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
             episode = itemView.findViewById(R.id.episode);
             downloadButton = itemView.findViewById(R.id.download_button);
-
+            progressBar = itemView.findViewById(R.id.episodeProgressBar);
+            // errorButton can later be clicked to attempt download again
 
             downloadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mListener != null) {
-//                        mListener.onDownloadClicked(episodes.get(getAdapterPosition()));
+//                        runEpisodeDownloader(v);
+
                         downloadButton.setVisibility(View.INVISIBLE);
                         downloadButton.setEnabled(false);
+                        progressBar.setVisibility(View.VISIBLE);
 
                         final DownloadHelper downloadHelper = new
                                 DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
@@ -413,32 +427,50 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
                         final int firstPosition = getAdapterPosition();
 
+                        /* creates episode object for newly moved/downloading episode
+                        and sets the download status to currently downloading and adds it to the
+                        sqlite episodes table so re-opening bottom sheet it's info will persist.
+                         */
                         final Episode movedEpisode = episodes.get(getAdapterPosition());
-                        movedEpisode.setDownloaded(true);
+                        movedEpisode.setDownloadStatus(Episode.CURRENTLY_DOWNLOADING);
+                        sqLiteHelper.addEpisode(movedEpisode);
 
                         episodes.remove(getAdapterPosition());
 
-                        int finalPosition = dateSorter(movedEpisode);
+                        final int finalPosition = dateSorter(movedEpisode);
                         if (finalPosition != -1) {
                             recyclerView.getAdapter().notifyItemMoved(firstPosition, finalPosition);
 //                            recyclerView.getAdapter().notifyDataSetChanged();
                         }
 
-                        // TODO: Put list sorter method inside this receiver, probably... maybe.
                         // Receives the download complete intent and adds episode to database
                         final BroadcastReceiver onComplete = new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
-                                boolean valid = downloadHelper.isDownloadValid();
+//                                boolean valid = downloadHelper.isDownloadValid();
+
+                                String status = downloadHelper.getDownloadStatus();
 
                                 /* the valid check is needed because DownloadManager sends multiple
                                 ACTION_DOWNLOAD_COMPLETE intents while downloading, not just when
-                                finished the download.
+                                finished the download. Also stops cancel from adding to the database
                                  */
-                                if (valid) {
-                                    sqLiteHelper.addEpisode(movedEpisode, true);
+                                if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
+                                    // Update download status and update the episode in sqlite
+                                    movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
+                                    sqLiteHelper.updateEpisode(movedEpisode);
                                     Toast.makeText(context, "Download Complete",
                                             Toast.LENGTH_SHORT).show();
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                    recyclerView.getAdapter().notifyItemChanged(finalPosition);
+                                    context.unregisterReceiver(this);
+                                } else {
+                                    // Handles canceled and failed downloads
+                                    sqLiteHelper.deleteEpisode(movedEpisode);
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                    downloadButton.setVisibility(View.VISIBLE);
+                                    downloadButton.setEnabled(true);
+                                    recyclerView.getAdapter().notifyItemChanged(finalPosition);
                                     context.unregisterReceiver(this);
                                 }
                             }
@@ -460,6 +492,72 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                     }
                 }
             });
+        }
+
+        private void runEpisodeDownloader(View view) {
+            downloadButton.setVisibility(View.INVISIBLE);
+            downloadButton.setEnabled(false);
+            progressBar.setVisibility(View.VISIBLE);
+
+            final DownloadHelper downloadHelper = new
+                    DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
+                    view.getContext());
+            downloadHelper.downloadEpisode();
+
+            final int firstPosition = getAdapterPosition();
+
+                        /* creates episode object for newly moved/downloading episode
+                        and sets the download status to currently downloading and adds it to the
+                        sqlite episodes table so re-opening bottom sheet it's info will persist.
+                         */
+            final Episode movedEpisode = episodes.get(getAdapterPosition());
+            movedEpisode.setDownloadStatus(Episode.CURRENTLY_DOWNLOADING);
+            sqLiteHelper.addEpisode(movedEpisode);
+
+            episodes.remove(getAdapterPosition());
+
+            int finalPosition = dateSorter(movedEpisode);
+            if (finalPosition != -1) {
+                recyclerView.getAdapter().notifyItemMoved(firstPosition, finalPosition);
+//                            recyclerView.getAdapter().notifyDataSetChanged();
+            }
+
+            // Receives the download complete intent and adds episode to database
+            final BroadcastReceiver onComplete = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+//                                boolean valid = downloadHelper.isDownloadValid();
+
+                    String status = downloadHelper.getDownloadStatus();
+
+                                /* the valid check is needed because DownloadManager sends multiple
+                                ACTION_DOWNLOAD_COMPLETE intents while downloading, not just when
+                                finished the download. Also stops cancel from adding to the database
+                                 */
+                    if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
+                        // Update download status and update the episode in sqlite
+                        movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
+                        sqLiteHelper.updateEpisode(movedEpisode);
+                        Toast.makeText(context, "Download Complete",
+                                Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.INVISIBLE);
+
+                        context.unregisterReceiver(this);
+                    } else if (status.equalsIgnoreCase(DownloadHelper.STATUS_FAILED) ||
+                            status.equalsIgnoreCase("")) {
+                        sqLiteHelper.deleteEpisode(movedEpisode);
+                        progressBar.setVisibility(View.INVISIBLE);
+                        downloadButton.setVisibility(View.VISIBLE);
+                        downloadButton.setEnabled(true);
+                        context.unregisterReceiver(this);
+                    }
+                }
+            };
+
+            // Registers the above receiver (onComplete receiver)
+            view.getContext().registerReceiver(onComplete,
+                    new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
         }
 
         /**
@@ -511,12 +609,21 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             holder.episode.setText(episodes.get(itemPosition).getTitle());
 
             // Sets download button to invisible if ep is downloaded or pod is not subscribed
-            if (episodes.get(itemPosition).isDownloaded() || position == -1) {
+            if (episodes.get(itemPosition).getDownloadStatus() == 1 || position == -1) {
+                // downloaded, show play button
                 holder.downloadButton.setVisibility(View.INVISIBLE);
                 holder.downloadButton.setEnabled(false);
-            } else {
+                holder.progressBar.setVisibility(View.INVISIBLE);
+            } else if (episodes.get(itemPosition).getDownloadStatus() == 2) {
+                // downloading, show progress bar
+                holder.downloadButton.setVisibility(View.INVISIBLE);
+                holder.downloadButton.setEnabled(false);
+                holder.progressBar.setVisibility(View.VISIBLE);
+            } else if (episodes.get(itemPosition).getDownloadStatus() == 0 && position != -1) {
+                // not downloaded, show download button. Must be library bottom sheet (subscribed)
                 holder.downloadButton.setVisibility(View.VISIBLE);
                 holder.downloadButton.setEnabled(true);
+                holder.progressBar.setVisibility(View.INVISIBLE);
             }
         }
 
@@ -527,4 +634,3 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
     }
 }
-

@@ -13,11 +13,16 @@ import com.the_canuck.openpodcast.Episode;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 
 public class DownloadHelper {
+
+    public final static String STATUS_FAILED = "STATUS_FAILED";
+    public final static String STATUS_PAUSED = "STATUS_PAUSED";
+    public final static String STATUS_PENDING = "STATUS_PENDING";
+    public final static String STATUS_RUNNING = "STATUS_RUNNING";
+    public final static String STATUS_SUCCESSFUL = "STATUS_SUCCESSFUL";
+
     private Episode episode;
     private int collectionId;
     private Context context;
@@ -57,20 +62,40 @@ public class DownloadHelper {
     }
 
     /**
-     * Checks if the status of the downloaded is complete or in progress.
+     * Checks the status of the download.
      *
-     * @return if the download is completed (true) or not (false)
+     * @return the status code for the download
      */
-    public boolean isDownloadValid() {
+    public String getDownloadStatus() {
         DownloadManager dm = (DownloadManager) context.getSystemService
                 (Context.DOWNLOAD_SERVICE);
         Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(enqueue));
+        String statusText = "";
 
         if (cursor.moveToFirst()) {
-            int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-            return status == DownloadManager.STATUS_SUCCESSFUL;
+            int mStatus = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+            switch (mStatus) {
+                case DownloadManager.STATUS_FAILED:
+                    statusText = STATUS_FAILED;
+                    break;
+                case DownloadManager.STATUS_PAUSED:
+                    statusText = STATUS_PAUSED;
+                    break;
+                case DownloadManager.STATUS_PENDING:
+                    statusText = STATUS_PENDING;
+                    break;
+                case DownloadManager.STATUS_RUNNING:
+                    statusText = STATUS_RUNNING;
+                    break;
+                case DownloadManager.STATUS_SUCCESSFUL:
+                    statusText = STATUS_SUCCESSFUL;
+                    break;
+                default:
+                    statusText = STATUS_FAILED;
+                    break;
+            }
         }
-        return false;
+        return statusText;
     }
 
     /**
