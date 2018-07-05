@@ -12,11 +12,11 @@ import java.util.Locale;
 public abstract class ListHelper {
 
     /**
-     * Adds the passed episode into the passed list, in a sorted position based on publish date.
+     * Returns the index the episode belongs in the list based on pubDate.
      *
      * @param mEpisode episode being added into the list
      * @param episodeList list of episodes being added to
-     * @return the updated episode list
+     * @return the index the episode should be placed in
      */
     public static int getSortedIndex(Episode mEpisode, List<Episode> episodeList) {
         // Checks to see which episode was published first, adds episode to appropriate index

@@ -25,6 +25,7 @@ public class RssReader {
     static final String MEDIA_ENCLOSURE = "enclosure";
     static final String MEDIA_LENGTH = "length";
     static final String MEDIA_URL = "url";
+    static final String DURATION = "itunes:duration";
 
     public RssReader(String url) {
         this.url = url;
@@ -78,6 +79,8 @@ public class RssReader {
                                         (null, MEDIA_URL));
                                 item.setLength(xmlParser.getAttributeValue
                                         (null, MEDIA_LENGTH));
+                            } else if (name.equalsIgnoreCase(DURATION)) {
+                                item.setDuration(xmlParser.nextText());
                             }
                         }
                         break;

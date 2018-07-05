@@ -1,6 +1,8 @@
 package com.the_canuck.openpodcast;
 
-public class Episode {
+import java.io.Serializable;
+
+public class Episode implements Serializable {
 
     // Constants for downloadedStatus
     public static final int NOT_DOWNLOADED = 0;
@@ -14,6 +16,7 @@ public class Episode {
     private String length;
     private String link;
     private String pubDate;
+    private String duration;
     private int collectionId;
     private int downloadStatus = NOT_DOWNLOADED;
 
@@ -25,6 +28,15 @@ public class Episode {
         this.title = title;
         this.description = description;
         this.mediaUrl = mediaUrl;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public Episode setDuration(String duration) {
+        this.duration = duration;
+        return this;
     }
 
     /**

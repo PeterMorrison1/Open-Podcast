@@ -36,6 +36,7 @@ import com.bumptech.glide.request.target.Target;
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.dialogs.EpisodeDialog;
 import com.the_canuck.openpodcast.download.DownloadHelper;
 import com.the_canuck.openpodcast.fragments.library.MyLibraryRecyclerViewAdapter;
 import com.the_canuck.openpodcast.search.RssReader;
@@ -487,6 +488,9 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 @Override
                 public void onClick(View v) {
                     if (mListener != null) {
+                        EpisodeDialog dialog =
+                                EpisodeDialog.newInstance(episodes.get(getAdapterPosition()));
+                        dialog.show(getFragmentManager(), "test");
 //                        mListener.onPodcastClicked(episodes.get(getAdapterPosition()));
 //                        dismiss();
                     }
@@ -494,71 +498,71 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             });
         }
 
-        private void runEpisodeDownloader(View view) {
-            downloadButton.setVisibility(View.INVISIBLE);
-            downloadButton.setEnabled(false);
-            progressBar.setVisibility(View.VISIBLE);
-
-            final DownloadHelper downloadHelper = new
-                    DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
-                    view.getContext());
-            downloadHelper.downloadEpisode();
-
-            final int firstPosition = getAdapterPosition();
-
-                        /* creates episode object for newly moved/downloading episode
-                        and sets the download status to currently downloading and adds it to the
-                        sqlite episodes table so re-opening bottom sheet it's info will persist.
-                         */
-            final Episode movedEpisode = episodes.get(getAdapterPosition());
-            movedEpisode.setDownloadStatus(Episode.CURRENTLY_DOWNLOADING);
-            sqLiteHelper.addEpisode(movedEpisode);
-
-            episodes.remove(getAdapterPosition());
-
-            int finalPosition = dateSorter(movedEpisode);
-            if (finalPosition != -1) {
-                recyclerView.getAdapter().notifyItemMoved(firstPosition, finalPosition);
-//                            recyclerView.getAdapter().notifyDataSetChanged();
-            }
-
-            // Receives the download complete intent and adds episode to database
-            final BroadcastReceiver onComplete = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-//                                boolean valid = downloadHelper.isDownloadValid();
-
-                    String status = downloadHelper.getDownloadStatus();
-
-                                /* the valid check is needed because DownloadManager sends multiple
-                                ACTION_DOWNLOAD_COMPLETE intents while downloading, not just when
-                                finished the download. Also stops cancel from adding to the database
-                                 */
-                    if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
-                        // Update download status and update the episode in sqlite
-                        movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
-                        sqLiteHelper.updateEpisode(movedEpisode);
-                        Toast.makeText(context, "Download Complete",
-                                Toast.LENGTH_SHORT).show();
-                        progressBar.setVisibility(View.INVISIBLE);
-
-                        context.unregisterReceiver(this);
-                    } else if (status.equalsIgnoreCase(DownloadHelper.STATUS_FAILED) ||
-                            status.equalsIgnoreCase("")) {
-                        sqLiteHelper.deleteEpisode(movedEpisode);
-                        progressBar.setVisibility(View.INVISIBLE);
-                        downloadButton.setVisibility(View.VISIBLE);
-                        downloadButton.setEnabled(true);
-                        context.unregisterReceiver(this);
-                    }
-                }
-            };
-
-            // Registers the above receiver (onComplete receiver)
-            view.getContext().registerReceiver(onComplete,
-                    new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-        }
+//        private void runEpisodeDownloader(View view) {
+//            downloadButton.setVisibility(View.INVISIBLE);
+//            downloadButton.setEnabled(false);
+//            progressBar.setVisibility(View.VISIBLE);
+//
+//            final DownloadHelper downloadHelper = new
+//                    DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
+//                    view.getContext());
+//            downloadHelper.downloadEpisode();
+//
+//            final int firstPosition = getAdapterPosition();
+//
+//                        /* creates episode object for newly moved/downloading episode
+//                        and sets the download status to currently downloading and adds it to the
+//                        sqlite episodes table so re-opening bottom sheet it's info will persist.
+//                         */
+//            final Episode movedEpisode = episodes.get(getAdapterPosition());
+//            movedEpisode.setDownloadStatus(Episode.CURRENTLY_DOWNLOADING);
+//            sqLiteHelper.addEpisode(movedEpisode);
+//
+//            episodes.remove(getAdapterPosition());
+//
+//            int finalPosition = dateSorter(movedEpisode);
+//            if (finalPosition != -1) {
+//                recyclerView.getAdapter().notifyItemMoved(firstPosition, finalPosition);
+////                            recyclerView.getAdapter().notifyDataSetChanged();
+//            }
+//
+//            // Receives the download complete intent and adds episode to database
+//            final BroadcastReceiver onComplete = new BroadcastReceiver() {
+//                @Override
+//                public void onReceive(Context context, Intent intent) {
+////                                boolean valid = downloadHelper.isDownloadValid();
+//
+//                    String status = downloadHelper.getDownloadStatus();
+//
+//                                /* the valid check is needed because DownloadManager sends multiple
+//                                ACTION_DOWNLOAD_COMPLETE intents while downloading, not just when
+//                                finished the download. Also stops cancel from adding to the database
+//                                 */
+//                    if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
+//                        // Update download status and update the episode in sqlite
+//                        movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
+//                        sqLiteHelper.updateEpisode(movedEpisode);
+//                        Toast.makeText(context, "Download Complete",
+//                                Toast.LENGTH_SHORT).show();
+//                        progressBar.setVisibility(View.INVISIBLE);
+//
+//                        context.unregisterReceiver(this);
+//                    } else if (status.equalsIgnoreCase(DownloadHelper.STATUS_FAILED) ||
+//                            status.equalsIgnoreCase("")) {
+//                        sqLiteHelper.deleteEpisode(movedEpisode);
+//                        progressBar.setVisibility(View.INVISIBLE);
+//                        downloadButton.setVisibility(View.VISIBLE);
+//                        downloadButton.setEnabled(true);
+//                        context.unregisterReceiver(this);
+//                    }
+//                }
+//            };
+//
+//            // Registers the above receiver (onComplete receiver)
+//            view.getContext().registerReceiver(onComplete,
+//                    new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+//
+//        }
 
         /**
          * Sorts an episode into an arraylist based on publish date.

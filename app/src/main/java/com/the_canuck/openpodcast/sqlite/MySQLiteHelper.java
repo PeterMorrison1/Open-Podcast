@@ -23,7 +23,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
     // Database name & version
     private static final String DATABASE_NAME = "podcasts.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     // tables
     private static final String TABLE_SUBSCRIBED = "subscribed";
@@ -49,6 +49,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_FILE_SIZE = "file_size";
     private static final String COLUMN_LINK = "link";
     private static final String COLUMN_MEDIA_URL = "media_url";
+    private static final String COLUMN_DURATION = "duration";
 
     private static final String CREATE_SUB_TABLE = "CREATE TABLE " + TABLE_SUBSCRIBED + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -71,7 +72,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             + COLUMN_DOWNLOADED + " INTEGER,"
             + COLUMN_FILE_SIZE + " TEXT,"
             + COLUMN_LINK + " TEXT,"
-            + COLUMN_MEDIA_URL + " TEXT"
+            + COLUMN_MEDIA_URL + " TEXT,"
+            + COLUMN_DURATION + " TEXT"
             + ")";
 
     public MySQLiteHelper(Context context) {
@@ -231,6 +233,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_FILE_SIZE, episode.getLength());
         contentValues.put(COLUMN_LINK, episode.getLink());
         contentValues.put(COLUMN_MEDIA_URL, episode.getMediaUrl());
+        contentValues.put(COLUMN_DURATION, episode.getDuration());
 
         db.insert(TABLE_EPISODES, null, contentValues);
     }
@@ -248,6 +251,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_FILE_SIZE, episode.getLength());
         contentValues.put(COLUMN_LINK, episode.getLink());
         contentValues.put(COLUMN_MEDIA_URL, episode.getMediaUrl());
+        contentValues.put(COLUMN_DURATION, episode.getDuration());
 
         db.update(TABLE_EPISODES, contentValues, COLUMN_TITLE + "=?",
                 new String[]{episode.getTitle()});
@@ -297,6 +301,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                     (cursor.getColumnIndexOrThrow(COLUMN_DOWNLOADED)));
             episode.setLink(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_LINK)));
             episode.setMediaUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MEDIA_URL)));
+            episode.setDuration(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DURATION)));
 
             Log.d("test", "Title: " + episode.getTitle() + "Collection Id: "
                     + episode.getCollectionId());
