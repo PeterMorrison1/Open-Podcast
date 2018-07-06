@@ -9,6 +9,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -28,6 +29,7 @@ public class DownloadHelper {
     private Context context;
     private long enqueue;
     private DownloadManager downloadManager;
+    private String path;
 
     // TODO: Remove collectionid param, its stored in episode now
     public DownloadHelper(Episode episode, int collectionId, Context context) {
@@ -42,7 +44,8 @@ public class DownloadHelper {
     public void downloadEpisode() {
 
         String mimeType = getMimeType(episode.getMediaUrl());
-        String path = episode.getTitle().replaceAll("/", " ") + "."
+        path = File.separator + collectionId + File.separator
+                + episode.getTitle().replaceAll("/", " ") + "."
                 + FilenameUtils.getExtension(episode.getMediaUrl());
 
         downloadManager = (DownloadManager) context.getSystemService
@@ -51,8 +54,7 @@ public class DownloadHelper {
                 Uri.parse(episode.getMediaUrl()));
         Toast.makeText(context, "Link: " + episode.getMediaUrl(), Toast.LENGTH_LONG).show();
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_PODCASTS,
-                File.separator + collectionId + File.separator + path);
-
+                path);
 
         request.setMimeType(mimeType);
         request.setTitle("Downloading " + episode.getTitle());
@@ -111,5 +113,14 @@ public class DownloadHelper {
             type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         }
         return type;
+    }
+
+    /**
+     * Gets the path to the downloaded file (not including the Environment.DIRECTORY_PODCASTS).
+     *
+     * @return string of the file path
+     */
+    public String getPath() {
+        return path;
     }
 }

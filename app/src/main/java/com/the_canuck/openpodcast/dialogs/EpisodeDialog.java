@@ -1,21 +1,30 @@
 package com.the_canuck.openpodcast.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
+import android.os.Build;
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.text.Html;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
+import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 
 public class EpisodeDialog extends DialogFragment{
 
     public static final String EPISODE = "episodeKey";
+    EpisodeDialogListener mListener;
 
     public static EpisodeDialog newInstance(Episode episode) {
         EpisodeDialog frag = new EpisodeDialog();
@@ -23,6 +32,17 @@ public class EpisodeDialog extends DialogFragment{
         bundle.putSerializable(EPISODE, episode);
         frag.setArguments(bundle);
         return frag;
+    }
+
+    public interface EpisodeDialogListener {
+        // TODO: If i add playlists, make "Add playlist" button here!
+        void onDialogDeleteClick();
+        void onDialogCloseClick();
+    }
+
+    public EpisodeDialog setmListener(EpisodeDialogListener mListener) {
+        this.mListener = mListener;
+        return this;
     }
 
     @Override
@@ -38,21 +58,70 @@ public class EpisodeDialog extends DialogFragment{
         TextView size = view.findViewById(R.id.dialog_size);
         TextView duration = view.findViewById(R.id.dialog_duration);
 
-//        int timeLeft = Integer.valueOf(episode.getLength());
-//        String timeLeft = String.valueOf((Integer.valueOf(episode.getLength()) / (1000 * 60)) % 600);
-
-        String time = "Duration: " + episode.getDuration();
-        String prettyDescription = android.text.Html.fromHtml(episode.getDescription()).toString();
+        // Parses the description HTML (so no html tags are in but are still used)
+        Spanned descriptionParsed;
+        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            descriptionParsed = Html.fromHtml(episode.getDescription(), Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            descriptionParsed = Html.fromHtml(episode.getDescription());
+        }
 
         title.setText(episode.getTitle());
         title.setTextSize(16);
         title.setPadding(16, 16,16, 16);
-        description.setText(prettyDescription);
-        description.setPadding(16,16,16,16);
-        size.setText(getFileSize(Integer.valueOf(episode.getLength())));
-        duration.setText(time);
 
-        builder.setView(view);
+        // sets description w/ hyperlinks
+        description.setText(descriptionParsed);
+        description.setMovementMethod(LinkMovementMethod.getInstance());
+        description.setPadding(16,16,16,16);
+
+        // sets the episode size and duration if they exist, if not query mediastore for it
+        if (episode.getLength() != null) {
+            size.setText(getFileSize(Integer.valueOf(episode.getLength())));
+        }
+        if (episode.getDuration() != null) {
+            String time = "Duration: " + episode.getDuration();
+            duration.setText(time);
+        }
+
+        if ((episode.getLength() == null || episode.getDuration() == null)
+                && episode.getDownloadStatus() == 1) {
+
+            // Get duration and size from mediastore if not exist and update sqlite database w/ it
+            HashMap<String, String> episodeData =
+                    MediaStoreHelper.getEpisodeMetaData(getContext(), episode);
+            if (episodeData != null) {
+                if (episode.getLength() == null) {
+                    episode.setLength(episodeData.get(MediaStoreHelper.SIZE));
+                }
+                if (episode.getDuration() == null) {
+                    episode.setDuration(episodeData.get(MediaStoreHelper.DURATION));
+                }
+                MySQLiteHelper sqLiteHelper = new MySQLiteHelper(getContext());
+                sqLiteHelper.updateEpisode(episode);
+            }
+        }
+
+        // sets the view and the buttons for the dialog
+        builder.setView(view)
+                .setPositiveButton(R.string.delete_episode, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // delete button
+                        if (mListener != null) {
+                            mListener.onDialogDeleteClick();
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.close_dialog, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // close dialog button
+                        if (mListener != null) {
+                            mListener.onDialogCloseClick();
+                        }
+                    }
+                });
         return builder.create();
     }
 

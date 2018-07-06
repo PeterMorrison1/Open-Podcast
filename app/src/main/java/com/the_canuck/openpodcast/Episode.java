@@ -19,6 +19,7 @@ public class Episode implements Serializable {
     private String duration;
     private int collectionId;
     private int downloadStatus = NOT_DOWNLOADED;
+    private String bookmark;
 
     public Episode() {
         // empty constructor
@@ -28,6 +29,20 @@ public class Episode implements Serializable {
         this.title = title;
         this.description = description;
         this.mediaUrl = mediaUrl;
+    }
+
+    /**
+     * Gets the bookmarked place (last place media was played) for the episode.
+     *
+     * @return String of the bookmarked time
+     */
+    public String getBookmark() {
+        return bookmark;
+    }
+
+    public Episode setBookmark(String bookmark) {
+        this.bookmark = bookmark;
+        return this;
     }
 
     public String getDuration() {

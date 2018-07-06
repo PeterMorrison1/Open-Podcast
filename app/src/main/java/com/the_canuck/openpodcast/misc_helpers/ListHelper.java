@@ -9,7 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-public abstract class ListHelper {
+public class ListHelper {
 
     /**
      * Returns the index the episode belongs in the list based on pubDate.
@@ -31,8 +31,6 @@ public abstract class ListHelper {
                 position = 0;
                 return position;
             } else if (!episodeList.isEmpty()){
-//                int i = 0;
-//                while (i <= episodeList.size())
                 for (int i = 0; i < episodeList.size(); i++){
                     Date iterationDate = formatter.parse(episodeList.get(i).getPubDate());
 

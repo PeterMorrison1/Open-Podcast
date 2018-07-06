@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomSheetDialogFragment;
@@ -39,6 +41,7 @@ import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.dialogs.EpisodeDialog;
 import com.the_canuck.openpodcast.download.DownloadHelper;
 import com.the_canuck.openpodcast.fragments.library.MyLibraryRecyclerViewAdapter;
+import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.search.RssReader;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
@@ -464,6 +467,10 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                             Toast.LENGTH_SHORT).show();
                                     progressBar.setVisibility(View.INVISIBLE);
                                     recyclerView.getAdapter().notifyItemChanged(finalPosition);
+                                    context.sendBroadcast(new Intent
+                                            (Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                                                    Uri.parse(Environment.DIRECTORY_PODCASTS
+                                                            + downloadHelper.getPath())));
                                     context.unregisterReceiver(this);
                                 } else {
                                     // Handles canceled and failed downloads
@@ -490,7 +497,35 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                     if (mListener != null) {
                         EpisodeDialog dialog =
                                 EpisodeDialog.newInstance(episodes.get(getAdapterPosition()));
-                        dialog.show(getFragmentManager(), "test");
+                        dialog.show(getFragmentManager(), "EpisodeDialog");
+
+                        dialog.setmListener(new EpisodeDialog.EpisodeDialogListener() {
+                            @Override
+                            public void onDialogDeleteClick() {
+                                // delete click
+                                if (episodes.get(getAdapterPosition()).getDownloadStatus() == 1) {
+                                    MediaStoreHelper.deleteEpisode(getContext(),
+                                            episodes.get(getAdapterPosition()));
+                                    sqLiteHelper.deleteEpisode(episodes.get(getAdapterPosition()));
+                                    downloadButton.setVisibility(View.VISIBLE);
+                                    downloadButton.setEnabled(true);
+
+                                    // FIXME: Doesn't seem to update view with download button
+                                    recyclerView.getAdapter()
+                                            .notifyItemChanged(getAdapterPosition());
+
+                                } else {
+                                    Toast.makeText(getContext(),
+                                            "Can't delete, episode isn't downloaded",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onDialogCloseClick() {
+                                // close click
+                            }
+                        });
 //                        mListener.onPodcastClicked(episodes.get(getAdapterPosition()));
 //                        dismiss();
                     }
@@ -498,6 +533,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             });
         }
 
+        // TODO: Not sure if this works or if i even want it. Think on it.
 //        private void runEpisodeDownloader(View view) {
 //            downloadButton.setVisibility(View.INVISIBLE);
 //            downloadButton.setEnabled(false);

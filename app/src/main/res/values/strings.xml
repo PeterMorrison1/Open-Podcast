@@ -22,7 +22,10 @@
     <string name="sports_and_rec">Sports &amp; Recreation</string>
     <string name="technology">Technology</string>
     <string name="tv_and_film">TV &amp; Film</string>
+
+    <!--Dialog strings-->
     <string name="delete_episode">Delete Episode</string>
+    <string name="close_dialog">Close</string>
 
     <!-- Settings strings -->
     <string name="pref_external">Save to external storage</string>

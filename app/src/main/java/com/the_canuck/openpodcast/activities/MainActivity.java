@@ -59,20 +59,6 @@ public class MainActivity extends AppCompatActivity implements
 
         sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse(Environment.DIRECTORY_PODCASTS)));
 
-        // TODO: THIS IS A TEST FOR QUERYING MEDIA
-//        Cursor cursor  = getContentResolver().query(
-//                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-//                null,
-//                MediaStore.Audio.Media.DATA + " like ? ",
-//                new String[] {"%Podcasts%"},
-//                MediaStore.Audio.Media.TITLE + " ASC");
-//        while (cursor.moveToNext()) {
-//            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-//            Toast.makeText(this, "Title: " + title, Toast.LENGTH_LONG).show();
-//        }
-//
-
-
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
         // Sets the fragment container as library fragment on startup
