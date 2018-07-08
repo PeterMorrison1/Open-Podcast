@@ -210,6 +210,21 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         return podcastExists;
     }
 
+    public String getPodcastArtwork600(int collectionId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String artwork = "";
+        String query = "select * from " + TABLE_SUBSCRIBED + " where "
+                + COLUMN_COLLECTION_ID + "='" + collectionId + "'";
+        Cursor cursor = db.rawQuery(query, null);
+//        db.delete(TABLE_SUBSCRIBED, COLUMN_COLLECTION_ID + "=?",
+//                new String[]{String.valueOf(collectionId)});
+        if (cursor.moveToFirst()) {
+            artwork = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ART_600));
+        }
+        return artwork;
+    }
+
+
     // EPISODES TABLE HELPER METHODS
     /**
      * Called to add an episode into the episodes list.

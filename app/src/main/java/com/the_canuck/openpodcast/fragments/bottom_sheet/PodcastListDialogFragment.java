@@ -83,6 +83,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private RecyclerView libraryRecyclerView;
     private int position = -1;
     private RecyclerView recyclerView;
+    private Palette palette;
 
     public static PodcastListDialogFragment newInstance(int collectionId, String artistName,
                                                  String artwork600, String artwork100,
@@ -301,7 +302,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                       ConstraintLayout descriptionLayout) {
         if (resource != null) {
             int defaultColour = 0x000000;
-            Palette palette = Palette.from(resource).generate();
+            palette = Palette.from(resource).generate();
             Palette.Swatch dominantSwatch = palette.getDominantSwatch();
             if (dominantSwatch != null) {
                 // title, artist, and constraint colours
@@ -396,6 +397,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
 
     public interface Listener {
         void onPodcastClicked(Episode episode);
+        void onPlayClicked(Episode episode);
     }
 
     private class ViewHolder extends RecyclerView.ViewHolder {
@@ -403,16 +405,16 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         final TextView episode;
         final Button downloadButton;
         final ProgressBar progressBar;
+        final Button playButton;
 
         ViewHolder(LayoutInflater inflater, ViewGroup parent) {
-            // TODO: Customize the item layout
             super(inflater.inflate
                     (R.layout.fragment_podcast_list_dialog_item, parent, false));
 
             episode = itemView.findViewById(R.id.episode);
             downloadButton = itemView.findViewById(R.id.download_button);
-            progressBar = itemView.findViewById(R.id.episodeProgressBar);
-            // errorButton can later be clicked to attempt download again
+            progressBar = itemView.findViewById(R.id.episode_progress_bar);
+            playButton = itemView.findViewById(R.id.play_episode_button);
 
             downloadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -467,6 +469,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                             Toast.LENGTH_SHORT).show();
                                     progressBar.setVisibility(View.INVISIBLE);
                                     recyclerView.getAdapter().notifyItemChanged(finalPosition);
+
                                     context.sendBroadcast(new Intent
                                             (Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                                                     Uri.parse(Environment.DIRECTORY_PODCASTS
@@ -528,6 +531,15 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                         });
 //                        mListener.onPodcastClicked(episodes.get(getAdapterPosition()));
 //                        dismiss();
+                    }
+                }
+            });
+            playButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        mListener.onPlayClicked(episodes.get(getAdapterPosition()));
+                        dismiss();
                     }
                 }
             });
@@ -654,6 +666,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 holder.downloadButton.setVisibility(View.INVISIBLE);
                 holder.downloadButton.setEnabled(false);
                 holder.progressBar.setVisibility(View.INVISIBLE);
+                holder.playButton.setVisibility(View.VISIBLE);
+                holder.playButton.setEnabled(true);
             } else if (episodes.get(itemPosition).getDownloadStatus() == 2) {
                 // downloading, show progress bar
                 holder.downloadButton.setVisibility(View.INVISIBLE);
@@ -664,6 +678,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 holder.downloadButton.setVisibility(View.VISIBLE);
                 holder.downloadButton.setEnabled(true);
                 holder.progressBar.setVisibility(View.INVISIBLE);
+                holder.playButton.setVisibility(View.INVISIBLE);
+                holder.playButton.setEnabled(false);
             }
         }
 
