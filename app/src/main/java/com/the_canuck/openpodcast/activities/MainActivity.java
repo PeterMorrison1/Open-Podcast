@@ -6,7 +6,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -51,8 +50,6 @@ import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
-import java.util.concurrent.TimeUnit;
-
 public class MainActivity extends AppCompatActivity implements
         SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
         LibraryFragment.OnListFragmentInteractionListener,
@@ -77,11 +74,14 @@ public class MainActivity extends AppCompatActivity implements
     private TextView seekBarCurrentDuration;
     private TextView thumbCardDuration;
     private CardView thumbCard;
+    private Episode currentEpisode = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initializeViews();
 
         handleIntent(getIntent());
 
@@ -92,24 +92,15 @@ public class MainActivity extends AppCompatActivity implements
         sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                 Uri.parse(Environment.DIRECTORY_PODCASTS)));
 
-        mDrawerLayout = findViewById(R.id.drawer_layout);
-
-        // Control sliding panel on startup
-        // TODO: Later make panel visible from start with last played episode
-        slidingPanel = findViewById(R.id.panel_layout);
-        panelTinyContainer = findViewById(R.id.panel_tiny_container);
-        panelBigContainer = findViewById(R.id.panel_big_container);
-        panelTinyTitle = findViewById(R.id.panel_small_title);
-        panelBigTitle = findViewById(R.id.panel_big_title);
-        panelImage = findViewById(R.id.panel_episode_image);
-        seekBar = findViewById(R.id.seek_bar);
-        seekBarMaxDuration = findViewById(R.id.seek_bar_max_duration);
-        seekBarCurrentDuration = findViewById(R.id.seek_bar_current_duration);
-        thumbCard = findViewById(R.id.thumb_card);
-        thumbCardDuration = findViewById(R.id.thumb_duration);
-
-        panelTinyContainer.setVisibility(View.VISIBLE);
-        panelTinyContainer.setEnabled(false);
+        // TODO: Later make sliding panel visible from start with last played episode
+        // TODO: Can make sliding panel invisible but not visible again ????????????????????
+//        if (currentEpisode == null) {
+//            panelBigContainer.setVisibility(View.INVISIBLE);
+//            panelBigContainer.setClickable(false);
+//        } else {
+//            panelBigContainer.setVisibility(View.VISIBLE);
+//            panelBigContainer.setClickable(true);
+//        }
 
         slidingPanel.setParallaxOffset(1000);
 
@@ -128,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements
                     int cardHalf = thumbCard.getWidth() / 2;
                     thumbCard.setX(seekBar.getX() + val + seekBar.getThumbOffset() / 2 - cardHalf);
                 }
-
             }
 
             @Override
@@ -161,7 +151,11 @@ public class MainActivity extends AppCompatActivity implements
                     panelTinyContainer.setEnabled(true);
                 } else if (slidingPanel.getPanelState() ==
                         SlidingUpPanelLayout.PanelState.EXPANDED) {
-                    // Maybe add animation here or animate to different viewholder
+                    // TODO: Maybe add animation here or animate to different viewholder
+                    /* Update: Above comment means when you drag panel up the tiny bar remains until
+                    the panel is completely expanded or collapsed. So fade away tiny bar basically.
+                    Take this as a learning experience to write better comments, future Peter.
+                     */
                     panelTinyContainer.setVisibility(View.INVISIBLE);
                     panelTinyContainer.setEnabled(false);
                 }
@@ -177,12 +171,14 @@ public class MainActivity extends AppCompatActivity implements
             transaction.commit();
         }
 
+        // Set and control toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
 
+        // Set and control navigation view (The drawer)
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setCheckedItem(R.id.nav_subscribed);
         navigationView.setNavigationItemSelectedListener
@@ -197,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements
                 Fragment newFragment = null;
                 String fragTag = null;
 
+                // Add future nav drawer selections here
                 switch (item.getItemId()) {
                     case R.id.nav_subscribed:
                         if (container instanceof LibraryFragment) {
@@ -245,12 +242,33 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
+    /**
+     * Initialize views that are globally used for this activity.
+     */
+    private void initializeViews() {
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        slidingPanel = findViewById(R.id.panel_layout);
+        panelTinyContainer = findViewById(R.id.panel_tiny_container);
+        panelBigContainer = findViewById(R.id.panel_big_container);
+        panelTinyTitle = findViewById(R.id.panel_small_title);
+        panelBigTitle = findViewById(R.id.panel_big_title);
+        panelImage = findViewById(R.id.panel_episode_image);
+        seekBar = findViewById(R.id.seek_bar);
+        seekBarMaxDuration = findViewById(R.id.seek_bar_max_duration);
+        seekBarCurrentDuration = findViewById(R.id.seek_bar_current_duration);
+        thumbCard = findViewById(R.id.thumb_card);
+        thumbCardDuration = findViewById(R.id.thumb_duration);
+    }
+
+    /**
+     * Prompts user for permissions to use the app.
+     */
     private void requestAppPermissions() {
         ActivityCompat.requestPermissions(this,
                 new String[] {
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
-                }, REQUEST_WRITE_STORAGE_REQUEST_CODE); // your request code
+                }, REQUEST_WRITE_STORAGE_REQUEST_CODE);
     }
 
     @Override
@@ -286,6 +304,11 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Sets the fragment to search for the clicked genre.
+     *
+     * @param intent the intent that contains the "isGenre" boolean, and the "query" term
+     */
     public void genreSearchIntent(Intent intent) {
         Bundle bundle = new Bundle();
 
@@ -363,11 +386,14 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void setSlidingPanelEpisode(Episode episode) {
         MySQLiteHelper sqLiteHelper = new MySQLiteHelper(this);
+
         String artwork = sqLiteHelper.getPodcastArtwork600(episode.getCollectionId());
         panelTinyTitle.setText(episode.getTitle());
         panelBigTitle.setText(episode.getTitle());
         seekBar.setMax((int) TimeHelper.convertDurationToSeconds(episode.getDuration()));
-        String maxDuration = "/    " + episode.getDuration();
+
+        // TODO: Change max duration to use BOOKMARK from mediastore/episodes table
+        String maxDuration = "/  " + episode.getDuration();
         seekBarMaxDuration.setText(maxDuration);
 
         // Anything requiring palette colours MUST be inside onResourceReady below!
@@ -397,6 +423,7 @@ public class MainActivity extends AppCompatActivity implements
                         if (palette != null) {
                             Palette.Swatch dominantSwatch = palette.getDominantSwatch();
                             if (dominantSwatch != null) {
+                                // To use the palette it must be set inside here
                                 panelBigContainer.setBackgroundColor(dominantSwatch.getRgb());
                                 panelBigTitle.setTextColor(dominantSwatch.getTitleTextColor());
                                 seekBarMaxDuration.setTextColor(dominantSwatch.getBodyTextColor());
@@ -404,9 +431,6 @@ public class MainActivity extends AppCompatActivity implements
                                         (dominantSwatch.getBodyTextColor());
                                 thumbCard.setCardBackgroundColor(dominantSwatch.getTitleTextColor());
                                 thumbCardDuration.setTextColor(dominantSwatch.getBodyTextColor());
-
-//                                title.setTextColor(dominantSwatch.getTitleTextColor());
-//                                panelTinyContainer.setBackgroundColor(Color.WHITE);
                             }
                         }
                         return false;
@@ -424,6 +448,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPlayClicked(Episode episode) {
+        currentEpisode = episode;
         setSlidingPanelEpisode(episode);
     }
 
