@@ -6,7 +6,11 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +27,7 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
@@ -47,8 +52,12 @@ import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.bottom_sheet.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
+import com.the_canuck.openpodcast.media_player.MediaPlayerService;
+import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements
         SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
@@ -449,7 +458,36 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onPlayClicked(Episode episode) {
         currentEpisode = episode;
+        Intent mIntent = new Intent(getApplicationContext(), MediaPlayerService.class);
+        mIntent.setAction(MediaPlayerService.ACTION_PLAY);
+        mIntent.putExtra(Episode.EPISODE, episode);
+        startService(mIntent);
+
         setSlidingPanelEpisode(episode);
+//        try {
+//            Uri test = MediaStoreHelper.getEpisodeUri(this, episode);
+//            Log.d("mediastore", "Uri: " + test);
+//            MediaPlayer mediaPlayer = new MediaPlayer();
+//
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+//                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+//                        .setUsage(AudioAttributes.USAGE_MEDIA)
+//                        .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+//                        .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+//                        .build());
+//            } else {
+//                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//            }
+//            mediaPlayer.setDataSource(getApplicationContext(), test);
+//            mediaPlayer.prepare();
+//            mediaPlayer.start();
+//
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
     }
 
     @Override

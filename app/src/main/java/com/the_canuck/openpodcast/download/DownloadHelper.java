@@ -44,8 +44,15 @@ public class DownloadHelper {
     public void downloadEpisode() {
 
         String mimeType = getMimeType(episode.getMediaUrl());
+
+        // FIXME: Encode the file name in utf-8!! Must be done before release!
+        // Replacing invalid characters was a quick and very dirty hack, will be encoded instead
+        String title = episode.getTitle();
+        title = title.replaceAll("/", " ");
+        title = title.replaceAll("#", " ");
+
         path = File.separator + collectionId + File.separator
-                + episode.getTitle().replaceAll("/", " ") + "."
+                + title + "."
                 + FilenameUtils.getExtension(episode.getMediaUrl());
 
         downloadManager = (DownloadManager) context.getSystemService

@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 public class Episode implements Serializable {
 
+    // Constant for serializing episode
+    public static final String EPISODE = "com.the_canuck.openpodcast.Episode.episodeKey";
+
     // Constants for downloadedStatus
     public static final int NOT_DOWNLOADED = 0;
     public static final int IS_DOWNLOADED = 1;

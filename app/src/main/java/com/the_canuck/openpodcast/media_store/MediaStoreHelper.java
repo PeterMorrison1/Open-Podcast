@@ -9,6 +9,8 @@ import android.provider.MediaStore;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
+import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -111,5 +113,65 @@ public class MediaStoreHelper {
             }
         }
         cursor.close();
+    }
+
+    /**
+     * Finds the episode with matching title in mediastore and gets it's uri.
+     *
+     * @param context the context of the application
+     * @param episode the episode that the uri is being fetched for
+     * @return the uri of the episode (from mediastore)
+     */
+    public static Uri getEpisodeUri(Context context, Episode episode) {
+        Uri uri;
+        Cursor cursor = getCursor(context);
+
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+            String titleNoExtension = FilenameUtils.getBaseName(title);
+
+            // If the title found in mediastore equals the passed in title
+            // FIXME: Update this with UTF-8 encoding when I do in DownloadHelper!
+            String episodeTitle = episode.getTitle();
+            episodeTitle = episodeTitle.replaceAll("/", " ");
+            episodeTitle = episodeTitle.replaceAll("#", " ");
+            if (titleNoExtension.equalsIgnoreCase(episodeTitle)) {
+
+                uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+                cursor.close();
+                return uri;
+            }
+        }
+        cursor.close();
+        return null;
+    }
+
+    /**
+     * Adds duration or file size (length) to the episode and returns it, if the episode doesn't
+     * already have those parameters.
+     *
+     * @param context context of the application
+     * @param episode the episode being updated
+     * @return a copy of the Episode objected passed in, with updated duration and length (size)
+     */
+    public static Episode updateEpisodeMetaData(Context context, Episode episode) {
+        if ((episode.getLength() == null || episode.getDuration() == null)
+                && episode.getDownloadStatus() == 1) {
+
+            // Get duration and size from mediastore if not exist and update sqlite database w/ it
+            HashMap<String, String> episodeData = getEpisodeMetaData(context, episode);
+
+            if (episodeData != null) {
+                if (episode.getLength() == null) {
+                    episode.setLength(episodeData.get(MediaStoreHelper.SIZE));
+                }
+                if (episode.getDuration() == null) {
+                    episode.setDuration(TimeHelper.convertSecondsToHourMinSec(Integer.valueOf
+                            (episodeData.get(MediaStoreHelper.DURATION))));
+                }
+            }
+        }
+        return episode;
     }
 }

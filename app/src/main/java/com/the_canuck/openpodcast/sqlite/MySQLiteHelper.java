@@ -232,13 +232,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * @param episode the episode to be added into the episodes table
      */
     public void addEpisode(Episode episode) {
-        /* set if the episode was downloaded. Pass in bool & convert to avoid future confusion
-        1 = true, 0 = false. Might be removing isDownloaded in the future.
-        Removing isDownloaded depends if its going to save all episode info for EVERY podcast
-        subscribed to (or not subscribed if i later want).
-        For the time being only episodes DOWNLOADED will have their meta data saved.
-         */
-//        int downloaded = isDownloaded ? 1 : 0;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -262,7 +255,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * @param episode the episode to be updated
      */
     public void updateEpisode(Episode episode) {
-//        int downloaded = isDownloaded ? 1 : 0;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 

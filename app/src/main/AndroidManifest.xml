@@ -18,12 +18,15 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.SEARCH" />
+                <action android:name="com.the_canuck.openpodcast.media_player.PLAY" />
+
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
+        <service android:name=".media_player.MediaPlayerService" />
     </application>
 
 </manifest>

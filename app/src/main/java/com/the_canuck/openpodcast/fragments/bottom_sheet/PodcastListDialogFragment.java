@@ -464,7 +464,12 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                 if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
                                     // Update download status and update the episode in sqlite
                                     movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
-                                    sqLiteHelper.updateEpisode(movedEpisode);
+
+                                    // Update podcast info if it doesn't have duration or size yet
+                                    sqLiteHelper.updateEpisode(MediaStoreHelper
+                                            .updateEpisodeMetaData(getContext(),
+                                                    movedEpisode));
+
                                     Toast.makeText(context, "Download Complete",
                                             Toast.LENGTH_SHORT).show();
                                     progressBar.setVisibility(View.INVISIBLE);
@@ -477,6 +482,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                     context.unregisterReceiver(this);
                                 } else {
                                     // Handles canceled and failed downloads
+                                    Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
                                     sqLiteHelper.deleteEpisode(movedEpisode);
                                     progressBar.setVisibility(View.INVISIBLE);
                                     downloadButton.setVisibility(View.VISIBLE);
@@ -545,73 +551,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             });
         }
 
-        // TODO: Not sure if this works or if i even want it. Think on it.
-//        private void runEpisodeDownloader(View view) {
-//            downloadButton.setVisibility(View.INVISIBLE);
-//            downloadButton.setEnabled(false);
-//            progressBar.setVisibility(View.VISIBLE);
-//
-//            final DownloadHelper downloadHelper = new
-//                    DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
-//                    view.getContext());
-//            downloadHelper.downloadEpisode();
-//
-//            final int firstPosition = getAdapterPosition();
-//
-//                        /* creates episode object for newly moved/downloading episode
-//                        and sets the download status to currently downloading and adds it to the
-//                        sqlite episodes table so re-opening bottom sheet it's info will persist.
-//                         */
-//            final Episode movedEpisode = episodes.get(getAdapterPosition());
-//            movedEpisode.setDownloadStatus(Episode.CURRENTLY_DOWNLOADING);
-//            sqLiteHelper.addEpisode(movedEpisode);
-//
-//            episodes.remove(getAdapterPosition());
-//
-//            int finalPosition = dateSorter(movedEpisode);
-//            if (finalPosition != -1) {
-//                recyclerView.getAdapter().notifyItemMoved(firstPosition, finalPosition);
-////                            recyclerView.getAdapter().notifyDataSetChanged();
-//            }
-//
-//            // Receives the download complete intent and adds episode to database
-//            final BroadcastReceiver onComplete = new BroadcastReceiver() {
-//                @Override
-//                public void onReceive(Context context, Intent intent) {
-////                                boolean valid = downloadHelper.isDownloadValid();
-//
-//                    String status = downloadHelper.getDownloadStatus();
-//
-//                                /* the valid check is needed because DownloadManager sends multiple
-//                                ACTION_DOWNLOAD_COMPLETE intents while downloading, not just when
-//                                finished the download. Also stops cancel from adding to the database
-//                                 */
-//                    if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
-//                        // Update download status and update the episode in sqlite
-//                        movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
-//                        sqLiteHelper.updateEpisode(movedEpisode);
-//                        Toast.makeText(context, "Download Complete",
-//                                Toast.LENGTH_SHORT).show();
-//                        progressBar.setVisibility(View.INVISIBLE);
-//
-//                        context.unregisterReceiver(this);
-//                    } else if (status.equalsIgnoreCase(DownloadHelper.STATUS_FAILED) ||
-//                            status.equalsIgnoreCase("")) {
-//                        sqLiteHelper.deleteEpisode(movedEpisode);
-//                        progressBar.setVisibility(View.INVISIBLE);
-//                        downloadButton.setVisibility(View.VISIBLE);
-//                        downloadButton.setEnabled(true);
-//                        context.unregisterReceiver(this);
-//                    }
-//                }
-//            };
-//
-//            // Registers the above receiver (onComplete receiver)
-//            view.getContext().registerReceiver(onComplete,
-//                    new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-//
-//        }
-
         /**
          * Sorts an episode into an arraylist based on publish date.
          *
@@ -661,7 +600,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             holder.episode.setText(episodes.get(itemPosition).getTitle());
 
             // Sets download button to invisible if ep is downloaded or pod is not subscribed
-            if (episodes.get(itemPosition).getDownloadStatus() == 1 || position == -1) {
+            if (episodes.get(itemPosition).getDownloadStatus() == 1) {
                 // downloaded, show play button
                 holder.downloadButton.setVisibility(View.INVISIBLE);
                 holder.downloadButton.setEnabled(false);

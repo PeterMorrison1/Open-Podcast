@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -23,13 +24,12 @@ import java.util.HashMap;
 
 public class EpisodeDialog extends DialogFragment{
 
-    public static final String EPISODE = "episodeKey";
     EpisodeDialogListener mListener;
 
     public static EpisodeDialog newInstance(Episode episode) {
         EpisodeDialog frag = new EpisodeDialog();
         Bundle bundle = new Bundle();
-        bundle.putSerializable(EPISODE, episode);
+        bundle.putSerializable(Episode.EPISODE, episode);
         frag.setArguments(bundle);
         return frag;
     }
@@ -47,7 +47,7 @@ public class EpisodeDialog extends DialogFragment{
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Episode episode = (Episode) getArguments().getSerializable(EPISODE);
+        Episode episode = (Episode) getArguments().getSerializable(Episode.EPISODE);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -82,24 +82,6 @@ public class EpisodeDialog extends DialogFragment{
         if (episode.getDuration() != null) {
             String time = "Duration: " + episode.getDuration();
             duration.setText(time);
-        }
-
-        if ((episode.getLength() == null || episode.getDuration() == null)
-                && episode.getDownloadStatus() == 1) {
-
-            // Get duration and size from mediastore if not exist and update sqlite database w/ it
-            HashMap<String, String> episodeData =
-                    MediaStoreHelper.getEpisodeMetaData(getContext(), episode);
-            if (episodeData != null) {
-                if (episode.getLength() == null) {
-                    episode.setLength(episodeData.get(MediaStoreHelper.SIZE));
-                }
-                if (episode.getDuration() == null) {
-                    episode.setDuration(episodeData.get(MediaStoreHelper.DURATION));
-                }
-                MySQLiteHelper sqLiteHelper = new MySQLiteHelper(getContext());
-                sqLiteHelper.updateEpisode(episode);
-            }
         }
 
         // sets the view and the buttons for the dialog
