@@ -205,7 +205,7 @@
                         android:id="@+id/panel_large_play_button"
                         android:layout_width="100dp"
                         android:layout_height="100dp"
-                        android:background="@drawable/ic_play_circle_outline_white_48dp"
+                        android:background="@drawable/ic_pause_circle_outline_white_48dp"
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="8dp"
                         android:layout_marginTop="8dp"
