@@ -5,11 +5,13 @@ import android.content.Intent;
 
 import com.the_canuck.openpodcast.Episode;
 
+/**
+ * MediaController is used to control everything for mediaplayer except seek control due to
+ * the seekbar requiring constant calls and ui updates. The other controls being in this controller
+ * allows for the notification (not yet implemented) to pause and play. Probably, we'll see.
+ */
 public class MediaController {
-    /* MediaController is used to control everything for mediaplayer except seek control due to
-    the seekbar requiring constant calls and ui updates. The other controls being in this controller
-    allows for the notification (not yet implemented) to pause and play. Probably, we'll see.
-     */
+
 
     public static String SEEK_TIME = "SEEK_TIME";
 

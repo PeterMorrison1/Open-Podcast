@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
@@ -17,6 +18,9 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.util.HashMap;
 
+/**
+ * Runs all necessary queries/edits on the mediastore.
+ */
 public class MediaStoreHelper {
     public static final String DURATION = "duration";
     public static final String SIZE = "size";
@@ -40,12 +44,11 @@ public class MediaStoreHelper {
     }
 
     /**
-     * Gets the metadata of an episode from the mediastore. Returns hashmap with duration, size,
-     * and bookmark.
+     * Gets the metadata of an episode from the mediastore. Returns hashmap with duration and size.
      *
      * @param context current application context
      * @param episode the current episode being queried
-     * @return the hashmap containing episode's duration, size, and bookmark. Null if ep not found
+     * @return the hashmap containing episode's duration and size. Null if ep not found
      */
     public static HashMap<String, String> getEpisodeMetaData(Context context, Episode episode) {
         Cursor cursor = getCursor(context);
@@ -55,19 +58,28 @@ public class MediaStoreHelper {
             String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
             String titleNoExtension = FilenameUtils.getBaseName(title);
 
+            String episodeTitle = episode.getTitle();
+            episodeTitle = episodeTitle.replaceAll("/", " ");
+            episodeTitle = episodeTitle.replaceAll("#", " ");
+
             // If the title found in mediastore equals the passed in title
-            if (titleNoExtension.equalsIgnoreCase(episode.getTitle().replaceAll("/", " "))) {
+            if (titleNoExtension.equalsIgnoreCase(episodeTitle)) {
 
                 String duration = cursor.getString(cursor.getColumnIndexOrThrow
                        (MediaStore.Audio.Media.DURATION));
                 String size = cursor.getString(cursor.getColumnIndexOrThrow
                        (MediaStore.Audio.Media.SIZE));
-                String bookmark = cursor.getString(cursor.getColumnIndexOrThrow
-                       (MediaStore.Audio.Media.BOOKMARK));
-                podcastMetaData = new HashMap<String, String>();
+
+                // Commenting out bookmark before removing later. Using sqlite for bookmark instead
+                // TODO: Delete bookmark stuff in mediastore if I decide to not use it
+//                String bookmark = cursor.getString(cursor.getColumnIndexOrThrow
+//                       (MediaStore.Audio.Media.BOOKMARK));
+
+                podcastMetaData = new HashMap<>();
                 podcastMetaData.put(DURATION, duration);
                 podcastMetaData.put(SIZE, size);
-                podcastMetaData.put(BOOKMARK, bookmark);
+//                podcastMetaData.put(BOOKMARK, bookmark);
+                return podcastMetaData;
             }
         }
         return podcastMetaData;
@@ -170,6 +182,7 @@ public class MediaStoreHelper {
                     episode.setDuration(TimeHelper.convertSecondsToHourMinSec(Integer.valueOf
                             (episodeData.get(MediaStoreHelper.DURATION))));
                 }
+//                episode.setBookmark(episodeData.get(MediaStoreHelper.BOOKMARK));
             }
         }
         return episode;

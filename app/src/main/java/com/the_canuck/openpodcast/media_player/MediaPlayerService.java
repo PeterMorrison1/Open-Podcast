@@ -17,6 +17,15 @@ import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 
 import java.io.IOException;
 
+/**
+ * <p>The service that runs the MediaPlayer, which is controlled with MediaController. </p>
+ *
+ * <p>To access the MediaPlayer object you must create a connection to the ServerInstance,
+ * which is only to be accessed to get current position or update with seekbar. </p>
+ *
+ * All other MediaPlayer controls must be done through the MediaController (play, pause, resume,
+ * stop).
+ */
 public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener {
     public static final String ACTION_PLAY = "com.the_canuck.openpodcast.media_player.PLAY";
     public static final String ACTION_PAUSE = "com.the_canuck.openpodcast.media_player.PAUSE";
@@ -26,6 +35,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             "com.the_canuck.openpodcast.media_player.SEEK_BUTTON";
 
     private MediaPlayer mediaPlayer = null;
+    private Episode episode = null;
 
     IBinder mBinder = new LocalBinder();
 
@@ -44,6 +54,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+
+        if (episode.getBookmark() != null) {
+            mp.seekTo(Integer.valueOf(episode.getBookmark()));
+        }
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -52,6 +66,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
             if (action.equals(ACTION_PLAY)) {
                 Episode mEpisode = (Episode) intent.getExtras().getSerializable(Episode.EPISODE);
+                episode = mEpisode;
                 processPlayRequest(mEpisode);
             } else if (action.equals(ACTION_PAUSE)) {
                 processPauseRequest();

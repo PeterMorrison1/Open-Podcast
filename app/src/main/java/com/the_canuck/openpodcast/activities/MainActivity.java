@@ -333,6 +333,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
+        updateCurrentEpisodeBookmark();
+
         if (mBounded) {
             unbindService(mConnection);
             mBounded = false;
@@ -364,8 +366,7 @@ public class MainActivity extends AppCompatActivity implements
      * Updates the seekbar to match the currently playing media's current time.
      */
     private void updateSeekBar() {
-        if (mMediaPlayer != null) {
-        } else {
+        if (mMediaPlayer == null) {
             if (mBounded) {
                 mMediaPlayer = mediaPlayerService.getMediaPlayer();
             }
@@ -373,6 +374,20 @@ public class MainActivity extends AppCompatActivity implements
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             int currentPosition = mMediaPlayer.getCurrentPosition() / 1000;
             seekBar.setProgress(currentPosition);
+        }
+    }
+
+    /**
+     * Updates the current episode's bookmark time in the sqlite database.
+     */
+    private void updateCurrentEpisodeBookmark() {
+        /* Opted to use bookmark in episodes table over mediastore since mediastore seems more
+        expensive to use (possibly from how I coded it). Also episode table is easier :)
+         */
+        if (currentEpisode != null) {
+            MySQLiteHelper mySQLiteHelper = new MySQLiteHelper(this);
+            currentEpisode.setBookmark(String.valueOf(mMediaPlayer.getCurrentPosition()));
+            mySQLiteHelper.updateEpisode(currentEpisode);
         }
     }
 
@@ -599,10 +614,14 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPlayClicked(Episode episode) {
+        // Updates the currently playing episode's bookmark before setting a new episode to play
+        updateCurrentEpisodeBookmark();
+
+        // Sets new currentEpisode and starts mediaplayer
         currentEpisode = episode;
-        MediaController.startRequest(getApplicationContext(), episode);
+        MediaController.startRequest(getApplicationContext(), currentEpisode);
         isEpisodePaused = false;
-        setSlidingPanelEpisode(episode);
+        setSlidingPanelEpisode(currentEpisode);
     }
 
     @Override
