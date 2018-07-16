@@ -130,4 +130,8 @@ public class DownloadHelper {
     public String getPath() {
         return path;
     }
+
+    public Uri getDownloadUri(long id) {
+        return downloadManager.getUriForDownloadedFile(id);
+    }
 }

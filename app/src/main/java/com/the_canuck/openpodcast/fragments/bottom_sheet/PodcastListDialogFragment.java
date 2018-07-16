@@ -20,6 +20,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,7 @@ import com.the_canuck.openpodcast.search.RssReader;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -454,6 +456,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                             @Override
                             public void onReceive(Context context, Intent intent) {
 //                                boolean valid = downloadHelper.isDownloadValid();
+                                String action = intent.getAction();
 
                                 String status = downloadHelper.getDownloadStatus();
 
@@ -461,34 +464,48 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                 ACTION_DOWNLOAD_COMPLETE intents while downloading, not just when
                                 finished the download. Also stops cancel from adding to the database
                                  */
-                                if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
-                                    // Update download status and update the episode in sqlite
-                                    movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
+                                if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
+                                    if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
+                                        // Update download status and update the episode in sqlite
+                                        movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
 
-                                    // Update podcast info if it doesn't have duration or size yet
-                                    sqLiteHelper.updateEpisode(MediaStoreHelper
-                                            .updateEpisodeMetaData(getContext(),
-                                                    movedEpisode));
+                                        // Update podcast info if it doesn't have duration or size yet
+                                        sqLiteHelper.updateEpisode(MediaStoreHelper
+                                                .updateEpisodeMetaData(getContext(),
+                                                        movedEpisode));
 
-                                    Toast.makeText(context, "Download Complete",
-                                            Toast.LENGTH_SHORT).show();
-                                    progressBar.setVisibility(View.INVISIBLE);
-                                    recyclerView.getAdapter().notifyItemChanged(finalPosition);
+                                        Toast.makeText(context, "Download Complete",
+                                                Toast.LENGTH_SHORT).show();
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                        recyclerView.getAdapter().notifyItemChanged(finalPosition);
 
-                                    context.sendBroadcast(new Intent
-                                            (Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                                                    Uri.parse(Environment.DIRECTORY_PODCASTS
-                                                            + downloadHelper.getPath())));
-                                    context.unregisterReceiver(this);
-                                } else {
-                                    // Handles canceled and failed downloads
-                                    Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
-                                    sqLiteHelper.deleteEpisode(movedEpisode);
-                                    progressBar.setVisibility(View.INVISIBLE);
-                                    downloadButton.setVisibility(View.VISIBLE);
-                                    downloadButton.setEnabled(true);
-                                    recyclerView.getAdapter().notifyItemChanged(finalPosition);
-                                    context.unregisterReceiver(this);
+                                        context.sendBroadcast(new Intent
+                                                (Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                                                        Uri.parse(Environment.DIRECTORY_PODCASTS
+                                                                + downloadHelper.getPath())));
+//                                    context.unregisterReceiver(this);
+                                    } else {
+                                        // Handles canceled and failed downloads
+                                        Uri uri;
+                                        long id = intent.getLongExtra
+                                                (DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+
+                                        uri = downloadHelper.getDownloadUri(id);
+
+                                        /* uri is null when the download is canceled, which allows
+                                        us to check if the action is for successful download or a
+                                        canceled download
+                                         */
+                                        if (uri == null) {
+                                            sqLiteHelper.deleteEpisode(movedEpisode);
+                                            progressBar.setVisibility(View.INVISIBLE);
+                                            downloadButton.setVisibility(View.VISIBLE);
+                                            downloadButton.setEnabled(true);
+                                            recyclerView.getAdapter()
+                                                    .notifyItemChanged(finalPosition);
+//                                    context.unregisterReceiver(this);
+                                        }
+                                    }
                                 }
                             }
                         };
