@@ -6,19 +6,20 @@ import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -28,7 +29,6 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
@@ -38,7 +38,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -55,8 +54,8 @@ import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.bottom_sheet.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
-import com.the_canuck.openpodcast.media_player.MediaController;
-import com.the_canuck.openpodcast.media_player.MediaPlayerService;
+import com.the_canuck.openpodcast.media_player.AudioService;
+import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
@@ -70,6 +69,11 @@ public class MainActivity extends AppCompatActivity implements
     final String SEARCH_TAG = "search";
     final String DISCOVER_TAG = "discover";
     final String SETTINGS_TAG = "settings";
+
+    private final int STATE_PAUSED = 0;
+    private final int STATE_PLAYING = 1;
+
+    private int currentState;
 
     private DrawerLayout mDrawerLayout;
     private SlidingUpPanelLayout slidingPanel;
@@ -85,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements
     private TextView thumbCardDuration;
     private CardView thumbCard;
     private Button panelLargePlay;
+    private Button panelSmallPlay;
     private Button forward30;
     private Button rewind30;
 
@@ -92,11 +97,15 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean isEpisodePaused = true;
 
-    private MediaPlayerService mediaPlayerService;
+//    private MediaPlayerService mediaPlayerService;
     private boolean mBounded;
-    private MediaPlayer mMediaPlayer = null;
+//    private MediaPlayer mMediaPlayer = null;
 
     private Handler handler = new Handler();
+
+    private MediaBrowserCompat mediaBrowserCompat;
+    private MediaControllerCompat mediaControllerCompat;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +123,12 @@ public class MainActivity extends AppCompatActivity implements
         sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                 Uri.parse(Environment.DIRECTORY_PODCASTS)));
 
+        mediaBrowserCompat = new MediaBrowserCompat(this,
+                new ComponentName(this, AudioService.class),
+                mediaBrowserConnectionCallback, getIntent().getExtras());
+
+        mediaBrowserCompat.connect();
+
         // TODO: Later make sliding panel visible from start with last played episode
         // TODO: Can make sliding panel invisible but not visible again ????????????????????
 //        if (currentEpisode == null) {
@@ -130,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements
         initializePlayButtonRes();
 
         slidingPanel.setParallaxOffset(1000);
+        thumbCard.setVisibility(View.INVISIBLE);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -139,14 +155,14 @@ public class MainActivity extends AppCompatActivity implements
 
                 // Sets the thumbCard to same position as the seekbar thumb
                 // FIXME: thumbCard moves a bit too far left when at 00:00
-                if (fromUser && mMediaPlayer != null) {
+                if (fromUser && currentState == STATE_PLAYING) {
                     thumbCard.setVisibility(View.VISIBLE);
                     int val = (progress * (seekBar.getWidth() - 2 * seekBar.getThumbOffset())) /
                             seekBar.getMax();
                     int cardHalf = thumbCard.getWidth() / 2;
                     thumbCard.setX(seekBar.getX() + val + seekBar.getThumbOffset() / 2 - cardHalf);
 
-                    mMediaPlayer.seekTo(progress * 1000);
+                    mediaControllerCompat.getTransportControls().seekTo(progress * 1000);
                 }
             }
 
@@ -203,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements
         forward30.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MediaController.seekButtonRequest(getApplicationContext(), 30);
+                seekButton(30);
             }
         });
 
@@ -211,12 +227,19 @@ public class MainActivity extends AppCompatActivity implements
         rewind30.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MediaController.seekButtonRequest(getApplicationContext(), -30);
+                seekButton(-30);
             }
         });
 
         // Controls when the panel large play button is clicked (pause/resume)
         panelLargePlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                togglePlayButton();
+            }
+        });
+
+        panelSmallPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 togglePlayButton();
@@ -309,36 +332,117 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
 
-        Intent mIntent = new Intent(this, MediaPlayerService.class);
-        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
+//        Intent mIntent = new Intent(this, MediaPlayerService.class);
+//        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
     }
 
-    // Connects to the service to connect to the mediaplayer for controlling playback
-    ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mBounded = true;
-            MediaPlayerService.LocalBinder mLocalBinder = (MediaPlayerService.LocalBinder) service;
-            mediaPlayerService = mLocalBinder.getServerInstance();
-            mMediaPlayer = mediaPlayerService.getMediaPlayer();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mBounded = false;
-            mediaPlayerService = null;
-        }
-    };
+//    // Connects to the service to connect to the mediaplayer for controlling playback
+//    ServiceConnection mConnection = new ServiceConnection() {
+//        @Override
+//        public void onServiceConnected(ComponentName name, IBinder service) {
+//            mBounded = true;
+//            MediaPlayerService.LocalBinder mLocalBinder = (MediaPlayerService.LocalBinder) service;
+//            mediaPlayerService = mLocalBinder.getServerInstance();
+//            mMediaPlayer = mediaPlayerService.getMediaPlayer();
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName name) {
+//            mBounded = false;
+//            mediaPlayerService = null;
+//        }
+//    };
 
     @Override
     protected void onStop() {
         super.onStop();
         updateCurrentEpisodeBookmark();
+//
+//        if (mBounded) {
+//            unbindService(mConnection);
+//            mBounded = false;
+//        }
+    }
 
-        if (mBounded) {
-            unbindService(mConnection);
-            mBounded = false;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaControllerCompat.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+
+            mediaControllerCompat.getTransportControls().pause();
         }
+        mediaBrowserCompat.disconnect();
+    }
+
+    private MediaBrowserCompat.ConnectionCallback mediaBrowserConnectionCallback =
+            new MediaBrowserCompat.ConnectionCallback() {
+
+                @Override
+                public void onConnected() {
+                    super.onConnected();
+                    try {
+                        mediaControllerCompat = new MediaControllerCompat(MainActivity.this,
+                                mediaBrowserCompat.getSessionToken());
+                        mediaControllerCompat.registerCallback(mediaControllerCallback);
+                        MediaControllerCompat.setMediaController(MainActivity.this,
+                                mediaControllerCompat);
+                        if (currentEpisode != null) {
+                            playEpisode(currentEpisode);
+                        }
+
+//                        currentState = STATE_PLAYING;
+
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+    private MediaControllerCompat.Callback mediaControllerCallback =
+            new MediaControllerCompat.Callback() {
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            super.onPlaybackStateChanged(state);
+
+            if (state == null) {
+                return;
+            }
+
+            switch (state.getState()) {
+                case PlaybackStateCompat.STATE_PLAYING: {
+                    currentState = STATE_PLAYING;
+                    break;
+                }
+                case PlaybackStateCompat.STATE_PAUSED: {
+                    currentState = STATE_PAUSED;
+                    break;
+                }
+            }
+        }
+    };
+
+    /**
+     * Sends the passed in episode to the AudioService.
+     *
+     * @param episode the episode to be played
+     */
+    private void playEpisode(Episode episode) {
+        if (episode != null) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(Episode.EPISODE, episode);
+            Uri uri = MediaStoreHelper.getEpisodeUri(getApplicationContext(),
+                    episode);
+//            MediaControllerCompat.getMediaController(MainActivity.this)
+//                    .getTransportControls().playFromUri(uri, bundle);
+            mediaControllerCompat.getTransportControls().playFromUri(uri, bundle);
+            initializePlayButtonRes();
+        }
+    }
+
+    private void seekButton(int seekTime) {
+        int currentPosition = (int) mediaControllerCompat.getPlaybackState().getPosition();
+        int newPosition = currentPosition + seekTime * 1000;
+        mediaControllerCompat.getTransportControls().seekTo(newPosition);
     }
 
     /**
@@ -358,6 +462,7 @@ public class MainActivity extends AppCompatActivity implements
         thumbCard = findViewById(R.id.thumb_card);
         thumbCardDuration = findViewById(R.id.thumb_duration);
         panelLargePlay = findViewById(R.id.panel_large_play_button);
+        panelSmallPlay = findViewById(R.id.panel_small_play_button);
         forward30 = findViewById(R.id.forward_30);
         rewind30 = findViewById(R.id.rewind_30);
     }
@@ -366,13 +471,8 @@ public class MainActivity extends AppCompatActivity implements
      * Updates the seekbar to match the currently playing media's current time.
      */
     private void updateSeekBar() {
-        if (mMediaPlayer == null) {
-            if (mBounded) {
-                mMediaPlayer = mediaPlayerService.getMediaPlayer();
-            }
-        }
-        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-            int currentPosition = mMediaPlayer.getCurrentPosition() / 1000;
+        if (currentState == STATE_PLAYING) {
+            int currentPosition = (int) mediaControllerCompat.getPlaybackState().getPosition() / 1000;
             seekBar.setProgress(currentPosition);
         }
     }
@@ -386,20 +486,26 @@ public class MainActivity extends AppCompatActivity implements
          */
         if (currentEpisode != null) {
             MySQLiteHelper mySQLiteHelper = new MySQLiteHelper(this);
-            currentEpisode.setBookmark(String.valueOf(mMediaPlayer.getCurrentPosition()));
+//            currentEpisode.setBookmark(String.valueOf(mMediaPlayer.getCurrentPosition()));
+            long bookmark = MediaControllerCompat.getMediaController(MainActivity.this)
+                    .getPlaybackState().getPosition();
+
+            currentEpisode.setBookmark(String.valueOf(bookmark));
             mySQLiteHelper.updateEpisode(currentEpisode);
         }
     }
 
     /**
      * Initializes the big play button to start as the proper background based on if there is a
-     * last played episode or not. If there is, then a play button, if not then a pause button.
+     * current episode or not. If there is, then a play button, if not then a pause button.
      */
     private void initializePlayButtonRes() {
         if (currentEpisode == null) {
             panelLargePlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
+            panelSmallPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
         } else {
             panelLargePlay.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
+            panelSmallPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
         }
     }
 
@@ -409,20 +515,35 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void togglePlayButton() {
         // TODO: Can probably pass in a button and this could control tiny panel play button too
-        if (isEpisodePaused) {
+        if (currentState == STATE_PAUSED) {
             // Resumes the episode and sets button icon to pause
             isEpisodePaused = false;
-            panelLargePlay.setBackgroundResource
-                    (R.drawable.ic_pause_circle_outline_white_48dp);
-            MediaController.stateRequest(getApplicationContext(),
-                    MediaPlayerService.ACTION_RESUME);
+            currentState = STATE_PLAYING;
+            panelLargePlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
+            panelSmallPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+//            MediaController.stateRequest(getApplicationContext(),
+//                    MediaPlayerService.ACTION_RESUME);
+            mediaControllerCompat.getTransportControls().play();
         } else {
             // Pauses the episode and sets button icon to play
-            isEpisodePaused = true;
-            panelLargePlay.setBackgroundResource
-                    (R.drawable.ic_play_circle_outline_white_48dp);
-            MediaController.stateRequest(getApplicationContext(),
-                    MediaPlayerService.ACTION_PAUSE);
+            if (mediaControllerCompat.getPlaybackState().getState() ==
+                    PlaybackStateCompat.STATE_PLAYING) {
+
+                isEpisodePaused = true;
+                panelLargePlay.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
+                panelSmallPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+//            MediaController.stateRequest(getApplicationContext(),
+//                    MediaPlayerService.ACTION_PAUSE);
+                mediaControllerCompat.getTransportControls().pause();
+            }
+            currentState = STATE_PAUSED;
+//            isEpisodePaused = true;
+//            panelLargePlay.setBackgroundResource
+//                    (R.drawable.ic_play_circle_outline_white_48dp);
+////            MediaController.stateRequest(getApplicationContext(),
+////                    MediaPlayerService.ACTION_PAUSE);
+//            MediaControllerCompat.getMediaController(MainActivity.this)
+//                    .getTransportControls().pause();
         }
     }
 
@@ -619,7 +740,8 @@ public class MainActivity extends AppCompatActivity implements
 
         // Sets new currentEpisode and starts mediaplayer
         currentEpisode = episode;
-        MediaController.startRequest(getApplicationContext(), currentEpisode);
+//        MediaController.startRequest(getApplicationContext(), currentEpisode);
+        playEpisode(currentEpisode);
         isEpisodePaused = false;
         setSlidingPanelEpisode(currentEpisode);
     }
