@@ -82,6 +82,7 @@ public class AudioService extends MediaBrowserServiceCompat implements
             if (!successfullyRetrievedAudioFocus()) {
                 return;
             }
+            isRunning = true;
             // FIXME: I think i accidentally put this here. Test if its not needed
 //            if (mediaPlayer.isPlaying()) {
 //                mediaPlayer.reset();
@@ -253,6 +254,8 @@ public class AudioService extends MediaBrowserServiceCompat implements
         stopSelf();
     }
 
+
+
     //    private void createNotificationChannel() {
 //        // Create the NotificationChannel, but only on API 26+ because
 //        // the NotificationChannel class is new and not in the support library
@@ -362,6 +365,7 @@ public class AudioService extends MediaBrowserServiceCompat implements
         }
 //        NotificationManagerCompat.from(AudioService.this).notify(1, builder.build());
         startForeground(1, builder.build());
+        stopForeground(false);
     }
 
     /**
@@ -376,20 +380,24 @@ public class AudioService extends MediaBrowserServiceCompat implements
      * Initialize the media player and it's settings.
      */
     private void initMediaPlayer() {
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+        try {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setLegacyStreamType(AudioManager.STREAM_MUSIC)
-                    .build());
-        } else {
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+                        .build());
+            } else {
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            }
+            mediaPlayer.setVolume(1.0f, 1.0f);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        mediaPlayer.setVolume(1.0f, 1.0f);
     }
 
     /**
