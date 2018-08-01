@@ -370,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mediaControllerCompat.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
 
             mediaControllerCompat.getTransportControls().pause();
+            mediaControllerCompat.getTransportControls().stop();
         }
         mediaBrowserCompat.disconnect();
     }

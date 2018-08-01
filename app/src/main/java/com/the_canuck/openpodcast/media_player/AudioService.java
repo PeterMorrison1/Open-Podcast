@@ -28,7 +28,6 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import com.bumptech.glide.Glide;
@@ -158,18 +157,27 @@ public class AudioService extends MediaBrowserServiceCompat implements
                 KeyEvent event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
 
                 if (event != null) {
+
+                    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                        // FIXME: Button sometimes activates twice still. hit play, it plays then pauses
+                        if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
+                            if (mediaPlayer.isPlaying()) {
+                                onPause();
+                            } else if (!mediaPlayer.isPlaying()) {
+                                onPlay();
+                            }
+                        }
+                    }
                     switch (event.getKeyCode()) {
                         case KeyEvent.KEYCODE_MEDIA_PAUSE: {
                             if (mediaPlayer.isPlaying()) {
                                 onPause();
-                                Log.d("eventv", "event pause: " + event);
                             }
                             break;
                         }
                         case KeyEvent.KEYCODE_MEDIA_PLAY: {
                             if (!mediaPlayer.isPlaying()) {
                                 onPlay();
-                                Log.d("eventv", "event play: " + event);
                             }
                             break;
                         }
@@ -182,6 +190,7 @@ public class AudioService extends MediaBrowserServiceCompat implements
                         }
                         case KeyEvent.KEYCODE_MEDIA_REWIND: {
                             onSeekTo(mediaPlayer.getCurrentPosition() - 30 * 1000);
+                            break;
                         }
                     }
 
@@ -229,7 +238,16 @@ public class AudioService extends MediaBrowserServiceCompat implements
             e.printStackTrace();
         }
         mediaSessionCompat.release();
-        mediaPlayer.stop();
+        try {
+            mediaPlayer.stop();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            try {
+                mediaPlayer.pause();
+            } catch (IllegalStateException b) {
+                b.printStackTrace();
+            }
+        }
         mediaPlayer.release();
 //        NotificationManagerCompat.from(AudioService.this).cancel(1);
         NotificationManager notificationManager =
@@ -246,7 +264,17 @@ public class AudioService extends MediaBrowserServiceCompat implements
         audioManager.abandonAudioFocus(this);
         unregisterReceiver(mNoisyReceiver);
         mediaSessionCompat.release();
-        mediaPlayer.stop();
+
+        try {
+            mediaPlayer.stop();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            try {
+                mediaPlayer.pause();
+            } catch (IllegalStateException b) {
+                b.printStackTrace();
+            }
+        }
         mediaPlayer.release();
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -483,8 +511,11 @@ public class AudioService extends MediaBrowserServiceCompat implements
 
                         builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
                                 episode.getTitle());
+                        builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, episode.getTitle());
                         // TODO: Add artist to episode in sqlite
                         builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
+                                episode.getArtist());
+                        builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                                 episode.getArtist());
                         mediaSessionCompat.setMetadata(builder.build());
                     }

@@ -95,8 +95,7 @@
 
             <android.support.constraint.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                sothree:layout_constraintTop_toBottomOf="@id/panel_tiny_container">
+                android:layout_height="match_parent">
 
                 <android.support.constraint.ConstraintLayout
                     android:id="@+id/duration_layout"
@@ -104,7 +103,8 @@
                     android:layout_height="wrap_content"
                     sothree:layout_constraintStart_toStartOf="parent"
                     sothree:layout_constraintEnd_toEndOf="parent"
-                    sothree:layout_constraintTop_toBottomOf="@id/seek_bar">
+                    sothree:layout_constraintTop_toBottomOf="@id/seek_bar"
+                    sothree:layout_constraintBottom_toTopOf="@id/panel_big_button_constraint">
 
                     <android.support.constraint.Guideline
                         android:id="@+id/guideline25"
@@ -143,11 +143,10 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:background="@android:drawable/dialog_holo_light_frame"
-                    sothree:layout_constraintBottom_toBottomOf="parent"
+                    sothree:layout_constraintBottom_toTopOf="@id/panel_big_title"
                     sothree:layout_constraintEnd_toEndOf="parent"
                     sothree:layout_constraintStart_toStartOf="parent"
-                    sothree:layout_constraintTop_toTopOf="parent"
-                    sothree:layout_constraintVertical_bias="0" />
+                    sothree:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/panel_big_title"
@@ -156,11 +155,12 @@
                     android:maxLines="2"
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:textAlignment="center"
                     android:textSize="20sp"
                     sothree:layout_constraintEnd_toEndOf="parent"
+                    sothree:layout_constraintBottom_toTopOf="@id/seek_bar"
                     sothree:layout_constraintStart_toStartOf="parent"
                     sothree:layout_constraintTop_toBottomOf="@id/panel_episode_image" />
 
@@ -168,11 +168,12 @@
                     android:id="@+id/seek_bar"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="48dp"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     sothree:layout_constraintTop_toBottomOf="@id/panel_big_title"
+                    sothree:layout_constraintBottom_toTopOf="@id/panel_big_button_constraint"
                     sothree:layout_constraintStart_toStartOf="parent"
                     sothree:layout_constraintEnd_toEndOf="parent" />
 
@@ -195,11 +196,17 @@
                     android:id="@+id/panel_big_button_constraint"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
                     sothree:layout_constraintTop_toBottomOf="@id/duration_layout"
                     sothree:layout_constraintStart_toStartOf="parent"
                     sothree:layout_constraintEnd_toEndOf="parent"
                     sothree:layout_constraintBottom_toBottomOf="parent">
+
+                    <!--<android.support.constraint.Guideline-->
+                        <!--android:id="@+id/guideline_big_buttons"-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:orientation="horizontal"-->
+                        <!--sothree:layout_constraintGuide_percent=".5"/>-->
 
                     <Button
                         android:id="@+id/panel_large_play_button"
