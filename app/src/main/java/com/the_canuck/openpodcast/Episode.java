@@ -12,6 +12,9 @@ public class Episode implements Serializable {
     public static final int IS_DOWNLOADED = 1;
     public static final int CURRENTLY_DOWNLOADING = 2;
 
+    public static final int NOT_LAST_PLAYED = 0;
+    public static final int IS_LAST_PLAYED = 1;
+
     private String title;
     private String description;
     private String artist;
@@ -23,6 +26,7 @@ public class Episode implements Serializable {
     private int collectionId;
     private int downloadStatus = NOT_DOWNLOADED;
     private String bookmark;
+    private int isLastPlayed = NOT_LAST_PLAYED;
 
     public Episode() {
         // empty constructor
@@ -32,6 +36,22 @@ public class Episode implements Serializable {
         this.title = title;
         this.description = description;
         this.mediaUrl = mediaUrl;
+    }
+
+    /**
+     * Gets the last played status of the episode. If this episode was playing when the app was
+     * closed then isLastPlayed will == 1, else it will == 0.
+     * Use NOT_LAST_PLAYED and IS_LAST_PLAYED.
+     *
+     * @return 0 or 1, based on if the episode was played last or not
+     */
+    public int getIsLastPlayed() {
+        return isLastPlayed;
+    }
+
+    public Episode setIsLastPlayed(int isLastPlayed) {
+        this.isLastPlayed = isLastPlayed;
+        return this;
     }
 
     /**

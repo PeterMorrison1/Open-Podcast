@@ -331,6 +331,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
     private void episodeListInstantiator() {
         reader = new RssReader(feedUrl);
         reader.setCollectionId(collectionId);
+        reader.setCollectionArtist(artistName);
         List<Episode> rssEpisodeList = reader.createEpisodeList();
         List<Episode> sqlEpisodeList = sqLiteHelper.getEpisodes(collectionId);
 

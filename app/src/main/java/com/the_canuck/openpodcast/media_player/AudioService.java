@@ -510,6 +510,9 @@ public class AudioService extends MediaBrowserServiceCompat implements
         mediaSessionCompat.setPlaybackState(builder.build());
     }
 
+    /**
+     * Stores the meta data for the current media session to show on notification and lock screen.
+     */
     private void initMediaSessionMetadata() {
         MySQLiteHelper sqLiteHelper = new MySQLiteHelper(this);
 
@@ -530,7 +533,6 @@ public class AudioService extends MediaBrowserServiceCompat implements
                         builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
                                 episode.getTitle());
                         builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, episode.getTitle());
-                        // TODO: Add artist to episode in sqlite
                         builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
                                 episode.getArtist());
                         builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,

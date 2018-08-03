@@ -117,6 +117,9 @@ public class MainActivity extends AppCompatActivity implements
         // TODO: Make this based on android version
         requestAppPermissions();
 
+        // Checks if there is a last played episode and sets it as current episode if so
+        initializeLastPlayedEp();
+
         // TODO: Might want to remove this, since it will cost lots of resources on startup
         sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                 Uri.parse(Environment.DIRECTORY_PODCASTS)));
@@ -127,22 +130,13 @@ public class MainActivity extends AppCompatActivity implements
 
         mediaBrowserCompat.connect();
 
-        // TODO: Later make sliding panel visible from start with last played episode
-        // TODO: Can make sliding panel invisible but not visible again ????????????????????
-//        if (currentEpisode == null) {
-//            panelBigContainer.setVisibility(View.INVISIBLE);
-//            panelBigContainer.setClickable(false);
-//        } else {
-//            panelBigContainer.setVisibility(View.VISIBLE);
-//            panelBigContainer.setClickable(true);
-//        }
-
         /* Sets the play button to be pause or play based on if there is a previously played episode
         code that sets if there is a previously played episode MUST go before this
          */
         initializePlayButtonRes();
 
         slidingPanel.setParallaxOffset(1000);
+
         hideSlideUpPanel();
 
         thumbCard.setVisibility(View.INVISIBLE);
@@ -429,12 +423,11 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void playEpisode(Episode episode) {
         if (episode != null) {
+            episode.setIsLastPlayed(Episode.IS_LAST_PLAYED);
             Bundle bundle = new Bundle();
             bundle.putSerializable(Episode.EPISODE, episode);
             Uri uri = MediaStoreHelper.getEpisodeUri(getApplicationContext(),
                     episode);
-//            MediaControllerCompat.getMediaController(MainActivity.this)
-//                    .getTransportControls().playFromUri(uri, bundle);
             mediaControllerCompat.getTransportControls().playFromUri(uri, bundle);
             initializePlayButtonRes();
             showSlideUpPanel();
@@ -472,6 +465,20 @@ public class MainActivity extends AppCompatActivity implements
         panelSmallPlay = findViewById(R.id.panel_small_play_button);
         forward30 = findViewById(R.id.forward_30);
         rewind30 = findViewById(R.id.rewind_30);
+    }
+
+    /**
+     * Searches the database for the last played episode and sets currentEpisode to
+     * the returned episode, if it exists.
+     */
+    private void initializeLastPlayedEp() {
+        MySQLiteHelper sqLiteHelper = new MySQLiteHelper(this);
+        Episode episode = sqLiteHelper.getLastPlayedEpisode();
+
+        if (episode != null && episode.getTitle() != null) {
+            currentEpisode = episode;
+            setSlidingPanelEpisode(currentEpisode);
+        }
     }
 
     /**
@@ -515,7 +522,6 @@ public class MainActivity extends AppCompatActivity implements
          */
         if (currentEpisode != null) {
             MySQLiteHelper mySQLiteHelper = new MySQLiteHelper(this);
-//            currentEpisode.setBookmark(String.valueOf(mMediaPlayer.getCurrentPosition()));
             long bookmark = MediaControllerCompat.getMediaController(MainActivity.this)
                     .getPlaybackState().getPosition();
 
@@ -764,12 +770,16 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPlayClicked(Episode episode) {
+        if (currentEpisode != null) {
+            // Sets the current episode as not last played before updating current episode
+            currentEpisode.setIsLastPlayed(Episode.NOT_LAST_PLAYED);
+        }
+
         // Updates the currently playing episode's bookmark before setting a new episode to play
         updateCurrentEpisodeBookmark();
 
         // Sets new currentEpisode and starts mediaplayer
         currentEpisode = episode;
-//        MediaController.startRequest(getApplicationContext(), currentEpisode);
         playEpisode(currentEpisode);
         isEpisodePaused = false;
         setSlidingPanelEpisode(currentEpisode);

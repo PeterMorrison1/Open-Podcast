@@ -16,16 +16,18 @@ public class RssReader {
     private String url;
     private String podcastDescription;
     private int collectionId;
-    static final String TITLE = "title";
-    static final String DESCRIPTION = "description";
-    static final String LINK = "link";
-    static final String ITEM = "item";
-    static final String PUB_DATE = "pubDate";
-    static final String CHANNEL = "channel";
-    static final String MEDIA_ENCLOSURE = "enclosure";
-    static final String MEDIA_LENGTH = "length";
-    static final String MEDIA_URL = "url";
-    static final String DURATION = "itunes:duration";
+    private String collectionArtist;
+
+    private static final String TITLE = "title";
+    private static final String DESCRIPTION = "description";
+    private static final String LINK = "link";
+    private static final String ITEM = "item";
+    private static final String PUB_DATE = "pubDate";
+    private static final String CHANNEL = "channel";
+    private static final String MEDIA_ENCLOSURE = "enclosure";
+    private static final String MEDIA_LENGTH = "length";
+    private static final String MEDIA_URL = "url";
+    private static final String DURATION = "itunes:duration";
 
     public RssReader(String url) {
         this.url = url;
@@ -101,6 +103,7 @@ public class RssReader {
                         if (name.equalsIgnoreCase(ITEM) && item != null) {
                             // sets the collectionId (podcast) for the episode
                             item.setCollectionId(collectionId);
+                            item.setArtist(collectionArtist);
                             list.add(item);
                         } else if (name.equalsIgnoreCase(CHANNEL)) {
                             done = true;
@@ -135,6 +138,11 @@ public class RssReader {
 
     public RssReader setCollectionId(int collectionId) {
         this.collectionId = collectionId;
+        return this;
+    }
+
+    public RssReader setCollectionArtist(String collectionArtist) {
+        this.collectionArtist = collectionArtist;
         return this;
     }
 }
