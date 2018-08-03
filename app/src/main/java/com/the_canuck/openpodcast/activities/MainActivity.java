@@ -95,11 +95,9 @@ public class MainActivity extends AppCompatActivity implements
 
     private Episode currentEpisode = null;
 
-    private boolean isEpisodePaused = true;
+    private boolean isEpisodePaused = true; // Might still use this
 
-//    private MediaPlayerService mediaPlayerService;
-    private boolean mBounded;
-//    private MediaPlayer mMediaPlayer = null;
+    private int panelHeight = -1;
 
     private Handler handler = new Handler();
 
@@ -145,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements
         initializePlayButtonRes();
 
         slidingPanel.setParallaxOffset(1000);
+        hideSlideUpPanel();
+
         thumbCard.setVisibility(View.INVISIBLE);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -437,9 +437,15 @@ public class MainActivity extends AppCompatActivity implements
 //                    .getTransportControls().playFromUri(uri, bundle);
             mediaControllerCompat.getTransportControls().playFromUri(uri, bundle);
             initializePlayButtonRes();
+            showSlideUpPanel();
         }
     }
 
+    /**
+     * Adds or removes time from current position in media.
+     *
+     * @param seekTime the time to add or remove from the current position (negative to remove)
+     */
     private void seekButton(int seekTime) {
         int currentPosition = (int) mediaControllerCompat.getPlaybackState().getPosition();
         int newPosition = currentPosition + seekTime * 1000;
@@ -466,6 +472,28 @@ public class MainActivity extends AppCompatActivity implements
         panelSmallPlay = findViewById(R.id.panel_small_play_button);
         forward30 = findViewById(R.id.forward_30);
         rewind30 = findViewById(R.id.rewind_30);
+    }
+
+    /**
+     * Hides the tiny slide up panel (small bar with just title and play button), <i>must</i> be
+     * called before calling showSlideUpPanel.
+     */
+    private void hideSlideUpPanel() {
+        if (currentEpisode == null) {
+            panelHeight = slidingPanel.getPanelHeight();
+            slidingPanel.setPanelHeight(0);
+        }
+    }
+
+    /**
+     * Shows the tiny slide up panel (small bar with just title and play button), <i>must</i> call
+     * hideSlideUpPanel before calling this method.
+     */
+    private void showSlideUpPanel() {
+        // Panel height is initialized as -1 because currentEpisode won't work for this check
+        if (panelHeight != -1) {
+            slidingPanel.setPanelHeight(panelHeight);
+        }
     }
 
     /**

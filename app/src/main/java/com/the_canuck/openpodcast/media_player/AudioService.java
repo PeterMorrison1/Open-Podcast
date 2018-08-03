@@ -158,6 +158,9 @@ public class AudioService extends MediaBrowserServiceCompat implements
 
                 if (event != null) {
 
+                    /* Handles pause/play on lock screen for non-notification controls on
+                     some devices
+                      */
                     if (event.getAction() == KeyEvent.ACTION_DOWN) {
                         // FIXME: Button sometimes activates twice still. hit play, it plays then pauses
                         if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
@@ -300,6 +303,9 @@ public class AudioService extends MediaBrowserServiceCompat implements
 //        }
 //    }
 
+    /**
+     * Shows the media notification with a play button.
+     */
     private void showPlayingNotification() {
         mediaSessionCompat.setActive(true);
         NotificationCompat.Builder builder =
@@ -351,6 +357,9 @@ public class AudioService extends MediaBrowserServiceCompat implements
         startForeground(1, builder.build());
     }
 
+    /**
+     * Shows a media notification with a pause button.
+     */
     private void showPausedNotification() {
         NotificationCompat.Builder builder =
                 NotificationHelper.from(AudioService.this, mediaSessionCompat);
@@ -452,6 +461,9 @@ public class AudioService extends MediaBrowserServiceCompat implements
         setSessionToken(mediaSessionCompat.getSessionToken());
     }
 
+    /**
+     * Updates the media session position.
+     */
     private void updatePosition() {
         PlaybackStateCompat.Builder builder = new PlaybackStateCompat.Builder();
         if (episode != null && mediaPlayer != null && isRunning) {
@@ -460,6 +472,12 @@ public class AudioService extends MediaBrowserServiceCompat implements
         }
     }
 
+    /**
+     * Checks if application gained audio focus (for instance when google maps would say a direction
+     * this app would lose audio focus temporarily).
+     *
+     * @return true if this app has audio focus - false if this app doesn't have audio focus
+     */
     private boolean successfullyRetrievedAudioFocus() {
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         int result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
