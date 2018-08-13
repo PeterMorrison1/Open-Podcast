@@ -46,33 +46,37 @@ public class MySearchRecyclerViewAdapter extends
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
 //        holder.mImageView.(Integer.toString(mValues.get(position).getCollectionId()));
-        RequestOptions myOptions = new RequestOptions()
-                .fitCenter()
-                .placeholder(R.drawable.ic_image_black_48dp)
-                .error(R.drawable.ic_error_black_24dp)
-                .override(150, 150);
-        Glide.with(holder.mView.getContext())
-                .load(mValues.get(position).getArtworkUrl100())
-                .apply(myOptions)
-                .into(holder.mImageView);
+        try {
+            RequestOptions myOptions = new RequestOptions()
+                    .fitCenter()
+                    .placeholder(R.drawable.ic_image_black_48dp)
+                    .error(R.drawable.ic_error_black_24dp)
+                    .override(150, 150);
+            Glide.with(holder.mView.getContext())
+                    .load(mValues.get(position).getArtworkUrl100())
+                    .apply(myOptions)
+                    .into(holder.mImageView);
 
-        holder.mTitleView.setText(mValues.get(position).getCollectionName());
-        holder.mTitleView.setEllipsize(TextUtils.TruncateAt.END);
-        holder.mTitleView.setMaxLines(1);
-        holder.mAuthorView.setText(mValues.get(position).getArtistName());
-        holder.mAuthorView.setEllipsize(TextUtils.TruncateAt.END);
-        holder.mAuthorView.setMaxLines(1);
+            holder.mTitleView.setText(mValues.get(position).getCollectionName());
+            holder.mTitleView.setEllipsize(TextUtils.TruncateAt.END);
+            holder.mTitleView.setMaxLines(1);
+            holder.mAuthorView.setText(mValues.get(position).getArtistName());
+            holder.mAuthorView.setEllipsize(TextUtils.TruncateAt.END);
+            holder.mAuthorView.setMaxLines(1);
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem);
+            holder.mView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (null != mListener) {
+                        // Notify the active callbacks interface (the activity, if the
+                        // fragment is attached to one) that an item has been selected.
+                        mListener.onListFragmentInteraction(holder.mItem);
+                    }
                 }
-            }
-        });
+            });
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -5,7 +5,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -40,8 +44,11 @@ import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.dialogs.EpisodeDialog;
+import com.the_canuck.openpodcast.download.DownloadCompleteService;
 import com.the_canuck.openpodcast.download.DownloadHelper;
+import com.the_canuck.openpodcast.download.DownloadReceiver;
 import com.the_canuck.openpodcast.fragments.library.MyLibraryRecyclerViewAdapter;
+import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.search.RssReader;
 import com.the_canuck.openpodcast.search.enums.ItunesJsonKeys;
@@ -55,6 +62,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import static android.content.Context.MODE_PRIVATE;
 
 
 /**
@@ -161,8 +170,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                 e.printStackTrace();
             }
         }
-        Toast.makeText(getContext(), Integer.toString(episodes.size()), Toast.LENGTH_SHORT).show();
 
+        // TODO: Make the instantiations and declarations more readable and in their own method
         final TextView title = view.findViewById(R.id.bottom_sheet_title);
         title.setEllipsize(TextUtils.TruncateAt.END);
         title.setMaxLines(1);
@@ -179,6 +188,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
         final ConstraintLayout descriptionLayout = view.findViewById(R.id.description_layout);
         final Button subscribeButton = view.findViewById(R.id.description_button_subscribe);
         final Button unsubscribeButton = view.findViewById(R.id.description_button_unsubscribe);
+        final Button settingsButton = view.findViewById(R.id.bottom_sheet_settings);
 
         // check if the podcast clicked is already subscribed, then set (un)sub buttons accordingly
         if (sqLiteHelper.doesPodcastExist(podcast)) {
@@ -221,6 +231,13 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             }
         });
 
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "settings", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Set text for title, artist, and description
         title.setText(collectionName);
         artist.setText(artistName);
@@ -258,6 +275,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                 (R.drawable.ic_add_circle_outline_black_24dp));
                         setButtonColours(bitmapResource, unsubscribeButton,
                                 getResources().getDrawable(R.drawable.ic_check_circle_black_24dp));
+                        setButtonColours(bitmapResource, settingsButton,
+                                getResources().getDrawable(R.drawable.ic_settings_white_24dp));
                         return false;
                     }
                 })
@@ -273,7 +292,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
      * @param button (un)subscribe button being coloured
      * @param buttonDrawable drawable being used for the button being passed in
      */
-    public void setButtonColours(Bitmap resource, Button button, Drawable buttonDrawable) {
+    public void setButtonColours(Bitmap resource, View button, Drawable buttonDrawable) {
         // TODO: Getting the palette each time will probably slow things down, fix later
         if (resource != null) {
             Palette palette = Palette.from(resource).generate();
@@ -281,9 +300,12 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
             if (dominantSwatch != null) {
                 // pass in current drawable for subscribe button (sub or unsub) and tint it
                 Drawable drawable = buttonDrawable;
-                drawable = DrawableCompat.wrap(drawable);
-                DrawableCompat.setTint(drawable, dominantSwatch.getTitleTextColor());
-                button.setCompoundDrawables(null, drawable, null, null);
+//                ColorFilter filter = new LightingColorFilter(dominantSwatch.getBodyTextColor(), dominantSwatch.getBodyTextColor());
+                drawable.setColorFilter(dominantSwatch.getBodyTextColor(), PorterDuff.Mode.SRC_IN);
+                button.setBackground(drawable);
+//                drawable = DrawableCompat.wrap(drawable);
+//                DrawableCompat.setTint(drawable, dominantSwatch.getTitleTextColor());
+//                button.setCompoundDrawables(null, drawable, null, null);
             }
         }
     }
@@ -432,7 +454,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                         final DownloadHelper downloadHelper = new
                                 DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
                                 v.getContext());
-                        downloadHelper.downloadEpisode();
+                        long enqueue = downloadHelper.downloadEpisode();
 
                         final int firstPosition = getAdapterPosition();
 
@@ -441,9 +463,11 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                         sqlite episodes table so re-opening bottom sheet it's info will persist.
                          */
                         final Episode movedEpisode = episodes.get(getAdapterPosition());
+                        movedEpisode.setDownloadId(enqueue);
                         movedEpisode.setDownloadStatus(Episode.CURRENTLY_DOWNLOADING);
                         sqLiteHelper.addEpisode(movedEpisode);
 
+                        // TODO: Is this missing an add statement or should it be just remove?
                         episodes.remove(getAdapterPosition());
 
                         final int finalPosition = dateSorter(movedEpisode);
@@ -456,9 +480,22 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                         final BroadcastReceiver onComplete = new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
-//                                boolean valid = downloadHelper.isDownloadValid();
-                                String action = intent.getAction();
 
+                                // Runs the download complete service to update sqlite database
+                                SharedPreferences prefs =
+                                        context.getSharedPreferences(PreferenceKeys.PREF_DOWNLOADS,
+                                                MODE_PRIVATE);
+
+                                if (prefs.getBoolean(PreferenceKeys.IS_FINISHED_DOWNLOADS,
+                                        false)) {
+
+                                    Intent serviceIntent = new Intent(context,
+                                            DownloadCompleteService.class);
+
+                                    context.startService(serviceIntent);
+                                }
+
+                                String action = intent.getAction();
                                 String status = downloadHelper.getDownloadStatus();
 
                                 /* the valid check is needed because DownloadManager sends multiple
@@ -468,22 +505,11 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                 if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
                                     if (status.equalsIgnoreCase(DownloadHelper.STATUS_SUCCESSFUL)) {
                                         // Update download status and update the episode in sqlite
-                                        movedEpisode.setDownloadStatus(Episode.IS_DOWNLOADED);
-
-                                        // Update podcast info if it doesn't have duration or size yet
-                                        sqLiteHelper.updateEpisode(MediaStoreHelper
-                                                .updateEpisodeMetaData(getContext(),
-                                                        movedEpisode));
 
                                         Toast.makeText(context, "Download Complete",
                                                 Toast.LENGTH_SHORT).show();
                                         progressBar.setVisibility(View.INVISIBLE);
                                         recyclerView.getAdapter().notifyItemChanged(finalPosition);
-
-                                        context.sendBroadcast(new Intent
-                                                (Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                                                        Uri.parse(Environment.DIRECTORY_PODCASTS
-                                                                + downloadHelper.getPath())));
 //                                    context.unregisterReceiver(this);
                                     } else {
                                         // Handles canceled and failed downloads
@@ -498,13 +524,12 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                                         canceled download
                                          */
                                         if (uri == null) {
-                                            sqLiteHelper.deleteEpisode(movedEpisode);
                                             progressBar.setVisibility(View.INVISIBLE);
                                             downloadButton.setVisibility(View.VISIBLE);
                                             downloadButton.setEnabled(true);
                                             recyclerView.getAdapter()
                                                     .notifyItemChanged(finalPosition);
-//                                    context.unregisterReceiver(this);
+//                                            context.unregisterReceiver(this);
                                         }
                                     }
                                 }
@@ -530,6 +555,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment {
                             @Override
                             public void onDialogDeleteClick() {
                                 // delete click
+                                // FIXME: Episodes that didn't update downloadstatus wont delete
                                 if (episodes.get(getAdapterPosition()).getDownloadStatus() == 1) {
                                     MediaStoreHelper.deleteEpisode(getContext(),
                                             episodes.get(getAdapterPosition()));

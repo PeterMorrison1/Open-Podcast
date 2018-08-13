@@ -6,12 +6,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
-import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -102,6 +100,7 @@ public class MediaStoreHelper {
             String titleNoExtension = FilenameUtils.getBaseName(title);
 //            String titleNoExtension = title.substring(0, title.lastIndexOf('.'));
 
+            // TODO: Change to utf-8 encoding for title
             // If the title found in mediastore equals the passed in title
             if (titleNoExtension.equalsIgnoreCase(episode.getTitle().replaceAll("/", " "))) {
                 Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);

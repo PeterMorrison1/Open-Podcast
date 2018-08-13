@@ -28,8 +28,14 @@
     <string name="close_dialog">Close</string>
 
     <!-- Settings strings -->
+    <string name="pref_category_storage">Storage</string>
+
     <string name="pref_external">Save to external storage</string>
-    <string name="pref_external_sum">Save to external storage if available</string>
+    <string name="pref_external_sum">Feature not currently working;
+        saving to internal storage</string>
+
+    <string name="pref_auto_title">Download new episodes</string>
+    <string name="pref_auto_summary">Automatically download new episodes when phone charging</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

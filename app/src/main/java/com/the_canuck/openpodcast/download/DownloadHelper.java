@@ -2,6 +2,7 @@ package com.the_canuck.openpodcast.download;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
@@ -9,6 +10,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 
 import org.apache.commons.io.FilenameUtils;
@@ -31,6 +33,9 @@ public class DownloadHelper {
     private DownloadManager downloadManager;
     private String path;
 
+    public DownloadHelper() {
+    }
+
     // TODO: Remove collectionid param, its stored in episode now
     public DownloadHelper(Episode episode, int collectionId, Context context) {
         this.episode = episode;
@@ -40,9 +45,10 @@ public class DownloadHelper {
 
     /**
      * Downloads the specified podcast episode with download manager.
+     *
+     * @return the enqueue which is the unique id for the download.
      */
-    public void downloadEpisode() {
-
+    public long downloadEpisode() {
         String mimeType = getMimeType(episode.getMediaUrl());
 
         // FIXME: Encode the file name in utf-8!! Must be done before release!
@@ -67,7 +73,22 @@ public class DownloadHelper {
         request.setTitle("Downloading " + episode.getTitle());
         request.setDescription("Downloading " + episode.getTitle());
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+
         enqueue = downloadManager.enqueue(request);
+        setTempDownloadPref(enqueue);
+        return enqueue;
+    }
+
+    /**
+     * Sets the download id/enqueue as null to initialize the id key. For easy use later.
+     *
+     * @param id the long enqueue from downloadEpisode()
+     */
+    private void setTempDownloadPref(long id) {
+        SharedPreferences prefs = context.getSharedPreferences(PreferenceKeys.PREF_DOWNLOADS,
+                Context.MODE_PRIVATE);
+
+        prefs.edit().putString(String.valueOf(id), "null").apply();
     }
 
     /**
@@ -133,5 +154,15 @@ public class DownloadHelper {
 
     public Uri getDownloadUri(long id) {
         return downloadManager.getUriForDownloadedFile(id);
+    }
+
+    public DownloadHelper setEnqueue(long enqueue) {
+        this.enqueue = enqueue;
+        return this;
+    }
+
+    public DownloadHelper setContext(Context context) {
+        this.context = context;
+        return this;
     }
 }

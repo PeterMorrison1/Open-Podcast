@@ -15,6 +15,8 @@ public class Episode implements Serializable {
     public static final int NOT_LAST_PLAYED = 0;
     public static final int IS_LAST_PLAYED = 1;
 
+    public static final long NO_DOWNLOAD_ID = -1;
+
     private String title;
     private String description;
     private String artist;
@@ -27,6 +29,7 @@ public class Episode implements Serializable {
     private int downloadStatus = NOT_DOWNLOADED;
     private String bookmark;
     private int isLastPlayed = NOT_LAST_PLAYED;
+    private long downloadId = NO_DOWNLOAD_ID;
 
     public Episode() {
         // empty constructor
@@ -36,6 +39,20 @@ public class Episode implements Serializable {
         this.title = title;
         this.description = description;
         this.mediaUrl = mediaUrl;
+    }
+
+    /**
+     * The id of the download for this file. Known as enqueue from DownloadManager (DownloadHelper).
+     *
+     * @return the downloadId for this downloaded/downloading file
+     */
+    public long getDownloadId() {
+        return downloadId;
+    }
+
+    public Episode setDownloadId(long downloadId) {
+        this.downloadId = downloadId;
+        return this;
     }
 
     /**

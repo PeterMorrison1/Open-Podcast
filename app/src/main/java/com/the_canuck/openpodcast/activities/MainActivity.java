@@ -6,6 +6,7 @@ import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
@@ -49,10 +50,12 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.download.DownloadCompleteService;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
 import com.the_canuck.openpodcast.fragments.bottom_sheet.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
+import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
 import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
 import com.the_canuck.openpodcast.media_player.AudioService;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
@@ -325,37 +328,24 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-
-//        Intent mIntent = new Intent(this, MediaPlayerService.class);
-//        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
     }
 
-//    // Connects to the service to connect to the mediaplayer for controlling playback
-//    ServiceConnection mConnection = new ServiceConnection() {
-//        @Override
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//            mBounded = true;
-//            MediaPlayerService.LocalBinder mLocalBinder = (MediaPlayerService.LocalBinder) service;
-//            mediaPlayerService = mLocalBinder.getServerInstance();
-//            mMediaPlayer = mediaPlayerService.getMediaPlayer();
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName name) {
-//            mBounded = false;
-//            mediaPlayerService = null;
-//        }
-//    };
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Runs the DownloadCompleteService when there are downloaded files ready to be added
+        SharedPreferences prefs = getSharedPreferences(PreferenceKeys.PREF_DOWNLOADS, MODE_PRIVATE);
+        if (prefs.getBoolean(PreferenceKeys.IS_FINISHED_DOWNLOADS, false)) {
+            Intent serviceIntent = new Intent(this, DownloadCompleteService.class);
+            startService(serviceIntent);
+        }
+    }
 
     @Override
     protected void onStop() {
         super.onStop();
         updateCurrentEpisodeBookmark();
-//
-//        if (mBounded) {
-//            unbindService(mConnection);
-//            mBounded = false;
-//        }
     }
 
     @Override

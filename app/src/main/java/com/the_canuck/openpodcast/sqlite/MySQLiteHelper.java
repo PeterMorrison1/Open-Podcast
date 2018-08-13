@@ -17,7 +17,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
     // Database name & version
     private static final String DATABASE_NAME = "podcasts.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     // tables
     private static final String TABLE_SUBSCRIBED = "subscribed";
@@ -45,6 +45,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_MEDIA_URL = "media_url";
     private static final String COLUMN_DURATION = "duration";
     private static final String COLUMN_BOOKMARK = "bookmark";
+    private static final String COLUMN_DOWNLOAD_ID = "download_id";
     private static final String COLUMN_LAST_PLAYED = "last_played";
 
     private static final String CREATE_SUB_TABLE = "CREATE TABLE " + TABLE_SUBSCRIBED + "("
@@ -71,6 +72,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             + COLUMN_MEDIA_URL + " TEXT,"
             + COLUMN_DURATION + " TEXT,"
             + COLUMN_ARTIST + " TEXT,"
+            + COLUMN_DOWNLOAD_ID + " INTEGER,"
             + COLUMN_LAST_PLAYED + " INTEGER,"
             + COLUMN_BOOKMARK + " TEXT"
             + ")";
@@ -246,6 +248,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_MEDIA_URL, episode.getMediaUrl());
         contentValues.put(COLUMN_DURATION, episode.getDuration());
         contentValues.put(COLUMN_ARTIST, episode.getArtist());
+        contentValues.put(COLUMN_DOWNLOAD_ID, episode.getDownloadId());
         contentValues.put(COLUMN_LAST_PLAYED, episode.getIsLastPlayed());
         contentValues.put(COLUMN_BOOKMARK, episode.getBookmark());
 
@@ -271,6 +274,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_MEDIA_URL, episode.getMediaUrl());
         contentValues.put(COLUMN_DURATION, episode.getDuration());
         contentValues.put(COLUMN_ARTIST, episode.getArtist());
+        contentValues.put(COLUMN_DOWNLOAD_ID, episode.getDownloadId());
         contentValues.put(COLUMN_LAST_PLAYED, episode.getIsLastPlayed());
         contentValues.put(COLUMN_BOOKMARK, episode.getBookmark());
 
@@ -309,6 +313,55 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return episode;
+    }
+
+    /**
+     * Gets an episode from its downloadId/enqueue.
+     *
+     * @param downloadId the enqueue/downloadId of the episode
+     * @return the episode object associated with the downloadId/enqueue
+     */
+    public Episode getEpisodeByDownloadId(long downloadId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Episode episode = new Episode();
+
+        String query = "select * from " + TABLE_EPISODES + " where " + COLUMN_DOWNLOAD_ID + "='"
+                + downloadId + "'";
+
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            episode = buildEpisode(cursor);
+        }
+        cursor.close();
+        return episode;
+    }
+
+    /**
+     * Searches TABLE_EPISODES for all episodes that have a non "-1" value for downloadId, meaning
+     * they are currently being downloaded or finihsed downloading and waiting to be updated in
+     * TABLE_EPISODES.
+     *
+     * @return list of currently or just finished downloading episodes
+     */
+    public List<Episode> getNewDownloadEpisodes() {
+        List<Episode> episodes = new ArrayList<>();
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        String query = "select * from " + TABLE_EPISODES + " where " + COLUMN_DOWNLOAD_ID + "!='"
+                + Episode.NO_DOWNLOAD_ID + "'";
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Episode episode = buildEpisode(cursor);
+            episodes.add(episode);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return episodes;
     }
 
     /**
@@ -373,6 +426,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             episode.setMediaUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MEDIA_URL)));
             episode.setDuration(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DURATION)));
             episode.setArtist(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ARTIST)));
+            episode.setDownloadId(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_DOWNLOAD_ID)));
             episode.setIsLastPlayed(cursor.getInt
                     (cursor.getColumnIndexOrThrow(COLUMN_LAST_PLAYED)));
             episode.setBookmark(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_BOOKMARK)));
