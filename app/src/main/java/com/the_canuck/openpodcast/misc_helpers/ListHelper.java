@@ -11,14 +11,21 @@ import java.util.Locale;
 
 public class ListHelper {
 
+    public static final int A_OLDERTHAN_B = -1;
+    public static final int A_NEWERTHAN_B = 1;
+    public static final int A_SAMEAS_B = 0;
+
+    // Error is set as -5000 because im not sure if .compareTo() goes lower than -1 ¯\_(ツ)_/¯
+    public static final int ERROR = -5000;
+
     /**
      * Returns the index the episode belongs in the list based on pubDate.
      *
-     * @param mEpisode episode being added into the list
+     * @param pubDate the publish date of the episode being added into the list
      * @param episodeList list of episodes being added to
      * @return the index the episode should be placed in
      */
-    public static int getSortedIndex(Episode mEpisode, List<Episode> episodeList) {
+    public static int getSortedIndex(String pubDate, List<Episode> episodeList) {
         // Checks to see which episode was published first, adds episode to appropriate index
         // FIXME: Only returning the initial value of position. Maybe put directly in getEpisodes()
         int position = -1;
@@ -26,7 +33,7 @@ public class ListHelper {
         DateFormat formatter = new SimpleDateFormat
                 ("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
         try {
-            currentEpisodeDate = formatter.parse(mEpisode.getPubDate());
+            currentEpisodeDate = formatter.parse(pubDate);
             if (episodeList.isEmpty()) {
                 position = 0;
                 return position;
@@ -41,6 +48,31 @@ public class ListHelper {
                 }
             }
         } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return position;
+    }
+
+    /**
+     * Checks two episode dates with podcast/episode pubDate format for the newer of the two.
+     *
+     * @param dateA the String publish date of the first episode/podcast
+     * @param dateB the String publish date of the second episode/podcast
+     * @return the int of which is newer/older/same. A newerthan B = 1. A==B = 0. A olderthan B = -1
+     */
+    public static int determineNewerDate(String dateA, String dateB) {
+        int position = ERROR;
+        DateFormat formatter = new SimpleDateFormat
+                ("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+
+        try {
+            Date mDateA = formatter.parse(dateA);
+            Date mDateB = formatter.parse(dateB);
+
+            position = mDateA.compareTo(mDateB);
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

@@ -36,7 +36,7 @@ public class ListHelperTest {
 
     @Test
     public void testGetSortedIndexEmpty() {
-        int actual = ListHelper.getSortedIndex(episodeOne, episodeList);
+        int actual = ListHelper.getSortedIndex(episodeOne.getPubDate(), episodeList);
         int expected = 0;
         assertEquals("Not empty arraylist", expected, actual);
     }
@@ -44,7 +44,7 @@ public class ListHelperTest {
     @Test
     public void testGetSortedIndexTwoEps() {
         episodeList.add(episodeOne);
-        int actual = ListHelper.getSortedIndex(episodeTwo, episodeList);
+        int actual = ListHelper.getSortedIndex(episodeTwo.getPubDate(), episodeList);
         int expected = -1;
         assertEquals("Index not equal to -1", expected, actual);
     }
@@ -53,8 +53,29 @@ public class ListHelperTest {
     public void testGetSortedIndexThreeEps() {
         episodeList.add(episodeOne);
         episodeList.add(episodeThree);
-        int actual = ListHelper.getSortedIndex(episodeTwo, episodeList);
+        int actual = ListHelper.getSortedIndex(episodeTwo.getPubDate(), episodeList);
         int expected = 1;
         assertEquals("Index not equal to proper place (1)", expected, actual);
+    }
+
+    @Test
+    public void testDetermineNewerDateOlder() {
+        int actual = ListHelper.determineNewerDate(episodeOne.getPubDate(), episodeTwo.getPubDate());
+        int expected = -1;
+        assertEquals("Formatting of date incorrect", expected, actual);
+    }
+
+    @Test
+    public void testDetermineNewerDateNewer() {
+        int actual = ListHelper.determineNewerDate(episodeTwo.getPubDate(), episodeOne.getPubDate());
+        int expected = 1;
+        assertEquals("Formatting of date incorrect", expected, actual);
+    }
+
+    @Test
+    public void testDetermineNEwerDateSame() {
+        int actual = ListHelper.determineNewerDate(episodeOne.getPubDate(), episodeOne.getPubDate());
+        int expected = 0;
+        assertEquals("Formatting of date incorrect", expected, actual);
     }
 }

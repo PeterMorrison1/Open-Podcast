@@ -227,6 +227,10 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         return artwork;
     }
 
+    public List<Podcast> getAutoUpdatePods() {
+        return null;
+    }
+
 
     // EPISODES TABLE HELPER METHODS
     /**
@@ -386,7 +390,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             Episode episode = buildEpisode(cursor);
 
             // Gets the position the episode belongs in (sorted by pubDate)
-            int index = ListHelper.getSortedIndex(episode, episodes);
+            int index = ListHelper.getSortedIndex(episode.getPubDate(), episodes);
 
             // determines position based on index returned by sorted index
             if (episodes.size() == 0) {

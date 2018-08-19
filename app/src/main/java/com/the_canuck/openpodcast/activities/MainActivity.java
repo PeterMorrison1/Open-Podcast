@@ -745,6 +745,7 @@ public class MainActivity extends AppCompatActivity implements
                                 thumbCardDuration.setTextColor(dominantSwatch.getBodyTextColor());
                             }
                         }
+                        // FIXME: Need an else statment here? or get rid of this and above if
                         return false;
                     }
                 })

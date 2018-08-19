@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.the_canuck.openpodcast"
         minSdkVersion 19
@@ -32,6 +32,7 @@ dependencies {
     implementation 'com.android.support:preference-v7:27.1.1'
     implementation 'commons-io:commons-io:2.6'
     implementation 'com.sothree.slidinguppanel:library:3.4.0'
+    implementation 'android.arch.work:work-runtime:1.0.0-alpha07'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

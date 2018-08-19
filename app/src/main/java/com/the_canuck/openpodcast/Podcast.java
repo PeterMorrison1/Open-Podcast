@@ -16,6 +16,7 @@ public class Podcast {
     private String feedUrl;
     private RecyclerView recyclerView;
     private int position;
+    private String newestDownloadDate;
 
     public Podcast() {
     }
@@ -31,6 +32,20 @@ public class Podcast {
         artworkUrl600 = builder.artworkUrl600;
         censoredName = builder.censoredName;
         feedUrl = builder.feedUrl;
+    }
+
+    /**
+     * Returns the newest download date, which is the newest episode for the podcast that has been
+     * synced by the DownloadWorker.
+     * @return
+     */
+    public String getNewestDownloadDate() {
+        return newestDownloadDate;
+    }
+
+    public Podcast setNewestDownloadDate(String newestDownloadDate) {
+        this.newestDownloadDate = newestDownloadDate;
+        return this;
     }
 
     public RecyclerView getRecyclerView() {
