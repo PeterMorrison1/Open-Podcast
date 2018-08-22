@@ -3,6 +3,10 @@ package com.the_canuck.openpodcast;
 import android.support.v7.widget.RecyclerView;
 
 public class Podcast {
+
+    public static final int AUTO_UPDATE_ENABLED = 1;
+    public static final int AUTO_UPDATE_DISABLED = 0;
+
     private int collectionId;
     private String collectionName;
     private String artistName;
@@ -32,12 +36,14 @@ public class Podcast {
         artworkUrl600 = builder.artworkUrl600;
         censoredName = builder.censoredName;
         feedUrl = builder.feedUrl;
+        newestDownloadDate = builder.newestDownloadDate;
     }
 
     /**
      * Returns the newest download date, which is the newest episode for the podcast that has been
      * synced by the DownloadWorker.
-     * @return
+     *
+     * @return a String of the last date the podcast has been updated
      */
     public String getNewestDownloadDate() {
         return newestDownloadDate;
@@ -117,8 +123,17 @@ public class Podcast {
 
     public static class PodcastBuilder {
         String collectionName, artistName, artworkUrl30, artworkUrl60, artworkUrl100,
-                artworkUrl600, censoredName, feedUrl;
+                artworkUrl600, censoredName, feedUrl, newestDownloadDate;
         int trackCount, collectionId;
+
+        public String getNewestDownloadDate() {
+            return newestDownloadDate;
+        }
+
+        public PodcastBuilder setNewestDownloadDate(String newestDownloadDate) {
+            this.newestDownloadDate = newestDownloadDate;
+            return this;
+        }
 
         public PodcastBuilder setCollectionId(int collectionId) {
             this.collectionId = collectionId;
@@ -187,6 +202,7 @@ public class Podcast {
                 ", artworkUrl600='" + artworkUrl600 + '\'' +
                 ", censoredName='" + censoredName + '\'' +
                 ", feedUrl='" + feedUrl + '\'' +
+                ", newestDate='" + newestDownloadDate + '\'' +
                 '}';
     }
 }

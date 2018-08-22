@@ -61,6 +61,15 @@ import com.the_canuck.openpodcast.media_player.AudioService;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
+import com.the_canuck.openpodcast.update_pods.DownloadWorker;
+
+import java.util.concurrent.TimeUnit;
+
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 public class MainActivity extends AppCompatActivity implements
         SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
@@ -72,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements
     final String SEARCH_TAG = "search";
     final String DISCOVER_TAG = "discover";
     final String SETTINGS_TAG = "settings";
+
+    final static String UPDATE_WORK_TAG = "auto_update_episodes";
 
     private final int STATE_PAUSED = 0;
     private final int STATE_PLAYING = 1;
@@ -323,6 +334,7 @@ public class MainActivity extends AppCompatActivity implements
                 return true;
             }
         });
+        initializeUpdateWorker();
     }
 
     @Override
@@ -357,6 +369,27 @@ public class MainActivity extends AppCompatActivity implements
             mediaControllerCompat.getTransportControls().stop();
         }
         mediaBrowserCompat.disconnect();
+    }
+
+    /**
+     * Starts the periodic DownloadWorker class and sets it's constraints.
+     */
+    private void initializeUpdateWorker() {
+        WorkManager workManager = WorkManager.getInstance();
+
+        // TODO: Update with user's settings
+        Constraints constraints = new Constraints.Builder()
+                .setRequiresCharging(true)
+                .setRequiresStorageNotLow(true)
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(DownloadWorker.class,
+                24, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build();
+
+        workManager.enqueueUniquePeriodicWork(UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.KEEP, updateWorker);
     }
 
     private MediaBrowserCompat.ConnectionCallback mediaBrowserConnectionCallback =

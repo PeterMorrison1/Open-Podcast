@@ -17,7 +17,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
     // Database name & version
     private static final String DATABASE_NAME = "podcasts.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 10;
 
     // tables
     private static final String TABLE_SUBSCRIBED = "subscribed";
@@ -35,6 +35,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_ART_100 = "art_100";
     private static final String COLUMN_ART_600 = "art_600";
     private static final String COLUMN_AUTO_UPDATE = "auto_update";
+    private static final String COLUMN_NEWEST_DOWNLOAD = "newest_download";
 
     // episodes table columns
     private static final String COLUMN_DESCRIPTION = "description";
@@ -57,7 +58,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             + COLUMN_FEED_URL + " TEXT,"
             + COLUMN_ART_100 + " TEXT,"
             + COLUMN_ART_600 + " TEXT,"
-            + COLUMN_AUTO_UPDATE + " INTEGER"
+            + COLUMN_AUTO_UPDATE + " INTEGER,"
+            + COLUMN_NEWEST_DOWNLOAD + " TEXT"
             + ")";
 
     private static final String CREATE_EPISODE_TABLE = "CREATE TABLE " + TABLE_EPISODES + "("
@@ -81,6 +83,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    // TODO: Update MySQLiteHelper to be a singleton, just found out this is best practice
+    // Alternatively could use content providers, but that isn't as easy to refactor as singleton
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_SUB_TABLE);
@@ -101,10 +106,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * Called to add a podcast to the subscription list.
      *
      * @param podcast specific podcast being subscribed to
-     * @param autoUpdate if the new episodes will be automatically downloaded (0 or 1)
+     * @param autoUpdate if the new episodes will be automatically downloaded (see podcast constants)
      */
     public void subscribe(Podcast podcast, int autoUpdate) {
-        // TODO: Change autoupdate to be passed as bool & changed to int in this method for clarity
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -115,6 +119,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_FEED_URL, podcast.getFeedUrl());
         contentValues.put(COLUMN_ART_100, podcast.getArtworkUrl100());
         contentValues.put(COLUMN_ART_600, podcast.getArtworkUrl600());
+        contentValues.put(COLUMN_NEWEST_DOWNLOAD, podcast.getNewestDownloadDate());
 
         // autoUpdate must be passed in and will be either 0 or 1 (bool)
         contentValues.put(COLUMN_AUTO_UPDATE, autoUpdate);
@@ -131,6 +136,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_SUBSCRIBED, COLUMN_COLLECTION_ID + "=?",
                 new String[]{String.valueOf(podcast.getCollectionId())});
+        db.close();
     }
 
 
@@ -138,7 +144,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * Called to update a podcast in the subscription list if meta data changes or auto download.
      *
      * @param podcast specific podcast being updated
-     * @param autoUpdate if the new episodes will be automatically downloaded (0 or 1)
+     * @param autoUpdate if the new episodes will be automatically downloaded (see Podcast constants)
      */
     public void updatePodcast(Podcast podcast, int autoUpdate) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -151,12 +157,14 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_FEED_URL, podcast.getFeedUrl());
         contentValues.put(COLUMN_ART_100, podcast.getArtworkUrl100());
         contentValues.put(COLUMN_ART_600, podcast.getArtworkUrl600());
+        contentValues.put(COLUMN_NEWEST_DOWNLOAD, podcast.getNewestDownloadDate());
 
         // autoUpdate must be passed in and will be either 0 or 1 (bool)
         contentValues.put(COLUMN_AUTO_UPDATE, autoUpdate);
 
         db.update(TABLE_SUBSCRIBED, contentValues, COLUMN_COLLECTION_ID + "=?",
                 new String[]{Integer.toString(podcast.getCollectionId())});
+        db.close();
     }
 
     /**
@@ -172,27 +180,22 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Podcast podcast = new Podcast.PodcastBuilder()
-                    .setCollectionName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE)))
-                    .setCensoredName(cursor.getString
-                            (cursor.getColumnIndexOrThrow(COLUMN_CENSORED_TITLE)))
-                    .setArtistName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ARTIST)))
-                    .setCollectionId(cursor.getInt
-                            (cursor.getColumnIndexOrThrow(COLUMN_COLLECTION_ID)))
-                    .setFeedUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEED_URL)))
-                    .setArtworkUrl100(cursor.getString
-                            (cursor.getColumnIndexOrThrow(COLUMN_ART_100)))
-                    .setArtworkUrl600(cursor.getString
-                            (cursor.getColumnIndexOrThrow(COLUMN_ART_600)))
-                    .build();
+            Podcast podcast = buildPodcast(cursor);
 
             podcasts.add(podcast);
             cursor.moveToNext();
         }
         cursor.close();
+        db.close();
         return podcasts;
     }
 
+    /**
+     * Checks if a podcast object exists in the database (subscribed to it).
+     *
+     * @param podcast the podcast object being queried
+     * @return a boolean if it is subscribed to or not
+     */
     public boolean doesPodcastExist(Podcast podcast) {
         SQLiteDatabase db = this.getWritableDatabase();
         boolean podcastExists;
@@ -206,6 +209,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         // if matching collection id return true
         podcastExists = cursor.getCount() > 0;
         cursor.close();
+        db.close();
         return podcastExists;
     }
 
@@ -224,11 +228,61 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             artwork = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ART_600));
         }
+        cursor.close();
+        db.close();
         return artwork;
     }
 
+    /**
+     * Creates a list of podcasts that have an auto update status to them.
+     *
+     * @return list of podcasts that are to be auto updated
+     */
     public List<Podcast> getAutoUpdatePods() {
-        return null;
+        SQLiteDatabase db = getWritableDatabase();
+        List<Podcast> podcastList = new ArrayList<>();
+
+        String query = "select * from " + TABLE_SUBSCRIBED + " where "
+                + COLUMN_AUTO_UPDATE + "='" + Podcast.AUTO_UPDATE_ENABLED + "'";
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            podcastList.add(buildPodcast(cursor));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        db.close();
+        return podcastList;
+    }
+
+    /**
+     * Builds a podcast object using the provided cursor.
+     *
+     * @param cursor the cursor holding the podcast data
+     * @return the podcast object
+     */
+    private Podcast buildPodcast(Cursor cursor) {
+        Podcast podcast;
+
+        podcast = new Podcast.PodcastBuilder()
+                .setCollectionName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE)))
+                .setCensoredName(cursor.getString
+                        (cursor.getColumnIndexOrThrow(COLUMN_CENSORED_TITLE)))
+                .setArtistName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ARTIST)))
+                .setCollectionId(cursor.getInt
+                        (cursor.getColumnIndexOrThrow(COLUMN_COLLECTION_ID)))
+                .setFeedUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEED_URL)))
+                .setArtworkUrl100(cursor.getString
+                        (cursor.getColumnIndexOrThrow(COLUMN_ART_100)))
+                .setArtworkUrl600(cursor.getString
+                        (cursor.getColumnIndexOrThrow(COLUMN_ART_600)))
+                .setNewestDownloadDate((cursor.getString
+                        (cursor.getColumnIndexOrThrow(COLUMN_NEWEST_DOWNLOAD))))
+                .build();
+
+        return podcast;
     }
 
 
@@ -257,6 +311,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_BOOKMARK, episode.getBookmark());
 
         db.insert(TABLE_EPISODES, null, contentValues);
+        db.close();
     }
 
     /**
@@ -284,7 +339,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
         db.update(TABLE_EPISODES, contentValues, COLUMN_TITLE + "=?",
                 new String[]{episode.getTitle()});
-
+        db.close();
     }
 
     /**
@@ -297,6 +352,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_EPISODES, COLUMN_TITLE + "=?",
                 new String[]{episode.getTitle()});
+        db.close();
     }
 
     /**
@@ -316,6 +372,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             episode = buildEpisode(cursor);
         }
         cursor.close();
+        db.close();
         return episode;
     }
 
@@ -337,6 +394,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             episode = buildEpisode(cursor);
         }
         cursor.close();
+        db.close();
         return episode;
     }
 
@@ -364,7 +422,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             cursor.moveToNext();
         }
         cursor.close();
-
+        db.close();
         return episodes;
     }
 
@@ -405,6 +463,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             cursor.moveToNext();
         }
         cursor.close();
+        db.close();
         return episodes;
     }
 
