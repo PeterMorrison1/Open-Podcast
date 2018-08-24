@@ -6,10 +6,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 
@@ -49,6 +51,12 @@ public class DownloadHelper {
      * @return the enqueue which is the unique id for the download.
      */
     public long downloadEpisode() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean downloadOverRoaming = prefs.getBoolean(context.getString
+                (R.string.pref_network_roaming), false);
+
+        int allowedNetworks = Integer.valueOf(prefs.getString(context.getString(R.string.pref_network_select_type), "3"));
+
         String mimeType = getMimeType(episode.getMediaUrl());
 
         // FIXME: Encode the file name in utf-8!! Must be done before release!
@@ -73,6 +81,17 @@ public class DownloadHelper {
         request.setTitle("Downloading " + episode.getTitle());
         request.setDescription("Downloading " + episode.getTitle());
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+        request.setAllowedOverRoaming(downloadOverRoaming);
+
+        // Allowed networks holds network pref which corresponds with Request.NETWORK_TYPE
+        // 3 doesn't exist as an entry but is a custom one to select either as allowed
+        if (allowedNetworks == 3) {
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE);
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+        } else {
+            request.setAllowedNetworkTypes(allowedNetworks);
+        }
+
 
         enqueue = downloadManager.enqueue(request);
         setTempDownloadPref(enqueue);

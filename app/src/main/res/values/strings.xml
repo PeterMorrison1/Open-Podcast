@@ -6,6 +6,8 @@
     <string name="search_title">New title or author to search</string>
     <string name="pod_image_description">Image of the podcast</string>
     <string name="more_podcasts">More</string>
+
+    <!--Categories-->
     <string name="arts">Arts</string>
     <string name="business">Business</string>
     <string name="comedy">Comedy</string>
@@ -27,16 +29,37 @@
     <string name="delete_episode">Delete Episode</string>
     <string name="close_dialog">Close</string>
 
+    <!--Array strings-->
+    <string name="network_connected">Any network</string>
+    <string name="network_unmetered">Un-metered network</string>
+    <string name="network_metered">Metered network</string>
+    <string name="network_not_roaming">Connected to non-roaming network</string>
+
+    <string name="network_wifi">Wifi</string>
+    <string name="network_mobile">Mobile</string>
+
     <!-- Settings strings -->
-    <string name="pref_category_storage">Storage</string>
+    <string name="pref_category_storage_title">Storage</string>
+    <string name="pref_category_downloads_title">Downloads</string>
 
     <string name="pref_external">Save to external storage</string>
     <string name="pref_external_sum">Feature not currently working;
         saving to internal storage</string>
 
-    <string name="pref_auto_title">Download new episodes</string>
-    <string name="pref_auto_summary">Automatically download new episodes when phone charging</string>
+    <string name="pref_auto_title">Download new episode releases</string>
+    <string name="pref_auto_summary">Automatically download new episodes when phone is
+        charging (Must also select specific podcasts to auto-update)</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="pref_roaming_title">Download episodes while roaming</string>
+    <string name="pref_roaming_summary">Allow episodes to download while roaming (new episodes will
+        never auto download while roaming)</string>
+
+    <string name="pref_network_auto_title">Select auto-download network</string>
+    <string name="pref_network_auto_summary">Network new episodes can
+        automatically be downloaded on</string>
+
+    <string name="pref_network_select_title">Select user download network</string>
+    <string name="pref_network_select_summary">Network for episodes user selects to
+        download</string>
+
 </resources>

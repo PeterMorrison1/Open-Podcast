@@ -1,23 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="@string/pref_category_storage"
-        android:key="pref_category_storage">
+        android:title="@string/pref_category_storage_title"
+        android:key="@string/pref_category_storage">
 
         <SwitchPreference
-            android:key="pref_external"
+            android:key="@string/pref_storage_external"
             android:title="@string/pref_external"
             android:summary="@string/pref_external_sum"
             android:selectable="false"
             android:enabled="false"
             android:defaultValue="false"/>
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_category_downloads_title"
+        android:key="@string/pref_category_downloads">
+
         <SwitchPreference
-            android:key="pref_auto_download"
+            android:key="@string/pref_auto_download"
             android:title="@string/pref_auto_title"
             android:summary="@string/pref_auto_summary"
             android:defaultValue="false"/>
 
+        <SwitchPreference
+            android:key="@string/pref_network_roaming"
+            android:title="@string/pref_roaming_title"
+            android:summary="@string/pref_roaming_summary"
+            android:defaultValue="false" />
+
+        <ListPreference
+            android:key="@string/pref_network_auto_type"
+            android:title="@string/pref_network_auto_title"
+            android:summary="@string/pref_network_auto_summary"
+            android:entries="@array/network_auto_entries"
+            android:entryValues="@array/network_auto_values"
+            android:defaultValue="@string/network_metered" />
+
+        <ListPreference
+            android:key="@string/pref_network_select_type"
+            android:title="@string/pref_network_select_title"
+            android:summary="@string/pref_network_select_summary"
+            android:entries="@array/network_select_entries"
+            android:entryValues="@array/network_select_values"
+            android:defaultValue="@string/network_metered"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

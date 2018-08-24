@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -375,21 +376,34 @@ public class MainActivity extends AppCompatActivity implements
      * Starts the periodic DownloadWorker class and sets it's constraints.
      */
     private void initializeUpdateWorker() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String allowedNetworks = prefs.getString(getString
+                (R.string.pref_network_select_type), getString(R.string.network_metered));
+
         WorkManager workManager = WorkManager.getInstance();
 
         // TODO: Update with user's settings
-        Constraints constraints = new Constraints.Builder()
+        Constraints.Builder constraints = new Constraints.Builder()
                 .setRequiresCharging(true)
-                .setRequiresStorageNotLow(true)
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
+                .setRequiresStorageNotLow(true);
+
+        if (allowedNetworks.equalsIgnoreCase(getString(R.string.network_connected))) {
+            constraints.setRequiredNetworkType(NetworkType.CONNECTED);
+        } else if (allowedNetworks.equalsIgnoreCase(getString(R.string.network_metered))) {
+            constraints.setRequiredNetworkType(NetworkType.METERED);
+        } else if (allowedNetworks.equalsIgnoreCase(getString(R.string.network_unmetered))) {
+            constraints.setRequiredNetworkType(NetworkType.UNMETERED);
+        }
+
+        constraints.setRequiredNetworkType(NetworkType.NOT_ROAMING);
 
         PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(DownloadWorker.class,
                 24, TimeUnit.MINUTES)
-                .setConstraints(constraints)
+                .setConstraints(constraints.build())
                 .build();
 
-        workManager.enqueueUniquePeriodicWork(UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.KEEP, updateWorker);
+        workManager.enqueueUniquePeriodicWork(UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.KEEP,
+                updateWorker);
     }
 
     private MediaBrowserCompat.ConnectionCallback mediaBrowserConnectionCallback =

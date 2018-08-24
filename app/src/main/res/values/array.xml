@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="network_auto_entries">
+        <item>@string/network_connected</item>
+        <item>@string/network_metered</item>
+        <item>@string/network_unmetered</item>
+        <!--<item>@string/network_not_roaming</item>-->
+    </string-array>
+
+    <string-array name="network_auto_values">
+        <item>@string/network_connected</item>
+        <item>@string/network_metered</item>
+        <item>@string/network_unmetered</item>
+    </string-array>
+
+    <string-array name="network_select_entries">
+        <item>@string/network_mobile</item>
+        <item>@string/network_wifi</item>
+        <item>@string/network_connected</item>
+    </string-array>
+
+    <string-array name="network_select_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+</resources>

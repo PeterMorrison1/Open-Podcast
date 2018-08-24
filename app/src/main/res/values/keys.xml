@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources tools:ignore="MissingTranslation" xmlns:tools="http://schemas.android.com/tools">
+    <!--Categories-->
+    <string name="pref_category_storage">pref_category_storage</string>
+    <string name="pref_category_downloads">pref_category_storage</string>
+
+    <!--Storage Keys-->
+    <string name="pref_storage_external">pref_storage_external</string>
+
+    <!--Download Keys-->
+    <string name="pref_auto_download">pref_auto_download</string>
+    <string name="pref_network_roaming">pref_network_roaming</string>
+    <string name="pref_network_auto_type">pref_network_auto_type</string>
+    <string name="pref_network_select_type">pref_network_auto_type</string>
+
+</resources>
