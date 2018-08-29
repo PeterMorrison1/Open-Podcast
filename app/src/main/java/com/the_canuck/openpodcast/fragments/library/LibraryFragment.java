@@ -14,6 +14,8 @@ import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
+import java.util.List;
+
 
 /**
  * A fragment representing a list of Items.
@@ -21,14 +23,16 @@ import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class LibraryFragment extends Fragment {
+public class LibraryFragment extends Fragment implements LibraryContract.LibraryView {
 
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
+
     private int mColumnCount = 3;
+
     private OnListFragmentInteractionListener mListener;
-    private MySQLiteHelper sqLiteHelper;
+//    private MySQLiteHelper sqLiteHelper;
+    private List<Podcast> podcastList;
+    private LibraryContract.LibraryPresenter mLibPresenter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -51,6 +55,8 @@ public class LibraryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mLibPresenter = new LibraryPresenter(this, getContext());
+
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
@@ -61,23 +67,33 @@ public class LibraryFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library_list, container, false);
 
-        sqLiteHelper = new MySQLiteHelper(getContext());
+        mLibPresenter.updateSubscribedPodcasts();
+
+//        sqLiteHelper = new MySQLiteHelper(getContext());
 
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
+
+            // TODO: Set column count as a filter option and change here
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+
             recyclerView.setAdapter(new MyLibraryRecyclerViewAdapter
-                    (sqLiteHelper.getSubscribedPodcasts(), mListener, recyclerView));
+                    (podcastList, mListener, recyclerView));
         }
         return view;
     }
 
+    @Override
+    public void showLoadingIndicator(boolean active) {
+        // TODO: Put a loading view in later
+    }
+
+    @Override
+    public void showSubscribedPodcasts(List<Podcast> podcasts) {
+        podcastList = podcasts;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -92,7 +108,6 @@ public class LibraryFragment extends Fragment {
 
     @Override
     public void onDetach() {
-        sqLiteHelper.close();
         super.onDetach();
         mListener = null;
     }

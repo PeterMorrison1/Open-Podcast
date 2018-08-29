@@ -26,17 +26,19 @@ import java.util.List;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements SearchContract.SearchView {
 
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
+
     private int mColumnCount = 1;
+
     private OnListFragmentInteractionListener mListener;
     private String query;
     private boolean isGenre;
     private RecyclerView recyclerView = null;
     private ProgressBar progressBar;
+
+    private SearchContract.SearchPresenter searchPresenter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -58,6 +60,9 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        searchPresenter = new SearchPresenter(this);
+
         Bundle bundle = this.getArguments();
         if (bundle != null) {
             query = bundle.getString("query", "test");
@@ -81,44 +86,29 @@ public class SearchFragment extends Fragment {
             Context context = view.getContext();
             recyclerView = view.findViewById(R.id.recycler_view);
             recyclerView.requestFocus();
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
+
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+
             recyclerView.addItemDecoration(new DividerItemDecoration
                     (view.getContext(), LinearLayoutManager.VERTICAL));
 
-            progressBar.setVisibility(View.VISIBLE);
-            new SearchTask().execute(query);
+            searchPresenter.executeSearch(query, isGenre);
         }
         return view;
     }
 
-    /**
-     * Runs the SearchHelper and returns the podcast list and sets the recyclerview adapter.
-     */
-    private class SearchTask extends AsyncTask<String, Void, List<Podcast>> {
-        @Override
-        protected List<Podcast> doInBackground(String... strings) {
-            SearchHelper searchHelper;
-            List<Podcast> podcastList = null;
-            if (isGenre) {
-                searchHelper = new SearchHelper(strings[0], isGenre);
-            } else {
-                searchHelper = new SearchHelper(strings[0]);
-            }
-            SearchResultHelper resultHelper = new SearchResultHelper();
-            podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
-
-            return podcastList;
-        }
-
-        @Override
-        protected void onPostExecute(List<Podcast> podcasts) {
-            recyclerView.setAdapter(new MySearchRecyclerViewAdapter(podcasts, mListener));
+    @Override
+    public void showLoadingIndicator(boolean active) {
+        if (active) {
+            progressBar.setVisibility(View.VISIBLE);
+        } else {
             progressBar.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public void setRecyclerAdapter(List<Podcast> podcastList) {
+        recyclerView.setAdapter(new MySearchRecyclerViewAdapter(podcastList, mListener));
     }
 
     @Override
@@ -136,6 +126,12 @@ public class SearchFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        searchPresenter.stop();
     }
 
     /**

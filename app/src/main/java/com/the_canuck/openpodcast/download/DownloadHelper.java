@@ -54,7 +54,6 @@ public class DownloadHelper {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean downloadOverRoaming = prefs.getBoolean(context.getString
                 (R.string.pref_network_roaming), false);
-
         int allowedNetworks = Integer.valueOf(prefs.getString(context.getString(R.string.pref_network_select_type), "3"));
 
         String mimeType = getMimeType(episode.getMediaUrl());
@@ -84,7 +83,7 @@ public class DownloadHelper {
         request.setAllowedOverRoaming(downloadOverRoaming);
 
         // Allowed networks holds network pref which corresponds with Request.NETWORK_TYPE
-        // 3 doesn't exist as an entry but is a custom one to select either as allowed
+//         3 doesn't exist as an entry but is a custom one to select either as allowed
         if (allowedNetworks == 3) {
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE);
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
@@ -115,10 +114,10 @@ public class DownloadHelper {
      *
      * @return the status code for the download
      */
-    public String getDownloadStatus() {
+    public String getDownloadStatus(long id) {
         DownloadManager dm = (DownloadManager) context.getSystemService
                 (Context.DOWNLOAD_SERVICE);
-        Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(enqueue));
+        Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(id));
         String statusText = "";
 
         if (cursor.moveToFirst()) {
@@ -173,6 +172,10 @@ public class DownloadHelper {
 
     public Uri getDownloadUri(long id) {
         return downloadManager.getUriForDownloadedFile(id);
+    }
+
+    public long getEnqueue() {
+        return enqueue;
     }
 
     public DownloadHelper setEnqueue(long enqueue) {

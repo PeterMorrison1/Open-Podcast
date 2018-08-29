@@ -26,7 +26,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                 downloadHelper.setEnqueue(id);
                 downloadHelper.setContext(context);
 
-                String status = downloadHelper.getDownloadStatus();
+                String status = downloadHelper.getDownloadStatus(id);
 
                 if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
                     if (status != null) {

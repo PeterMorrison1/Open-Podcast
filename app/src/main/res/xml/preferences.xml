@@ -43,8 +43,7 @@
             android:title="@string/pref_network_select_title"
             android:summary="@string/pref_network_select_summary"
             android:entries="@array/network_select_entries"
-            android:entryValues="@array/network_select_values"
-            android:defaultValue="@string/network_metered"/>
+            android:entryValues="@array/network_select_values"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

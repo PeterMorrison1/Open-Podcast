@@ -34,7 +34,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
     private OnListFragmentInteractionListener mListener;
 
-    // TODO: Delete these when you delete the huge amount of if statements below
     private List<RecyclerView> recyclerViews = null;
     List<Button> buttons;
     List<Integer> genres;
@@ -49,7 +48,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
     public DiscoverFragment() {
     }
 
-    // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static DiscoverFragment newInstance() {
         DiscoverFragment fragment = new DiscoverFragment();
@@ -103,7 +101,7 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
                 RecyclerView recyclerView = view.findViewById(views.get(i).getId());
 
                 recyclerView.setLayoutManager(layoutManager);
-//
+
                 recyclerViews.add(recyclerView);
 
                 new SearchTask().execute(genres.get(i));
@@ -125,6 +123,7 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
      * @return list of every more button
      */
     public List<Button> createButtonList(View view) {
+        // TODO: Reworking discovery page, will remove "More" Buttons
         // Create list of views used in genre screen
         List<Button> views = new ArrayList<>();
         views.add((Button) view.findViewById(R.id.arts_button));
@@ -206,6 +205,7 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        // TODO: Removing all "More" Buttons later, so don't bother working with this
         String genreId = null;
 
         int i = 0;
@@ -244,6 +244,9 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
      * Runs the SearchHelper and returns the podcast list and sets the recyclerview adapter.
      */
     private class SearchTask extends AsyncTask<Integer, Void, List<Podcast>> {
+
+        // TODO: This is going to be completely removed on discovery page rework
+
         @Override
         protected List<Podcast> doInBackground(Integer... integers) {
             SearchHelper searchHelper;

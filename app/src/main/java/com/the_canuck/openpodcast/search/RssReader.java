@@ -1,5 +1,7 @@
 package com.the_canuck.openpodcast.search;
 
+import android.util.Log;
+
 import com.the_canuck.openpodcast.Episode;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -33,6 +35,12 @@ public class RssReader {
         this.url = url;
     }
 
+    public RssReader(String url, int collectionId, String collectionArtist) {
+        this.url = url;
+        this.collectionId = collectionId;
+        this.collectionArtist = collectionArtist;
+    }
+
     /**
      * Parses RSS link and puts items (episodes) into an array.
      *
@@ -48,6 +56,8 @@ public class RssReader {
 
             stream = new URL(url).openConnection().getInputStream();
             xmlParser.setInput(stream, null);
+            Log.d("test", "Test entered rss reader");
+
 
             int event = xmlParser.getEventType();
             boolean done = false;
