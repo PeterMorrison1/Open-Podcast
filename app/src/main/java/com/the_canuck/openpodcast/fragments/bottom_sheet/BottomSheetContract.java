@@ -3,6 +3,7 @@ package com.the_canuck.openpodcast.fragments.bottom_sheet;
 import android.net.Uri;
 
 import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.download.DownloadHelperApi;
 
 import java.util.List;
@@ -21,7 +22,8 @@ public interface BottomSheetContract {
 
         // Views
         void populateBottomSheetViews();
-
+        void showSubscribeButton();
+        void hideSubscribeButton();
 
         // Download Manager
         void setDownloadEnqueue(long enqueue);
@@ -35,15 +37,20 @@ public interface BottomSheetContract {
         // BottomSheet view
         void episodeListInstantiator(String feed, int collectionId, String artist);
 
-        void stop(); // Will be removed when for sure not using asynctask
+//        void stop(); // Will be removed when for sure not using asynctask
 
         void getDescription();
 
 
         // Episode specific
-
+        void deleteEpisode(Episode episode);
 
         // Podcast specific
+        void subscribe(Podcast podcast, int autoUpdate);
+
+        void unsubscribe(Podcast podcast);
+
+
 
 
         // Download manager
@@ -54,6 +61,8 @@ public interface BottomSheetContract {
         void getDownloadStatus(long enqueue);
 
         void getDownloadUri(long enqueue);
+
+        void doesPodcastExist(Podcast podcast);
 
     }
 }

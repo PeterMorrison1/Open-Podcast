@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -51,6 +50,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.application.PodcastApplication;
 import com.the_canuck.openpodcast.download.DownloadCompleteService;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
@@ -65,6 +65,8 @@ import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 import com.the_canuck.openpodcast.update_pods.DownloadWorker;
 
 import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -119,11 +121,31 @@ public class MainActivity extends AppCompatActivity implements
     private MediaBrowserCompat mediaBrowserCompat;
     private MediaControllerCompat mediaControllerCompat;
 
+    @Inject
+    public WorkManager workManager;
+
+    @Inject
+    public SearchManager searchManager;
+
+    @Inject
+    public SharedPreferences sharedPreferences;
+
+    private MainActivityComponent component;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//        component = DaggerMainActivityComponent.builder()
+//                .mainActivityModule(new MainActivityModule(this))
+//                .podcastApplicationComponent(PodcastApplication.get(this).component())
+//                .build();
+
+        component = PodcastApplication.get().plusActivityComponent(this);
+
+        component.injectMainActivity(this);
 
         initializeViews();
 
@@ -372,15 +394,20 @@ public class MainActivity extends AppCompatActivity implements
         mediaBrowserCompat.disconnect();
     }
 
+    public static MainActivity get(Fragment fragment) {
+        return (MainActivity) fragment.getActivity();
+    }
+
+    public MainActivityComponent component() {
+        return component;
+    }
+
     /**
      * Starts the periodic DownloadWorker class and sets it's constraints.
      */
     private void initializeUpdateWorker() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String allowedNetworks = prefs.getString(getString
+        String allowedNetworks = sharedPreferences.getString(getString
                 (R.string.pref_network_select_type), getString(R.string.network_metered));
-
-        WorkManager workManager = WorkManager.getInstance();
 
         // TODO: Update with user's settings
         Constraints.Builder constraints = new Constraints.Builder()
@@ -800,7 +827,6 @@ public class MainActivity extends AppCompatActivity implements
                 .into(panelImage);
     }
 
-
     @Override
     public void onPodcastClicked(Episode episode) {
 
@@ -825,28 +851,33 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onListFragmentInteraction(Podcast item) {
-        PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
-                item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
-                item.getCensoredName(), item.getTrackCount(),
-                item.getFeedUrl()).show(getSupportFragmentManager(),"dialog");
+        Bundle podcastBundle = new Bundle();
+        podcastBundle.putSerializable(Podcast.PODCAST, item);
+
+        PodcastListDialogFragment.newInstance()
+                .setPodcastBundle(podcastBundle)
+                .show(getSupportFragmentManager(),"dialog");
     }
 
     @Override
     public void onListFragmentInteractionLibrary(Podcast item) {
-        PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
-                item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
-                item.getCensoredName(), item.getTrackCount(),
-                item.getFeedUrl())
+        Bundle podcastBundle = new Bundle();
+        podcastBundle.putSerializable(Podcast.PODCAST, item);
+
+        PodcastListDialogFragment.newInstance()
                 .setLibraryRecyclerView(item.getRecyclerView())
                 .setPosition(item.getPosition())
+                .setPodcastBundle(podcastBundle)
                 .show(getSupportFragmentManager(),"dialog");
     }
 
     @Override
     public void onFragmentInteraction(Podcast item) {
-        PodcastListDialogFragment.newInstance(item.getCollectionId(), item.getArtistName(),
-                item.getArtworkUrl600(), item.getArtworkUrl100(), item.getCollectionName(),
-                item.getCensoredName(), item.getTrackCount(),
-                item.getFeedUrl()).show(getSupportFragmentManager(),"dialog");
+        Bundle podcastBundle = new Bundle();
+        podcastBundle.putSerializable(Podcast.PODCAST, item);
+
+        PodcastListDialogFragment.newInstance()
+                .setPodcastBundle(podcastBundle)
+                .show(getSupportFragmentManager(),"dialog");
     }
 }

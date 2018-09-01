@@ -2,7 +2,12 @@ package com.the_canuck.openpodcast;
 
 import android.support.v7.widget.RecyclerView;
 
-public class Podcast {
+import java.io.Serializable;
+
+public class Podcast implements Serializable {
+
+    // Constant for serializing podcast
+    public static final String PODCAST = "com.the_canuck.openpodcast.Podcast.podcastKey";
 
     public static final int AUTO_UPDATE_ENABLED = 1;
     public static final int AUTO_UPDATE_DISABLED = 0;

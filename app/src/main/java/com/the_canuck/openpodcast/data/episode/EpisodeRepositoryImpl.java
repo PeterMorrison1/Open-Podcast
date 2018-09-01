@@ -1,45 +1,45 @@
 package com.the_canuck.openpodcast.data.episode;
 
-import android.content.Context;
-
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.fragments.bottom_sheet.EpisodeListSorter;
 import com.the_canuck.openpodcast.search.RssReaderApi;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class EpisodeRepositoryImpl implements EpisodeRepository {
 
     public final EpisodesServiceApi episodesServiceApi;
     public final RssReaderApi readerApi;
 
-    private int collectionId;
-
-    Context context;
 
     private List<Episode> cachedEpisodeList;
     private List<Episode> cachedDownloadList;
     private List<Episode> cachedNonDownloadedList;
 
-    public EpisodeRepositoryImpl(EpisodesServiceApi episodesServiceApi, RssReaderApi readerApi,
-                                 int collectionId, Context context) {
+    private String cachedDescription;
+
+    @Inject
+    public EpisodeRepositoryImpl(EpisodesServiceApi episodesServiceApi, RssReaderApi readerApi) {
         this.episodesServiceApi = episodesServiceApi;
         this.readerApi = readerApi;
-        this.collectionId = collectionId;
-        this.context = context;
     }
 
     @Override
-    public void getAllEpisodesSorted(final LoadEpisodesCallback callback) {
+    public void getAllEpisodesSorted(final String feed, final int collectionId, final String artist, final LoadEpisodesCallback callback) {
+        if (cachedEpisodeList != null && cachedEpisodeList.get(0).getCollectionId() != collectionId) {
+            refreshData();
+        }
         // Check if cachedDownloadList exists, if not get it
         if (cachedDownloadList == null) {
-            getDownloadedEpisodes(new LoadEpisodesCallback() {
+            getDownloadedEpisodes(collectionId, new LoadEpisodesCallback() {
                 @Override
                 public void onEpisodesLoaded(List<Episode> episodes) {
 
                     // after above check if nonDownloadedList exists, if not get it
                     if (cachedNonDownloadedList == null) {
-                        getNonDownloadedEpisodes(new LoadEpisodesCallback() {
+                        getNonDownloadedEpisodes(feed, collectionId, artist, new LoadEpisodesCallback() {
                             @Override
                             public void onEpisodesLoaded(List<Episode> episodes) {
 
@@ -57,14 +57,16 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
                     }
                 }
             });
+        } else {
+            callback.onEpisodesLoaded(cachedEpisodeList);
         }
     }
 
     @Override
-    public void getDownloadedEpisodes(final LoadEpisodesCallback callback) {
+    public void getDownloadedEpisodes(int collectionId, final LoadEpisodesCallback callback) {
 
         if (cachedDownloadList == null) {
-            episodesServiceApi.getAllEpisodesForCollection(context, collectionId,
+            episodesServiceApi.getAllEpisodesForCollection(collectionId,
                     new EpisodesServiceApi.EpisodesServiceCallback<List<Episode>>() {
                         @Override
                         public void onLoaded(List<Episode> episodes) {
@@ -78,10 +80,10 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
     }
 
     @Override
-    public void getNonDownloadedEpisodes(final LoadEpisodesCallback callback) {
+    public void getNonDownloadedEpisodes(String feed, int collectionId, String artist, final LoadEpisodesCallback callback) {
         if (cachedNonDownloadedList == null) {
 
-            readerApi.getEpisodes(new RssReaderApi.RssServiceCallback<List<Episode>>() {
+            readerApi.getEpisodes(feed, collectionId, artist, new RssReaderApi.RssServiceCallback<List<Episode>>() {
                 @Override
                 public void onLoaded(List<Episode> episodes) {
                     cachedNonDownloadedList = episodes;
@@ -131,15 +133,21 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
         cachedEpisodeList = null;
         cachedDownloadList = null;
         cachedNonDownloadedList = null;
+        cachedDescription = null;
     }
 
     @Override
     public void getDescription(final GetStringCallback callback) {
-        readerApi.getDescription(new RssReaderApi.RssServiceCallback<String>() {
-            @Override
-            public void onLoaded(String episodes) {
-                callback.onStringReturned(episodes);
-            }
-        });
+        if (cachedDescription == null) {
+            readerApi.getDescription(new RssReaderApi.RssServiceCallback<String>() {
+                @Override
+                public void onLoaded(String episodes) {
+                    callback.onStringReturned(episodes);
+                }
+            });
+        } else {
+            callback.onStringReturned(cachedDescription);
+        }
+
     }
 }

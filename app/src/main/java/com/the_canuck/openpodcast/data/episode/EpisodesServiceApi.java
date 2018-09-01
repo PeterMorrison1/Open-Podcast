@@ -1,7 +1,5 @@
 package com.the_canuck.openpodcast.data.episode;
 
-import android.content.Context;
-
 import com.the_canuck.openpodcast.Episode;
 
 import java.util.List;
@@ -13,7 +11,7 @@ public interface EpisodesServiceApi {
         void onLoaded(T episodes);
     }
 
-    void getAllEpisodesForCollection(Context context, int collectionId,
+    void getAllEpisodesForCollection(int collectionId,
                                      EpisodesServiceCallback<List<Episode>> callback);
 
     void getEpisode(Episode episode, EpisodesServiceCallback<Episode> callback);

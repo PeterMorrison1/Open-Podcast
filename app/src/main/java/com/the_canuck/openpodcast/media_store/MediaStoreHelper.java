@@ -16,6 +16,8 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.util.HashMap;
 
+import javax.inject.Inject;
+
 /**
  * Runs all necessary queries/edits on the mediastore.
  */

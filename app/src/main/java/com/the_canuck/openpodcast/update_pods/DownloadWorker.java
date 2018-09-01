@@ -119,7 +119,7 @@ public class DownloadWorker extends Worker {
             reader.setCollectionId(podcast.getCollectionId());
             reader.setCollectionArtist(podcast.getArtistName());
 
-            List<Episode> episodeList = reader.createEpisodeList();
+            List<Episode> episodeList = reader.createEpisodeList(podcast.getFeedUrl(), podcast.getCollectionId(), podcast.getArtistName());
 
             // checks episode list of current podcast for new episodes
             for (int i = 0, episodeListSize = episodeList.size(); i < episodeListSize; i++) {

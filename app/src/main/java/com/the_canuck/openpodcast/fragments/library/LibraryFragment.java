@@ -12,9 +12,14 @@ import android.view.ViewGroup;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.activities.MainActivity;
+import com.the_canuck.openpodcast.application.PodcastApplication;
+import com.the_canuck.openpodcast.fragments.FragmentComponent;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 
 /**
@@ -33,6 +38,12 @@ public class LibraryFragment extends Fragment implements LibraryContract.Library
 //    private MySQLiteHelper sqLiteHelper;
     private List<Podcast> podcastList;
     private LibraryContract.LibraryPresenter mLibPresenter;
+
+    @Inject
+    public MySQLiteHelper sqLiteHelper;
+
+    @Inject
+    Context context;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -55,17 +66,19 @@ public class LibraryFragment extends Fragment implements LibraryContract.Library
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mLibPresenter = new LibraryPresenter(this, getContext());
+
+        FragmentComponent component = PodcastApplication.get().plusFragmentComponent(this);
+        component.inject(this);
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library_list, container, false);
+        mLibPresenter = new LibraryPresenter(this, sqLiteHelper);
 
         mLibPresenter.updateSubscribedPodcasts();
 
@@ -73,7 +86,7 @@ public class LibraryFragment extends Fragment implements LibraryContract.Library
 
         // Set the adapter
         if (view instanceof RecyclerView) {
-            Context context = view.getContext();
+
             RecyclerView recyclerView = (RecyclerView) view;
 
             // TODO: Set column count as a filter option and change here
@@ -110,6 +123,7 @@ public class LibraryFragment extends Fragment implements LibraryContract.Library
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        PodcastApplication.get().clearFragmentComponent();
     }
 
     /**

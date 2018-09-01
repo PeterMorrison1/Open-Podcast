@@ -1,7 +1,5 @@
 package com.the_canuck.openpodcast.data.episode;
 
-import android.support.annotation.NonNull;
-
 import com.the_canuck.openpodcast.Episode;
 
 import java.util.List;
@@ -24,11 +22,11 @@ public interface EpisodeRepository {
         void onStringReturned(String string);
     }
 
-    void getAllEpisodesSorted(LoadEpisodesCallback callback);
+    void getAllEpisodesSorted(String feed, int collectionId, String artist, LoadEpisodesCallback callback);
 
-    void getDownloadedEpisodes(LoadEpisodesCallback callback);
+    void getDownloadedEpisodes(int collectionId, LoadEpisodesCallback callback);
 
-    void getNonDownloadedEpisodes(LoadEpisodesCallback callback);
+    void getNonDownloadedEpisodes(String feed, int collectionId, String artist, LoadEpisodesCallback callback);
 
     void addEpisode(Episode episode);
 

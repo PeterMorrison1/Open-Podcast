@@ -11,7 +11,7 @@ public interface RssReaderApi {
         void onLoaded(T episodes);
     }
 
-    void getEpisodes(RssServiceCallback<List<Episode>> callback);
+    void getEpisodes(String feed, int collectionId, String Artist, RssServiceCallback<List<Episode>> callback);
 
     void getDescription(RssServiceCallback<String> callback);
 }

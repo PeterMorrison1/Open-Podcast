@@ -15,10 +15,15 @@ import android.widget.ProgressBar;
 
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
+import com.the_canuck.openpodcast.application.PodcastApplication;
+import com.the_canuck.openpodcast.fragments.FragmentComponent;
 import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
+import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * A fragment representing a list of Items.
@@ -39,6 +44,9 @@ public class SearchFragment extends Fragment implements SearchContract.SearchVie
     private ProgressBar progressBar;
 
     private SearchContract.SearchPresenter searchPresenter;
+
+    @Inject
+    public MySQLiteHelper sqLiteHelper;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -62,6 +70,9 @@ public class SearchFragment extends Fragment implements SearchContract.SearchVie
         super.onCreate(savedInstanceState);
 
         searchPresenter = new SearchPresenter(this);
+
+        FragmentComponent component = PodcastApplication.get().plusFragmentComponent(this);
+        component.inject(this);
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {

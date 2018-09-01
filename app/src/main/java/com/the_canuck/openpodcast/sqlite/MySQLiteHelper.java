@@ -136,7 +136,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_SUBSCRIBED, COLUMN_COLLECTION_ID + "=?",
                 new String[]{String.valueOf(podcast.getCollectionId())});
-        db.close();
+//        db.close();
     }
 
 
@@ -164,7 +164,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
         db.update(TABLE_SUBSCRIBED, contentValues, COLUMN_COLLECTION_ID + "=?",
                 new String[]{Integer.toString(podcast.getCollectionId())});
-        db.close();
+//        db.close();
     }
 
     /**
@@ -186,7 +186,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             cursor.moveToNext();
         }
         cursor.close();
-        db.close();
+//        db.close();
         return podcasts;
     }
 
@@ -209,7 +209,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         // if matching collection id return true
         podcastExists = cursor.getCount() > 0;
         cursor.close();
-        db.close();
+//        db.close();
         return podcastExists;
     }
 
@@ -229,7 +229,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             artwork = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ART_600));
         }
         cursor.close();
-        db.close();
+//        db.close();
         return artwork;
     }
 
@@ -253,7 +253,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             cursor.moveToNext();
         }
         cursor.close();
-        db.close();
+//        db.close();
         return podcastList;
     }
 
@@ -311,7 +311,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_BOOKMARK, episode.getBookmark());
 
         db.insert(TABLE_EPISODES, null, contentValues);
-        db.close();
+//        db.close();
     }
 
     /**
@@ -339,7 +339,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
         db.update(TABLE_EPISODES, contentValues, COLUMN_TITLE + "=?",
                 new String[]{episode.getTitle()});
-        db.close();
+//        db.close();
     }
 
     /**
@@ -352,7 +352,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_EPISODES, COLUMN_TITLE + "=?",
                 new String[]{episode.getTitle()});
-        db.close();
+//        db.close();
     }
 
     /**
@@ -372,7 +372,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             episode = buildEpisode(cursor);
         }
         cursor.close();
-        db.close();
+//        db.close();
         return episode;
     }
 
@@ -394,7 +394,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             episode = buildEpisode(cursor);
         }
         cursor.close();
-        db.close();
+//        db.close();
         return episode;
     }
 
@@ -422,7 +422,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             cursor.moveToNext();
         }
         cursor.close();
-        db.close();
+//        db.close();
         return episodes;
     }
 
@@ -463,7 +463,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             cursor.moveToNext();
         }
         cursor.close();
-        db.close();
+//        db.close();
         return episodes;
     }
 

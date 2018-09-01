@@ -9,17 +9,22 @@ import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class EpisodeServiceApiImpl implements EpisodesServiceApi {
 
     private List<Episode> episodeList;
     MySQLiteHelper sqLiteHelper; // TODO: Must inject with Dagger!!!!!
-    Context context;
+
+    @Inject
+    public EpisodeServiceApiImpl(MySQLiteHelper sqLiteHelper) {
+        this.sqLiteHelper = sqLiteHelper;
+    }
 
     @Override
-    public void getAllEpisodesForCollection(Context context, final int collectionId,
+    public void getAllEpisodesForCollection(final int collectionId,
                                             final EpisodesServiceCallback<List<Episode>> callback) {
         final Handler handler = new Handler();
-        sqLiteHelper = new MySQLiteHelper(context);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -91,7 +96,6 @@ public class EpisodeServiceApiImpl implements EpisodesServiceApi {
                         }
                     }
                 } else {
-                    sqLiteHelper = new MySQLiteHelper(context);
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -129,7 +133,6 @@ public class EpisodeServiceApiImpl implements EpisodesServiceApi {
                     });
 
                 } else {
-                    sqLiteHelper = new MySQLiteHelper(context);
                     final List<Episode> newDownloads = sqLiteHelper.getNewDownloadEpisodes();
                     handler.post(new Runnable() {
                         @Override

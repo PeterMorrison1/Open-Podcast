@@ -14,6 +14,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class RssReader {
     private String url;
     private String podcastDescription;
@@ -31,6 +33,10 @@ public class RssReader {
     private static final String MEDIA_URL = "url";
     private static final String DURATION = "itunes:duration";
 
+    @Inject
+    public RssReader() {
+    }
+
     public RssReader(String url) {
         this.url = url;
     }
@@ -46,7 +52,7 @@ public class RssReader {
      *
      * @return array of parsed episodes
      */
-    public List<Episode> createEpisodeList() {
+    public List<Episode> createEpisodeList(String url, int collectionId, String collectionArtist) {
         List<Episode> list = new ArrayList<>();
         InputStream stream = null;
         String text = null;
@@ -144,6 +150,11 @@ public class RssReader {
      */
     public String getPodcastDescription() {
         return podcastDescription;
+    }
+
+    public RssReader setUrl(String url) {
+        this.url = url;
+        return this;
     }
 
     public RssReader setCollectionId(int collectionId) {
