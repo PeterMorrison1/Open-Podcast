@@ -234,7 +234,12 @@ public class AudioService extends MediaBrowserServiceCompat implements
         super.onDestroy();
         isRunning = false;
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.abandonAudioFocus(this);
+        try {
+            audioManager.abandonAudioFocus(this);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+
         try {
             unregisterReceiver(mNoisyReceiver);
         } catch (IllegalArgumentException e) {
@@ -251,6 +256,7 @@ public class AudioService extends MediaBrowserServiceCompat implements
                 b.printStackTrace();
             }
         }
+        mediaPlayer.reset();
         mediaPlayer.release();
 //        NotificationManagerCompat.from(AudioService.this).cancel(1);
         NotificationManager notificationManager =

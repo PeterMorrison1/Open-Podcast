@@ -30,6 +30,7 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
@@ -51,6 +52,9 @@ import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.application.PodcastApplication;
+import com.the_canuck.openpodcast.data.episode.EpisodeRepository;
+import com.the_canuck.openpodcast.data.episode.EpisodeRepositoryImpl;
+import com.the_canuck.openpodcast.data.podcast.PodcastRepository;
 import com.the_canuck.openpodcast.download.DownloadCompleteService;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
@@ -59,6 +63,8 @@ import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
 import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
 import com.the_canuck.openpodcast.media_player.AudioService;
+import com.the_canuck.openpodcast.media_player.MediaControlApi;
+import com.the_canuck.openpodcast.media_player.MediaControlApiImpl;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
@@ -77,7 +83,7 @@ import androidx.work.WorkManager;
 public class MainActivity extends AppCompatActivity implements
         SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
         LibraryFragment.OnListFragmentInteractionListener,
-        DiscoverFragment.OnListFragmentInteractionListener {
+        DiscoverFragment.OnListFragmentInteractionListener, MainActivityContract.MainActivityView{
 
     private static final int REQUEST_WRITE_STORAGE_REQUEST_CODE = 112;
     final String LIBRARY_TAG = "library";
@@ -119,7 +125,11 @@ public class MainActivity extends AppCompatActivity implements
     private Handler handler = new Handler();
 
     private MediaBrowserCompat mediaBrowserCompat;
-    private MediaControllerCompat mediaControllerCompat;
+
+    private int mediaControllerState;
+    private long mediaPosition;
+
+    private MainActivityContract.MainActivityPresenter mainActivityPresenter;
 
     @Inject
     public WorkManager workManager;
@@ -130,25 +140,52 @@ public class MainActivity extends AppCompatActivity implements
     @Inject
     public SharedPreferences sharedPreferences;
 
+    public android.support.v4.app.FragmentManager fragmentManager;
+
+    @Inject
+    public EpisodeRepository episodeRepository;
+
+    @Inject
+    public PodcastRepository podcastRepository;
+
+    @Inject
+    public Context context;
+
+    public MediaControlApi mediaControlApi;
+
     private MainActivityComponent component;
+    private Toolbar toolbar;
+    private ActionBar actionBar;
+    private NavigationView navigationView;
+    private String artwork;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // -------------------------------- Initialize --------------------------------
+
         setContentView(R.layout.activity_main);
 
-//        component = DaggerMainActivityComponent.builder()
-//                .mainActivityModule(new MainActivityModule(this))
-//                .podcastApplicationComponent(PodcastApplication.get(this).component())
-//                .build();
-
         component = PodcastApplication.get().plusActivityComponent(this);
-
         component.injectMainActivity(this);
+
+        // Can't inject fragment manager, after restarting app it becomes null with injection
+        fragmentManager = getSupportFragmentManager();
+
+        // Media browser Initialization
+        // TODO: Try and use dagger to inject media browser
+        mediaBrowserCompat = new MediaBrowserCompat(this,
+                new ComponentName(context, AudioService.class),
+                mediaBrowserConnectionCallback, getIntent().getExtras());
+        mediaBrowserCompat.connect();
+
+        mainActivityPresenter = new MainActivityPresenter(this, podcastRepository);
 
         initializeViews();
 
+        // For search (search for podcasts) intent
         handleIntent(getIntent());
 
         // TODO: Make this based on android version
@@ -157,206 +194,35 @@ public class MainActivity extends AppCompatActivity implements
         // Checks if there is a last played episode and sets it as current episode if so
         initializeLastPlayedEp();
 
-        // TODO: Might want to remove this, since it will cost lots of resources on startup
+        // Start a scan for media store
+        // Might want to remove this, since it will cost lots of resources on startup
         sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                 Uri.parse(Environment.DIRECTORY_PODCASTS)));
-
-        mediaBrowserCompat = new MediaBrowserCompat(this,
-                new ComponentName(this, AudioService.class),
-                mediaBrowserConnectionCallback, getIntent().getExtras());
-
-        mediaBrowserCompat.connect();
 
         /* Sets the play button to be pause or play based on if there is a previously played episode
         code that sets if there is a previously played episode MUST go before this
          */
         initializePlayButtonRes();
-
         slidingPanel.setParallaxOffset(1000);
-
+        thumbCard.setVisibility(View.INVISIBLE);
         hideSlideUpPanel();
 
-        thumbCard.setVisibility(View.INVISIBLE);
+        // -------------------------------- Button Listeners --------------------------------
+        seekBarChangeListener();
+        panelSlideListener();
+        seekButtonListeners();
+        playButtonListeners();
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                seekBarCurrentDuration.setText(TimeHelper.convertSecondsToHourMinSec(progress));
-                thumbCardDuration.setText(TimeHelper.convertSecondsToHourMinSec(progress));
+        updateSeekBar();
 
-                // Sets the thumbCard to same position as the seekbar thumb
-                // FIXME: thumbCard moves a bit too far left when at 00:00
-                if (fromUser && currentState == STATE_PLAYING) {
-                    thumbCard.setVisibility(View.VISIBLE);
-                    int val = (progress * (seekBar.getWidth() - 2 * seekBar.getThumbOffset())) /
-                            seekBar.getMax();
-                    int cardHalf = thumbCard.getWidth() / 2;
-                    thumbCard.setX(seekBar.getX() + val + seekBar.getThumbOffset() / 2 - cardHalf);
+        // Maybe put this above in the startup section, test first. Doesn't seem to matter though
+        setStartupFragment();
 
-                    mediaControllerCompat.getTransportControls().seekTo(progress * 1000);
-                }
-            }
+        // creates action/tool bar
+        initializeActionBar();
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+        navigationViewListener();
 
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                thumbCard.setVisibility(View.INVISIBLE);
-            }
-        });
-
-        // TODO: view this solution: https://github.com/umano/AndroidSlidingUpPanel/issues/750
-        // It will fix the panel opening and closing on click rather than drag
-        // Listens for when bottom panel is either sliding or changed state (PanelState enums)
-        slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-            }
-
-            @Override
-            public void onPanelStateChanged(View panel,
-                                            SlidingUpPanelLayout.PanelState previousState,
-                                            SlidingUpPanelLayout.PanelState newState) {
-
-                if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
-                    panelTinyContainer.setVisibility(View.VISIBLE);
-                    panelTinyContainer.setEnabled(true);
-                } else if (slidingPanel.getPanelState() ==
-                        SlidingUpPanelLayout.PanelState.EXPANDED) {
-                    // TODO: Maybe add animation here or animate to different viewholder
-                    /* Update: Above comment means when you drag panel up the tiny bar remains until
-                    the panel is completely expanded or collapsed. So fade away tiny bar basically.
-                    Take this as a learning experience to write better comments, future Peter.
-                     */
-                    panelTinyContainer.setVisibility(View.INVISIBLE);
-                    panelTinyContainer.setEnabled(false);
-                }
-            }
-        });
-
-        // Updates the seekbar
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                updateSeekBar();
-                handler.postDelayed(this, 1000);
-            }
-        });
-
-        // Control forward 30 seconds button
-        forward30.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                seekButton(30);
-            }
-        });
-
-        // Control rewind 30 seconds button
-        rewind30.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                seekButton(-30);
-            }
-        });
-
-        // Controls when the panel large play button is clicked (pause/resume)
-        panelLargePlay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                togglePlayButton();
-            }
-        });
-
-        panelSmallPlay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                togglePlayButton();
-            }
-        });
-
-        // Sets the fragment container as library fragment on startup
-        if (getFragmentManager().getBackStackEntryCount() == 0) {
-            Fragment libraryFragment = new LibraryFragment();
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.fragment_container, libraryFragment);
-            transaction.addToBackStack(LIBRARY_TAG);
-            transaction.commit();
-        }
-
-        // Set and control toolbar
-        // TODO: Maybe create a toolbar method to clean things up later
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
-
-        // Set and control navigation view (The drawer)
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setCheckedItem(R.id.nav_subscribed);
-        navigationView.setNavigationItemSelectedListener
-                (new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                item.setChecked(true);
-
-                Fragment container = getSupportFragmentManager().findFragmentById
-                        (R.id.fragment_container);
-
-                Fragment newFragment = null;
-                String fragTag = null;
-
-                // Add future nav drawer selections here
-                // TODO: Move these into a separate class or method to clean things up later
-                switch (item.getItemId()) {
-                    case R.id.nav_subscribed:
-                        if (container instanceof LibraryFragment) {
-                            mDrawerLayout.closeDrawers();
-                            return true;
-                        } else {
-                            getSupportFragmentManager().popBackStack(LIBRARY_TAG,
-                                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-                            newFragment = new LibraryFragment();
-                            fragTag = LIBRARY_TAG;
-                        }
-                        break;
-
-                    case R.id.nav_search:
-                        if (container instanceof DiscoverFragment) {
-                            mDrawerLayout.closeDrawers();
-                            return true;
-                        } else {
-                            getSupportFragmentManager().popBackStack(DISCOVER_TAG,
-                                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-                            newFragment = new DiscoverFragment();
-                            fragTag = DISCOVER_TAG;
-                        }
-                        break;
-
-                    case R.id.nav_settings:
-                        if (container instanceof SettingsFragment) {
-                            mDrawerLayout.closeDrawers();
-                            return true;
-                        } else {
-                            getSupportFragmentManager().popBackStack(SETTINGS_TAG,
-                                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-                            newFragment = new SettingsFragment();
-                            fragTag = SETTINGS_TAG;
-                        }
-                }
-                if (newFragment != null) {
-                    replaceFragment(newFragment, fragTag);
-                }
-                mDrawerLayout.closeDrawers();
-                return true;
-            }
-        });
         initializeUpdateWorker();
     }
 
@@ -386,20 +252,230 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mediaControllerCompat.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
-
-            mediaControllerCompat.getTransportControls().pause();
-            mediaControllerCompat.getTransportControls().stop();
+        mainActivityPresenter.getState();
+        if (mediaControllerState == PlaybackStateCompat.STATE_PLAYING) {
+            mainActivityPresenter.pause();
+            mainActivityPresenter.stop();
         }
         mediaBrowserCompat.disconnect();
     }
 
-    public static MainActivity get(Fragment fragment) {
-        return (MainActivity) fragment.getActivity();
+    /**
+     *  Controls what to do when the side drawer's buttons are clicked.
+     */
+    private void navigationViewListener() {
+        // Set and control navigation view (The drawer)
+        navigationView.setCheckedItem(R.id.nav_subscribed);
+        navigationView.setNavigationItemSelectedListener
+                (new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        item.setChecked(true);
+
+                        Fragment container = fragmentManager.findFragmentById
+                                (R.id.fragment_container);
+
+                        Fragment newFragment = null;
+                        String fragTag = null;
+
+                        // Add future nav drawer selections here
+                        switch (item.getItemId()) {
+                            case R.id.nav_subscribed:
+                                if (container instanceof LibraryFragment) {
+                                    mDrawerLayout.closeDrawers();
+                                    return true;
+                                } else {
+                                    fragmentManager.popBackStack(LIBRARY_TAG,
+                                            FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+                                    newFragment = new LibraryFragment();
+                                    fragTag = LIBRARY_TAG;
+                                }
+                                break;
+
+                            case R.id.nav_search:
+                                if (container instanceof DiscoverFragment) {
+                                    mDrawerLayout.closeDrawers();
+                                    return true;
+                                } else {
+                                    fragmentManager.popBackStack(DISCOVER_TAG,
+                                            FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+                                    newFragment = new DiscoverFragment();
+                                    fragTag = DISCOVER_TAG;
+                                }
+                                break;
+
+                            case R.id.nav_settings:
+                                if (container instanceof SettingsFragment) {
+                                    mDrawerLayout.closeDrawers();
+                                    return true;
+                                } else {
+                                    fragmentManager.popBackStack(SETTINGS_TAG,
+                                            FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+                                    newFragment = new SettingsFragment();
+                                    fragTag = SETTINGS_TAG;
+                                }
+                        }
+                        if (newFragment != null) {
+                            replaceFragment(newFragment, fragTag);
+                        }
+                        mDrawerLayout.closeDrawers();
+                        return true;
+                    }
+                });
     }
 
-    public MainActivityComponent component() {
-        return component;
+    /**
+     * Creates the tool/action bar.
+     */
+    private void initializeActionBar() {
+        // Set and control toolbar
+        try {
+            setSupportActionBar(toolbar);
+            actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Fills the activity with a LibraryFragment on startup.
+     */
+    private void setStartupFragment() {
+        // Sets the fragment container as library fragment on startup
+        if (fragmentManager.getBackStackEntryCount() == 0) {
+            Fragment libraryFragment = new LibraryFragment();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.add(R.id.fragment_container, libraryFragment);
+            transaction.addToBackStack(LIBRARY_TAG);
+            transaction.commit();
+        }
+    }
+
+    /**
+     * Sets the seekbar listener and it's actions.
+     */
+    private void seekBarChangeListener() {
+        // Controls things whenever the seekbar is changed from user or media player
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                seekBarCurrentDuration.setText(TimeHelper.convertSecondsToHourMinSec(progress));
+                thumbCardDuration.setText(TimeHelper.convertSecondsToHourMinSec(progress));
+
+                // Sets the thumbCard to same position as the seekbar thumb
+                // thumbCard moves a bit too far left when at 00:00
+                if (fromUser && (currentState == STATE_PLAYING || currentState == STATE_PAUSED)) {
+                    thumbCard.setVisibility(View.VISIBLE);
+                    int val = (progress * (seekBar.getWidth() - 2 * seekBar.getThumbOffset())) /
+                            seekBar.getMax();
+                    int cardHalf = thumbCard.getWidth() / 2;
+                    thumbCard.setX(seekBar.getX() + val + seekBar.getThumbOffset() / 2 - cardHalf);
+
+                    // Changes media position if user changed the seekbar
+                    mediaControlApi.seekTo(progress * 1000);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                thumbCard.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    /**
+     * Sets the panel slide listener and it's actions.
+     */
+    private void panelSlideListener() {
+        // TODO: view this solution: https://github.com/umano/AndroidSlidingUpPanel/issues/750
+        // It will fix the panel opening and closing on click rather than drag
+        // Listens for when bottom panel is either sliding or changed state (PanelState enums)
+        slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel,
+                                            SlidingUpPanelLayout.PanelState previousState,
+                                            SlidingUpPanelLayout.PanelState newState) {
+
+                if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                    panelTinyContainer.setVisibility(View.VISIBLE);
+                    panelTinyContainer.setEnabled(true);
+                } else if (slidingPanel.getPanelState() ==
+                        SlidingUpPanelLayout.PanelState.EXPANDED) {
+                    // TODO: Maybe add animation here or animate to different viewholder
+                    /* Update: Above comment means when you drag panel up the tiny bar remains until
+                    the panel is completely expanded or collapsed. So fade away tiny bar basically.
+                    Take this as a learning experience to write better comments, future Peter.
+                     */
+                    panelTinyContainer.setVisibility(View.INVISIBLE);
+                    panelTinyContainer.setEnabled(false);
+                }
+            }
+        });
+    }
+
+    /**
+     * Sets the seek forward/backward 30 seconds button listeners.
+     */
+    private void seekButtonListeners() {
+        // Control forward 30 seconds button
+        forward30.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seekButton(30);
+            }
+        });
+
+        // Control rewind 30 seconds button
+        rewind30.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seekButton(-30);
+            }
+        });
+    }
+
+    /**
+     * Sets the large and small play/pause buttons.
+     */
+    private void playButtonListeners() {
+        // Controls when the panel large play button is clicked (pause/resume)
+        panelLargePlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                togglePlayButton();
+            }
+        });
+
+        panelSmallPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                togglePlayButton();
+            }
+        });
+    }
+
+    @Override
+    public void setMediaState(int state) {
+        this.mediaControllerState = state;
+    }
+
+    @Override
+    public void setPosition(long position) {
+        mediaPosition = position;
     }
 
     /**
@@ -409,11 +485,12 @@ public class MainActivity extends AppCompatActivity implements
         String allowedNetworks = sharedPreferences.getString(getString
                 (R.string.pref_network_select_type), getString(R.string.network_metered));
 
-        // TODO: Update with user's settings
+        // Sets constraints for the worker, below constraints won't be changed by users
         Constraints.Builder constraints = new Constraints.Builder()
                 .setRequiresCharging(true)
                 .setRequiresStorageNotLow(true);
 
+        // Below constraints are changed in settings screen
         if (allowedNetworks.equalsIgnoreCase(getString(R.string.network_connected))) {
             constraints.setRequiredNetworkType(NetworkType.CONNECTED);
         } else if (allowedNetworks.equalsIgnoreCase(getString(R.string.network_metered))) {
@@ -424,8 +501,9 @@ public class MainActivity extends AppCompatActivity implements
 
         constraints.setRequiredNetworkType(NetworkType.NOT_ROAMING);
 
+        // Runs the worker every 24 hours to check for new podcasts
         PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(DownloadWorker.class,
-                24, TimeUnit.MINUTES)
+                24, TimeUnit.HOURS)
                 .setConstraints(constraints.build())
                 .build();
 
@@ -433,23 +511,26 @@ public class MainActivity extends AppCompatActivity implements
                 updateWorker);
     }
 
-    private MediaBrowserCompat.ConnectionCallback mediaBrowserConnectionCallback =
+    public MediaBrowserCompat.ConnectionCallback mediaBrowserConnectionCallback =
             new MediaBrowserCompat.ConnectionCallback() {
 
                 @Override
                 public void onConnected() {
                     super.onConnected();
                     try {
-                        mediaControllerCompat = new MediaControllerCompat(MainActivity.this,
-                                mediaBrowserCompat.getSessionToken());
-                        mediaControllerCompat.registerCallback(mediaControllerCallback);
+                        MediaControllerCompat mediaControllerCompat = new MediaControllerCompat(
+                                MainActivity.this, mediaBrowserCompat.getSessionToken());
+
                         MediaControllerCompat.setMediaController(MainActivity.this,
                                 mediaControllerCompat);
+                        mediaControlApi = new MediaControlApiImpl(mediaControllerCompat);
+
+                        mainActivityPresenter.setMediaController(mediaControlApi);
+
+                        mainActivityPresenter.registerCallback(mediaControllerCallback);
                         if (currentEpisode != null) {
                             playEpisode(currentEpisode);
                         }
-
-//                        currentState = STATE_PLAYING;
 
                     } catch (RemoteException e) {
                         e.printStackTrace();
@@ -490,9 +571,10 @@ public class MainActivity extends AppCompatActivity implements
             episode.setIsLastPlayed(Episode.IS_LAST_PLAYED);
             Bundle bundle = new Bundle();
             bundle.putSerializable(Episode.EPISODE, episode);
-            Uri uri = MediaStoreHelper.getEpisodeUri(getApplicationContext(),
+            Uri uri = MediaStoreHelper.getEpisodeUri(context,
                     episode);
-            mediaControllerCompat.getTransportControls().playFromUri(uri, bundle);
+            mainActivityPresenter.playFromUri(uri, bundle);
+//            mediaControllerCompat.getTransportControls().playFromUri(uri, bundle);
             initializePlayButtonRes();
             showSlideUpPanel();
         }
@@ -504,9 +586,10 @@ public class MainActivity extends AppCompatActivity implements
      * @param seekTime the time to add or remove from the current position (negative to remove)
      */
     private void seekButton(int seekTime) {
-        int currentPosition = (int) mediaControllerCompat.getPlaybackState().getPosition();
+        mainActivityPresenter.getPosition();
+        int currentPosition = (int) mediaPosition;
         int newPosition = currentPosition + seekTime * 1000;
-        mediaControllerCompat.getTransportControls().seekTo(newPosition);
+        mainActivityPresenter.seekTo(newPosition);
     }
 
     /**
@@ -529,6 +612,8 @@ public class MainActivity extends AppCompatActivity implements
         panelSmallPlay = findViewById(R.id.panel_small_play_button);
         forward30 = findViewById(R.id.forward_30);
         rewind30 = findViewById(R.id.rewind_30);
+        toolbar = findViewById(R.id.toolbar);
+        navigationView = findViewById(R.id.nav_view);
     }
 
     /**
@@ -571,10 +656,19 @@ public class MainActivity extends AppCompatActivity implements
      * Updates the seekbar to match the currently playing media's current time.
      */
     private void updateSeekBar() {
-        if (currentState == STATE_PLAYING) {
-            int currentPosition = (int) mediaControllerCompat.getPlaybackState().getPosition() / 1000;
-            seekBar.setProgress(currentPosition);
-        }
+        // Updates the seekbar
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (currentState == STATE_PLAYING) {
+                    mainActivityPresenter.getPosition();
+                    int currentPosition = (int) mediaPosition / 1000;
+                    seekBar.setProgress(currentPosition);
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
+
     }
 
     /**
@@ -585,12 +679,11 @@ public class MainActivity extends AppCompatActivity implements
         expensive to use (possibly from how I coded it). Also episode table is easier :)
          */
         if (currentEpisode != null) {
-            MySQLiteHelper mySQLiteHelper = new MySQLiteHelper(this);
             long bookmark = MediaControllerCompat.getMediaController(MainActivity.this)
                     .getPlaybackState().getPosition();
 
             currentEpisode.setBookmark(String.valueOf(bookmark));
-            mySQLiteHelper.updateEpisode(currentEpisode);
+            episodeRepository.updateEpisode(currentEpisode);
         }
     }
 
@@ -613,36 +706,27 @@ public class MainActivity extends AppCompatActivity implements
      * button if it was a play button when hit.
      */
     private void togglePlayButton() {
-        // TODO: Can probably pass in a button and this could control tiny panel play button too
         if (currentState == STATE_PAUSED) {
             // Resumes the episode and sets button icon to pause
             isEpisodePaused = false;
             currentState = STATE_PLAYING;
             panelLargePlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
             panelSmallPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-//            MediaController.stateRequest(getApplicationContext(),
-//                    MediaPlayerService.ACTION_RESUME);
-            mediaControllerCompat.getTransportControls().play();
+
+            mainActivityPresenter.play();
+
         } else {
             // Pauses the episode and sets button icon to play
-            if (mediaControllerCompat.getPlaybackState().getState() ==
-                    PlaybackStateCompat.STATE_PLAYING) {
+            mainActivityPresenter.getState();
+            if (mediaControllerState == PlaybackStateCompat.STATE_PLAYING) {
 
                 isEpisodePaused = true;
                 panelLargePlay.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
                 panelSmallPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
-//            MediaController.stateRequest(getApplicationContext(),
-//                    MediaPlayerService.ACTION_PAUSE);
-                mediaControllerCompat.getTransportControls().pause();
+
+                mainActivityPresenter.pause();
             }
             currentState = STATE_PAUSED;
-//            isEpisodePaused = true;
-//            panelLargePlay.setBackgroundResource
-//                    (R.drawable.ic_play_circle_outline_white_48dp);
-////            MediaController.stateRequest(getApplicationContext(),
-////                    MediaPlayerService.ACTION_PAUSE);
-//            MediaControllerCompat.getMediaController(MainActivity.this)
-//                    .getTransportControls().pause();
         }
     }
 
@@ -724,7 +808,7 @@ public class MainActivity extends AppCompatActivity implements
      * @param tag tag of the fragment for possible query later
      */
     public void replaceFragment(Fragment newFragment, String tag) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.fragment_container, newFragment);
         transaction.addToBackStack(tag);
         transaction.commit();
@@ -746,7 +830,7 @@ public class MainActivity extends AppCompatActivity implements
             public boolean onQueryTextSubmit(String query) {
                 // closes the search menu so you don't have to hit backbutton 3 times to go back
                 searchItem.collapseActionView();
-                getSupportFragmentManager().popBackStack(SEARCH_TAG,
+                fragmentManager.popBackStack(SEARCH_TAG,
                         FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 return false;
             }
@@ -771,17 +855,19 @@ public class MainActivity extends AppCompatActivity implements
      * @param episode the episode to use to fill the panel with
      */
     private void setSlidingPanelEpisode(Episode episode) {
-        MySQLiteHelper sqLiteHelper = new MySQLiteHelper(this);
+        mainActivityPresenter.getArtwork600(episode.getCollectionId());
 
-        String artwork = sqLiteHelper.getPodcastArtwork600(episode.getCollectionId());
         panelTinyTitle.setText(episode.getTitle());
         panelBigTitle.setText(episode.getTitle());
         seekBar.setMax((int) TimeHelper.convertDurationToSeconds(episode.getDuration()));
 
-        // TODO: Change max duration to use BOOKMARK from mediastore/episodes table
         String maxDuration = "/  " + episode.getDuration();
         seekBarMaxDuration.setText(maxDuration);
 
+
+    }
+
+    private void startGlide() {
         // Anything requiring palette colours MUST be inside onResourceReady below!
         RequestOptions myOptions = new RequestOptions()
                 .fitCenter()
@@ -804,27 +890,36 @@ public class MainActivity extends AppCompatActivity implements
                     public boolean onResourceReady(Bitmap resource, Object model,
                                                    Target<Bitmap> target, DataSource dataSource,
                                                    boolean isFirstResource) {
-                        // Sets the panel image and generates the palette from it
-                        palette = Palette.from(resource).generate();
-                        if (palette != null) {
-                            Palette.Swatch dominantSwatch = palette.getDominantSwatch();
-                            if (dominantSwatch != null) {
-                                // To use the palette it must be set inside here
-                                panelBigContainer.setBackgroundColor(dominantSwatch.getRgb());
-                                panelBigTitle.setTextColor(dominantSwatch.getTitleTextColor());
-                                seekBarMaxDuration.setTextColor(dominantSwatch.getBodyTextColor());
-                                seekBarCurrentDuration.setTextColor
-                                        (dominantSwatch.getBodyTextColor());
-                                thumbCard.setCardBackgroundColor(dominantSwatch.getTitleTextColor());
-                                thumbCardDuration.setTextColor(dominantSwatch.getBodyTextColor());
-                            }
-                        }
-                        // FIXME: Need an else statment here? or get rid of this and above if
+                        setColoursForPlayView(resource);
                         return false;
                     }
                 })
                 .apply(myOptions)
                 .into(panelImage);
+    }
+
+    private void setColoursForPlayView(Bitmap resource) {
+        // Sets the panel image and generates the palette from it
+        palette = Palette.from(resource).generate();
+        if (palette != null) {
+            Palette.Swatch dominantSwatch = palette.getDominantSwatch();
+            if (dominantSwatch != null) {
+                // To use the palette it must be set inside here
+                panelBigContainer.setBackgroundColor(dominantSwatch.getRgb());
+                panelBigTitle.setTextColor(dominantSwatch.getTitleTextColor());
+                seekBarMaxDuration.setTextColor(dominantSwatch.getBodyTextColor());
+                seekBarCurrentDuration.setTextColor
+                        (dominantSwatch.getBodyTextColor());
+                thumbCard.setCardBackgroundColor(dominantSwatch.getTitleTextColor());
+                thumbCardDuration.setTextColor(dominantSwatch.getBodyTextColor());
+            }
+        }
+    }
+
+    @Override
+    public void setArtwork600(String artwork) {
+        this.artwork = artwork;
+        startGlide();
     }
 
     @Override

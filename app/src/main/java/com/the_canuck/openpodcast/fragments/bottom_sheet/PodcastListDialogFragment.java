@@ -532,7 +532,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
 
                                     episodes.get(getAdapterPosition()).setDownloadStatus(0);
 
-                                    // FIXME: Doesn't seem to update view with download button
                                     recyclerView.getAdapter()
                                             .notifyItemChanged(getAdapterPosition());
 
@@ -747,8 +746,12 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
 
         @Override
         public int getItemCount() {
-
-            return episodes.size();
+            if (episodes != null) {
+                return episodes.size();
+            } else {
+                // TODO: If episodes is null show an error message or attempt to reopen this
+                return 0;
+            }
         }
 
     }
