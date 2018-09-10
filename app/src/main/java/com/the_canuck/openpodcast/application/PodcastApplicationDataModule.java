@@ -5,6 +5,11 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
+import com.the_canuck.openpodcast.data.discover_list.DiscoverLocalApi;
+import com.the_canuck.openpodcast.data.discover_list.DiscoverLocalApiImpl;
+import com.the_canuck.openpodcast.data.discover_list.DiscoverRepository;
+import com.the_canuck.openpodcast.data.discover_list.DiscoverRepositoryImpl;
 import com.the_canuck.openpodcast.data.episode.EpisodeRepository;
 import com.the_canuck.openpodcast.data.episode.EpisodeRepositoryImpl;
 import com.the_canuck.openpodcast.data.episode.EpisodeServiceApiImpl;
@@ -76,6 +81,25 @@ public class PodcastApplicationDataModule {
     @PodcastApplicationScope
     public PodcastServiceApi podcastServiceApi(MySQLiteHelper sqLiteHelper) {
         return new PodcastServiceApiImpl(sqLiteHelper);
+    }
+
+    @Provides
+    @PodcastApplicationScope
+    public DiscoverLocalApi discoverLocalApi(Gson gson, Context context) {
+        return new DiscoverLocalApiImpl(gson, context);
+    }
+
+    @Provides
+    @PodcastApplicationScope
+    public DiscoverRepository discoverRepository(DiscoverLocalApi discoverLocalApi) {
+        return new DiscoverRepositoryImpl(discoverLocalApi);
+    }
+
+    @Provides
+    @PodcastApplicationScope
+    public Gson gson() {
+        // TODO: Probably move this and rss reader into different modules later
+        return new Gson();
     }
 
 }

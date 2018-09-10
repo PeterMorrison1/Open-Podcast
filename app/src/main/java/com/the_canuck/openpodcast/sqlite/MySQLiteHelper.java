@@ -83,9 +83,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    // TODO: Update MySQLiteHelper to be a singleton, just found out this is best practice
-    // Alternatively could use content providers, but that isn't as easy to refactor as singleton
-
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_SUB_TABLE);
@@ -266,7 +263,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     private Podcast buildPodcast(Cursor cursor) {
         Podcast podcast;
 
-        podcast = new Podcast.PodcastBuilder()
+        podcast = new Podcast()
                 .setCollectionName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE)))
                 .setCensoredName(cursor.getString
                         (cursor.getColumnIndexOrThrow(COLUMN_CENSORED_TITLE)))
@@ -279,8 +276,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                 .setArtworkUrl600(cursor.getString
                         (cursor.getColumnIndexOrThrow(COLUMN_ART_600)))
                 .setNewestDownloadDate((cursor.getString
-                        (cursor.getColumnIndexOrThrow(COLUMN_NEWEST_DOWNLOAD))))
-                .build();
+                        (cursor.getColumnIndexOrThrow(COLUMN_NEWEST_DOWNLOAD))));
 
         return podcast;
     }

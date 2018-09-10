@@ -501,6 +501,7 @@ public class MainActivity extends AppCompatActivity implements
 
         constraints.setRequiredNetworkType(NetworkType.NOT_ROAMING);
 
+        // TODO: Add a tag to the worker so it can be queried later
         // Runs the worker every 24 hours to check for new podcasts
         PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(DownloadWorker.class,
                 24, TimeUnit.HOURS)

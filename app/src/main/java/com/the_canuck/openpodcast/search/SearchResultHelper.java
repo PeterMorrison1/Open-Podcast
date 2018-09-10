@@ -43,7 +43,7 @@ public class SearchResultHelper {
     private Podcast buildPodcast(final JSONObject object) {
         Podcast newPodcast = null;
         try {
-            newPodcast = new Podcast.PodcastBuilder()
+            newPodcast = new Podcast()
                 .setCollectionName(object.getString(ItunesJsonKeys.COLLECTIONNAME.getValue()))
                 .setCensoredName(object.getString
                         (ItunesJsonKeys.COLLECTIONCENSOREDNAME.getValue()))
@@ -56,8 +56,7 @@ public class SearchResultHelper {
                 .setArtworkUrl60(object.getString(ItunesJsonKeys.ARTWORKURL60.getValue()))
                 .setArtworkUrl100(object.getString(ItunesJsonKeys.ARTWORKURL100.getValue()))
                 .setArtworkUrl600(object.getString(ItunesJsonKeys.ARTWORKURL600.getValue()))
-                .setFeedUrl(object.getString(ItunesJsonKeys.FEEDURL.getValue()))
-                .build();
+                .setFeedUrl(object.getString(ItunesJsonKeys.FEEDURL.getValue()));
 
         } catch (JSONException e) {
             e.printStackTrace();

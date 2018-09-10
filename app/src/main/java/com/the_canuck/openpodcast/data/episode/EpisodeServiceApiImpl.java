@@ -14,7 +14,7 @@ import javax.inject.Inject;
 public class EpisodeServiceApiImpl implements EpisodesServiceApi {
 
     private List<Episode> episodeList;
-    MySQLiteHelper sqLiteHelper; // TODO: Must inject with Dagger!!!!!
+    MySQLiteHelper sqLiteHelper;
 
     @Inject
     public EpisodeServiceApiImpl(MySQLiteHelper sqLiteHelper) {

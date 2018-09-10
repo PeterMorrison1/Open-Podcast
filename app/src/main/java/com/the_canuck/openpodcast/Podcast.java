@@ -2,7 +2,9 @@ package com.the_canuck.openpodcast;
 
 import android.support.v7.widget.RecyclerView;
 
+
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class Podcast implements Serializable {
 
@@ -30,18 +32,69 @@ public class Podcast implements Serializable {
     public Podcast() {
     }
 
-    public Podcast(PodcastBuilder builder) {
-        collectionId = builder.collectionId;
-        collectionName = builder.collectionName;
-        artistName = builder.artistName;
-        trackCount = builder.trackCount;
-        artworkUrl30 = builder.artworkUrl30;
-        artworkUrl60 = builder.artworkUrl60;
-        artworkUrl100 = builder.artworkUrl100;
-        artworkUrl600 = builder.artworkUrl600;
-        censoredName = builder.censoredName;
-        feedUrl = builder.feedUrl;
-        newestDownloadDate = builder.newestDownloadDate;
+//    public Podcast(PodcastBuilder builder) {
+//        collectionId = builder.collectionId;
+//        collectionName = builder.collectionName;
+//        artistName = builder.artistName;
+//        trackCount = builder.trackCount;
+//        artworkUrl30 = builder.artworkUrl30;
+//        artworkUrl60 = builder.artworkUrl60;
+//        artworkUrl100 = builder.artworkUrl100;
+//        artworkUrl600 = builder.artworkUrl600;
+//        censoredName = builder.censoredName;
+//        feedUrl = builder.feedUrl;
+//        newestDownloadDate = builder.newestDownloadDate;
+//    }
+
+
+    public Podcast setCollectionId(int collectionId) {
+        this.collectionId = collectionId;
+        return this;
+    }
+
+    public Podcast setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+        return this;
+    }
+
+    public Podcast setArtistName(String artistName) {
+        this.artistName = artistName;
+        return this;
+    }
+
+    public Podcast setTrackCount(int trackCount) {
+        this.trackCount = trackCount;
+        return this;
+    }
+
+    public Podcast setArtworkUrl30(String artworkUrl30) {
+        this.artworkUrl30 = artworkUrl30;
+        return this;
+    }
+
+    public Podcast setArtworkUrl60(String artworkUrl60) {
+        this.artworkUrl60 = artworkUrl60;
+        return this;
+    }
+
+    public Podcast setArtworkUrl100(String artworkUrl100) {
+        this.artworkUrl100 = artworkUrl100;
+        return this;
+    }
+
+    public Podcast setArtworkUrl600(String artworkUrl600) {
+        this.artworkUrl600 = artworkUrl600;
+        return this;
+    }
+
+    public Podcast setCensoredName(String censoredName) {
+        this.censoredName = censoredName;
+        return this;
+    }
+
+    public Podcast setFeedUrl(String feedUrl) {
+        this.feedUrl = feedUrl;
+        return this;
     }
 
     /**
@@ -125,75 +178,75 @@ public class Podcast implements Serializable {
     public String getFeedUrl() {
         return feedUrl;
     }
-
-    public static class PodcastBuilder {
-        String collectionName, artistName, artworkUrl30, artworkUrl60, artworkUrl100,
-                artworkUrl600, censoredName, feedUrl, newestDownloadDate;
-        int trackCount, collectionId;
-
-        public String getNewestDownloadDate() {
-            return newestDownloadDate;
-        }
-
-        public PodcastBuilder setNewestDownloadDate(String newestDownloadDate) {
-            this.newestDownloadDate = newestDownloadDate;
-            return this;
-        }
-
-        public PodcastBuilder setCollectionId(int collectionId) {
-            this.collectionId = collectionId;
-            return this;
-        }
-
-        public PodcastBuilder setCollectionName(String collectionName) {
-            this.collectionName = collectionName;
-            return this;
-        }
-
-        public PodcastBuilder setArtistName(String artistName) {
-            this.artistName = artistName;
-            return this;
-        }
-
-        public PodcastBuilder setArtworkUrl30(String artworkUrl30) {
-            this.artworkUrl30 = artworkUrl30;
-            return this;
-        }
-
-        public PodcastBuilder setArtworkUrl60(String artworkUrl60) {
-            this.artworkUrl60 = artworkUrl60;
-            return this;
-        }
-
-        public PodcastBuilder setArtworkUrl100(String artworkUrl100) {
-            this.artworkUrl100 = artworkUrl100;
-            return this;
-        }
-
-        public PodcastBuilder setArtworkUrl600(String artworkUrl600) {
-            this.artworkUrl600 = artworkUrl600;
-            return this;
-        }
-
-        public PodcastBuilder setTrackCount(int trackCount) {
-            this.trackCount = trackCount;
-            return this;
-        }
-
-        public PodcastBuilder setCensoredName(String censoredName) {
-            this.censoredName = censoredName;
-            return this;
-        }
-
-        public PodcastBuilder setFeedUrl(String feedUrl) {
-            this.feedUrl = feedUrl;
-            return this;
-        }
-
-        public Podcast build() {
-            return new Podcast(this);
-        }
-    }
+//
+//    public static class PodcastBuilder {
+//        String collectionName, artistName, artworkUrl30, artworkUrl60, artworkUrl100,
+//                artworkUrl600, censoredName, feedUrl, newestDownloadDate;
+//        int trackCount, collectionId;
+//
+//        public String getNewestDownloadDate() {
+//            return newestDownloadDate;
+//        }
+//
+//        public PodcastBuilder setNewestDownloadDate(String newestDownloadDate) {
+//            this.newestDownloadDate = newestDownloadDate;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setCollectionId(int collectionId) {
+//            this.collectionId = collectionId;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setCollectionName(String collectionName) {
+//            this.collectionName = collectionName;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setArtistName(String artistName) {
+//            this.artistName = artistName;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setArtworkUrl30(String artworkUrl30) {
+//            this.artworkUrl30 = artworkUrl30;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setArtworkUrl60(String artworkUrl60) {
+//            this.artworkUrl60 = artworkUrl60;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setArtworkUrl100(String artworkUrl100) {
+//            this.artworkUrl100 = artworkUrl100;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setArtworkUrl600(String artworkUrl600) {
+//            this.artworkUrl600 = artworkUrl600;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setTrackCount(int trackCount) {
+//            this.trackCount = trackCount;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setCensoredName(String censoredName) {
+//            this.censoredName = censoredName;
+//            return this;
+//        }
+//
+//        public PodcastBuilder setFeedUrl(String feedUrl) {
+//            this.feedUrl = feedUrl;
+//            return this;
+//        }
+//
+//        public Podcast build() {
+//            return new Podcast(this);
+//        }
+//    }
     @Override
     public String toString() {
         return "Podcast{" +

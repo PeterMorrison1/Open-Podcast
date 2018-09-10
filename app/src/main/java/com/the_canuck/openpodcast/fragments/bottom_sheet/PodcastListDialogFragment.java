@@ -282,7 +282,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
             public void onClick(View v) {
                 /* Set the most recent episode as the pubdate so auto download wont download every
                 episode that exists for this podcast. Then add to sqlite.
-                TODO: Later will be moved to follow MVP better.
                  */
                 podcast.setNewestDownloadDate(episodes.get(0).getPubDate());
                 bottomSheetPresenter.subscribe(podcast, 1);

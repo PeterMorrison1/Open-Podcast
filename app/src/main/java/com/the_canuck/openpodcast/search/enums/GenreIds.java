@@ -20,10 +20,14 @@ public enum GenreIds {
 
 
     private final int value;
+    private static final int SIZE = 16;
     GenreIds(int value) {
         this.value = value;
     }
     public int getValue() {
         return value;
+    }
+    public static int getSize() {
+        return SIZE;
     }
 }

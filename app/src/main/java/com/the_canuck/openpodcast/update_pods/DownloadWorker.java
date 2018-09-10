@@ -32,13 +32,9 @@ public class DownloadWorker extends Worker {
         // sending a Data object to the next worker. Since Data object can only hold key pairs.
         // Then one worker updates a bunch of episodes in sqlite as "To be downloaded" then next worker
         // downloads them.
-        //
-        // UPDATE: Could use singleton sqlite database to do this. But might not change current sol.
-        // UPDATE: About above update see MySQLiteHelper.java
         // ---------------------------------------------------------------------------------------//
-//
+
         populateNewEpList();
-//
         startDownloadHelpers();
 
         Log.d("test", "Exit worker");

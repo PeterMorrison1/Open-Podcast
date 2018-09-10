@@ -17,6 +17,9 @@ import android.widget.ProgressBar;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.activities.MainActivity;
+import com.the_canuck.openpodcast.application.PodcastApplication;
+import com.the_canuck.openpodcast.data.discover_list.DiscoverRepository;
+import com.the_canuck.openpodcast.fragments.FragmentComponent;
 import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
 import com.the_canuck.openpodcast.search.enums.GenreIds;
@@ -24,15 +27,25 @@ import com.the_canuck.openpodcast.search.enums.GenreIds;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * A fragment representing a list of Items.
  * <p/>
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class DiscoverFragment extends Fragment implements View.OnClickListener {
+public class DiscoverFragment extends Fragment implements View.OnClickListener,
+        DiscoverContract.DiscoverView {
 
     private OnListFragmentInteractionListener mListener;
+
+    @Inject
+    public DiscoverRepository discoverRepository;
+
+    public DiscoverContract.DiscoverPresenter discoverPresenter;
+
+    private FragmentComponent component;
 
     private List<RecyclerView> recyclerViews = null;
     List<Button> buttons;
@@ -58,6 +71,12 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        component = PodcastApplication.get().plusFragmentComponent(this);
+        component.inject(this);
+
+        discoverPresenter = new DiscoverPresenter(discoverRepository, this);
+
     }
 
     @Override
@@ -104,9 +123,11 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 
                 recyclerViews.add(recyclerView);
 
-                new SearchTask().execute(genres.get(i));
+//                new SearchTask().execute(genres.get(i));
             }
         }
+
+        discoverPresenter.populatePodcastList();
 
         // set onclicklistener for each button in list
         for (int i = 0; i < buttons.size(); i++) {
@@ -238,6 +259,17 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener {
 //        transaction.replace(R.id.fragment_container, searchFragment);
 //        transaction.addToBackStack("search");
 //        transaction.commit();
+    }
+
+    @Override
+    public void setPodcastList(List<List<Podcast>> podcastLists) {
+        int i = 0;
+        // Checks which genre is being set to an adapter and sets it
+        while (i < podcastLists.size()) {
+            List<Podcast> podcasts = podcastLists.get(i);
+            recyclerViews.get(i).setAdapter(new MyDiscoverRecyclerViewAdapter(podcasts, mListener));
+            i++;
+        }
     }
 
     /**
