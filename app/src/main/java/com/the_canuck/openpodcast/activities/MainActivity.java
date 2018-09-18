@@ -67,8 +67,12 @@ import com.the_canuck.openpodcast.media_player.MediaControlApi;
 import com.the_canuck.openpodcast.media_player.MediaControlApiImpl;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
+import com.the_canuck.openpodcast.search.RssReader;
+import com.the_canuck.openpodcast.search.RssReaderApi;
+import com.the_canuck.openpodcast.search.RssReaderApiImpl;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 import com.the_canuck.openpodcast.update_pods.DownloadWorker;
+import com.the_canuck.openpodcast.update_pods.UpdateHelper;
 
 import java.util.concurrent.TimeUnit;
 
@@ -151,6 +155,9 @@ public class MainActivity extends AppCompatActivity implements
     @Inject
     public Context context;
 
+    @Inject
+    public MySQLiteHelper sqLiteHelper;
+
     public MediaControlApi mediaControlApi;
 
     private MainActivityComponent component;
@@ -220,6 +227,9 @@ public class MainActivity extends AppCompatActivity implements
 
         // creates action/tool bar
         initializeActionBar();
+
+        UpdateHelper updateHelper = new UpdateHelper(sqLiteHelper, getApplicationContext());
+        updateHelper.downloadNewEpisodes();
 
         navigationViewListener();
 

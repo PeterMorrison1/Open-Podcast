@@ -72,7 +72,6 @@ public class DownloadHelper {
                 (Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(
                 Uri.parse(episode.getMediaUrl()));
-        Toast.makeText(context, "Link: " + episode.getMediaUrl(), Toast.LENGTH_LONG).show();
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_PODCASTS,
                 path);
 
