@@ -30,7 +30,6 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
@@ -53,7 +52,6 @@ import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.application.PodcastApplication;
 import com.the_canuck.openpodcast.data.episode.EpisodeRepository;
-import com.the_canuck.openpodcast.data.episode.EpisodeRepositoryImpl;
 import com.the_canuck.openpodcast.data.podcast.PodcastRepository;
 import com.the_canuck.openpodcast.download.DownloadCompleteService;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
@@ -67,12 +65,8 @@ import com.the_canuck.openpodcast.media_player.MediaControlApi;
 import com.the_canuck.openpodcast.media_player.MediaControlApiImpl;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
-import com.the_canuck.openpodcast.search.RssReader;
-import com.the_canuck.openpodcast.search.RssReaderApi;
-import com.the_canuck.openpodcast.search.RssReaderApiImpl;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 import com.the_canuck.openpodcast.update_pods.DownloadWorker;
-import com.the_canuck.openpodcast.update_pods.UpdateHelper;
 
 import java.util.concurrent.TimeUnit;
 
@@ -228,8 +222,8 @@ public class MainActivity extends AppCompatActivity implements
         // creates action/tool bar
         initializeActionBar();
 
-        UpdateHelper updateHelper = new UpdateHelper(sqLiteHelper, getApplicationContext());
-        updateHelper.downloadNewEpisodes();
+//        UpdateHelper updateHelper = new UpdateHelper(sqLiteHelper, getApplicationContext());
+//        updateHelper.downloadNewEpisodes();
 
         navigationViewListener();
 
@@ -522,6 +516,8 @@ public class MainActivity extends AppCompatActivity implements
                 updateWorker);
     }
 
+    // Starts and sets the media controller
+    // Sets last played episode as currently playing if there was one last session
     public MediaBrowserCompat.ConnectionCallback mediaBrowserConnectionCallback =
             new MediaBrowserCompat.ConnectionCallback() {
 
@@ -549,6 +545,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
             };
 
+    // Check if the media is playing or paused, and set current state as that
     private MediaControllerCompat.Callback mediaControllerCallback =
             new MediaControllerCompat.Callback() {
         @Override
@@ -878,6 +875,9 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    /**
+     * Fetches and sets the image for the podcast artwork using Glide.
+     */
     private void startGlide() {
         // Anything requiring palette colours MUST be inside onResourceReady below!
         RequestOptions myOptions = new RequestOptions()
@@ -909,6 +909,11 @@ public class MainActivity extends AppCompatActivity implements
                 .into(panelImage);
     }
 
+    /**
+     * Sets the colours for the play slide up panel, using the palette for the podcast.
+     *
+     * @param resource the image of the podcast artwork to use for palette generation
+     */
     private void setColoursForPlayView(Bitmap resource) {
         // Sets the panel image and generates the palette from it
         palette = Palette.from(resource).generate();

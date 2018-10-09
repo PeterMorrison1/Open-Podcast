@@ -62,8 +62,6 @@ public class RssReader {
 
             stream = new URL(url).openConnection().getInputStream();
             xmlParser.setInput(stream, null);
-            Log.d("test", "Test entered rss reader");
-
 
             int event = xmlParser.getEventType();
             boolean done = false;

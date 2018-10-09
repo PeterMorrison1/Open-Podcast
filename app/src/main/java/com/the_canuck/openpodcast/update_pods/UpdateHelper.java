@@ -29,9 +29,13 @@ public class UpdateHelper {
         this.context = context;
     }
 
+    /**
+     * Parse all autoUpdate podcasts for new episodes, then download the episodes.
+     */
     public void downloadNewEpisodes() {
+        // TODO: Remove all Logs before final release
         populateNewEpList();
-//        startDownloadHelpers();
+        startDownloadHelpers();
     }
 
     /**
@@ -42,10 +46,10 @@ public class UpdateHelper {
         Log.d("test", "Enter downlodaHelpers");
 
         try {
-                    /* Starts a downloadHelper for each new episode then updates database that this ep is
-        downloading. The DownloadReceiver broadcastreceiver should catch and handle the
-        onComplete part, but need to still call the DownloadCompleteService.
-         */
+            /* Starts a downloadHelper for each new episode then updates database that this ep is
+            downloading. The DownloadReceiver broadcastreceiver should catch and handle the
+            onComplete part, but need to still call the DownloadCompleteService.
+             */
             for (Episode episode : newEpisodeList) {
                 Log.d("test", "Enter downlodaHelpers for loop");
                 Log.d("test", "Enter downlodaHelpers for loop array size: " + newEpisodeList.size());
@@ -77,22 +81,15 @@ public class UpdateHelper {
         RssReader reader = new RssReader();
         RssReaderApi readerApi = new RssReaderApiImpl(reader);
 
-
         final List<Podcast> podcastList = sqLiteHelper.getAutoUpdatePods();
         Log.d("test", "pass updatePods call");
 
 //        podcastList.get(0).setNewestDownloadDate("Mon, 07 May 2018 11:10:28 +0000");
-//
 //        sqLiteHelper.updatePodcast(podcastList.get(0), 1);
+
         // Checks all autoupdate podcasts episode list for new episodes
         for (final Podcast podcast: podcastList) {
             Log.d("test", "Title: " + podcast.getCollectionName());
-//            RssReader reader = new RssReader(podcast.getFeedUrl());
-//            reader.setCollectionId(podcast.getCollectionId());
-//            reader.setCollectionArtist(podcast.getArtistName());
-
-
-//            List<Episode> episodeList = reader.createEpisodeList(podcast.getFeedUrl(), podcast.getCollectionId(), podcast.getArtistName());
 
             readerApi.getEpisodes(podcast.getFeedUrl(), podcast.getCollectionId(),
                     podcast.getArtistName(), new RssReaderApi.RssServiceCallback<List<Episode>>() {
