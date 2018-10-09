@@ -144,6 +144,11 @@ public class BottomSheetPresenter implements BottomSheetContract.BottomSheetPres
     }
 
     @Override
+    public void updatePodcast(Podcast podcast, int autoUpdate) {
+        podcastRepository.updatePodcast(podcast, autoUpdate);
+    }
+
+    @Override
     public void doesPodcastExist(Podcast podcast) {
         podcastRepository.doesPodcastExist(podcast, new PodcastRepository.GetPodcastExistCallback() {
             @Override

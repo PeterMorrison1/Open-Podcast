@@ -8,9 +8,12 @@ public class PreferenceKeys {
 
     // Preference file keys
     public static String PREF_DOWNLOADS = "pref_downloads";
+    public static String PREF_AUTO_UPDATE = "pref_auto_update";
 
     // Preference individual data keys
 
     // if there are files in pref_downloads waiting to be updated in database
     public static String IS_FINISHED_DOWNLOADS = "is_finished_downloads";
+
+
 }

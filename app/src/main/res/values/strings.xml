@@ -29,6 +29,9 @@
     <string name="delete_episode">Delete Episode</string>
     <string name="close_dialog">Close</string>
 
+    <!--Podcast Settings-->
+    <string name="auto_update">Auto Update</string>
+
     <!--Array strings-->
     <string name="network_connected">Any network</string>
     <string name="network_unmetered">Un-metered network</string>

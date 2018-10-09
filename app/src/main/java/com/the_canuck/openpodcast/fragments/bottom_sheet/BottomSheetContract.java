@@ -50,7 +50,7 @@ public interface BottomSheetContract {
 
         void unsubscribe(Podcast podcast);
 
-
+        void updatePodcast(Podcast podcast, int autoUpdate);
 
 
         // Download manager

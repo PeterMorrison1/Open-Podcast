@@ -22,10 +22,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -310,13 +312,57 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
         });
     }
 
+    /**
+     * Sets the onclicklistener for the podcast popupmenu element.
+     */
     private void settingsButtonListener() {
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(context, "settings", Toast.LENGTH_SHORT).show();
+                showSettingsPopup(v);
             }
         });
+    }
+
+    /**
+     * Displays the podcast settings menu, and onclicklisteners for it's menu items.
+     *
+     * @param v the view of the button clicked to open the popupmenu
+     */
+    private void showSettingsPopup(View v) {
+        final SharedPreferences prefs = context.getSharedPreferences(PreferenceKeys.PREF_AUTO_UPDATE,
+                MODE_PRIVATE);
+        final PopupMenu popupMenu = new PopupMenu(context, v);
+        popupMenu.getMenuInflater().inflate(R.menu.popup_menu, popupMenu.getMenu());
+
+        // Sets the auto update button to be clicked or not, based on saved podcast info
+        final boolean isAutoUpdate = prefs.getBoolean(podcast.getCollectionName(), true);
+        popupMenu.getMenu().getItem(0).setChecked(isAutoUpdate);
+
+        // Sets click listener for each menu item
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                boolean mAutoUpdatePod = !isAutoUpdate;
+                int update;
+
+                // Can put switch statement here in future if more settings are added
+                popupMenu.getMenu().getItem(0).setChecked(mAutoUpdatePod);
+                prefs.edit().putBoolean(podcast.getCollectionName(), mAutoUpdatePod).apply();
+
+                // Updates the podcast's auto update status in sqlite
+                if (mAutoUpdatePod) {
+                    update = 1;
+                } else {
+                    update = 0;
+                }
+                bottomSheetPresenter.updatePodcast(podcast, update);
+                return false;
+            }
+        });
+
+        popupMenu.show();
     }
 
     @Override
