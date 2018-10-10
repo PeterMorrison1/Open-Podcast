@@ -12,6 +12,8 @@ public interface LibraryContract {
 
         void showSubscribedPodcasts(List<Podcast> podcasts);
 
+        void populatePodcastViews();
+
 //        void setColumnCount(int columnCount);
 
     }

@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.session.MediaControllerCompat;
 
+import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.media_player.MediaControlApi;
 
 public interface MainActivityContract {
@@ -15,6 +16,13 @@ public interface MainActivityContract {
         void setMediaState(int state);
 
         void setPosition(long position);
+
+        /**
+        * Sets the current episode for the sliding panel and the var currentEpisode.
+        *
+        * @param episode the episode to be set as the current one
+        */
+        void setCurrentEpisode(Episode episode);
     }
 
     interface MainActivityPresenter {
@@ -38,5 +46,7 @@ public interface MainActivityContract {
         void getState();
 
         void getPosition();
+
+        void getLastPlayedEp();
     }
 }

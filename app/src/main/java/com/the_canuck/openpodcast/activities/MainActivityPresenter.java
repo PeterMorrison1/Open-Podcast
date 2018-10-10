@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.session.MediaControllerCompat;
 
+import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.data.episode.EpisodeRepository;
 import com.the_canuck.openpodcast.data.podcast.PodcastRepository;
 import com.the_canuck.openpodcast.media_player.MediaControlApi;
 
@@ -13,12 +15,16 @@ public class MainActivityPresenter implements MainActivityContract.MainActivityP
 
     private PodcastRepository podcastRepository;
 
+    private EpisodeRepository episodeRepository;
+
     private MediaControlApi mediaControlApi;
 
     public MainActivityPresenter(MainActivityContract.MainActivityView mainActivityView,
-                                 PodcastRepository podcastRepository) {
+                                 PodcastRepository podcastRepository,
+                                 EpisodeRepository episodeRepository) {
         this.mainActivityView = mainActivityView;
         this.podcastRepository = podcastRepository;
+        this.episodeRepository = episodeRepository;
     }
 
     // -------------------------------- SQL --------------------------------
@@ -30,6 +36,16 @@ public class MainActivityPresenter implements MainActivityContract.MainActivityP
             @Override
             public void onArtworkLoaded(String artworkUrl) {
                 mainActivityView.setArtwork600(artworkUrl);
+            }
+        });
+    }
+
+    @Override
+    public void getLastPlayedEp() {
+        episodeRepository.getLastPlayed(new EpisodeRepository.GetEpisodeCallback() {
+            @Override
+            public void onEpisodeLoaded(Episode episode) {
+                mainActivityView.setCurrentEpisode(episode);
             }
         });
     }

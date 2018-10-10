@@ -149,9 +149,6 @@ public class MainActivity extends AppCompatActivity implements
     @Inject
     public Context context;
 
-    @Inject
-    public MySQLiteHelper sqLiteHelper;
-
     public MediaControlApi mediaControlApi;
 
     private MainActivityComponent component;
@@ -182,7 +179,8 @@ public class MainActivity extends AppCompatActivity implements
                 mediaBrowserConnectionCallback, getIntent().getExtras());
         mediaBrowserCompat.connect();
 
-        mainActivityPresenter = new MainActivityPresenter(this, podcastRepository);
+        mainActivityPresenter = new MainActivityPresenter(this, podcastRepository,
+                episodeRepository);
 
         initializeViews();
 
@@ -629,9 +627,11 @@ public class MainActivity extends AppCompatActivity implements
      * the returned episode, if it exists.
      */
     private void initializeLastPlayedEp() {
-        MySQLiteHelper sqLiteHelper = new MySQLiteHelper(this);
-        Episode episode = sqLiteHelper.getLastPlayedEpisode();
+        mainActivityPresenter.getLastPlayedEp();
+    }
 
+    @Override
+    public void setCurrentEpisode(Episode episode) {
         if (episode != null && episode.getTitle() != null) {
             currentEpisode = episode;
             setSlidingPanelEpisode(currentEpisode);

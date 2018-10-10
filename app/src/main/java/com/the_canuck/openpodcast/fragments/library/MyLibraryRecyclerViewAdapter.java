@@ -108,7 +108,12 @@ public class MyLibraryRecyclerViewAdapter extends
 
     @Override
     public int getItemCount() {
-        return mValues.size();
+        if (mValues != null) {
+            return mValues.size();
+        } else {
+            // TODO: If episodes is null show an error message or attempt to reopen this
+            return 0;
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
