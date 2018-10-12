@@ -1,4 +1,4 @@
-package com.the_canuck.openpodcast.fragments.bottom_sheet;
+package com.the_canuck.openpodcast.misc_helpers;
 
 import com.the_canuck.openpodcast.Episode;
 

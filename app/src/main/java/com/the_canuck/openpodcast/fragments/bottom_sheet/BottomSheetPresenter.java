@@ -90,17 +90,6 @@ public class BottomSheetPresenter implements BottomSheetContract.BottomSheetPres
                 getDescription();
             }
         });
-//        sqLiteHelper = new MySQLiteHelper(context);
-//        reader = new RssReader(feed);
-//
-//        bottomSheetView.showLoadingIndicator(true);
-//
-//        if (episodeListTask == null || !episodeListTask.isRunning()) {
-//            episodeListTask = new EpisodeListTask(bottomSheetView, collectionId, artist,
-//                    sqLiteHelper, reader);
-//
-//            episodeListTask.execute();
-//        }
     }
 //    @Override
 //    public void stop() {
@@ -117,7 +106,6 @@ public class BottomSheetPresenter implements BottomSheetContract.BottomSheetPres
                 if (string != null) {
                     bottomSheetView.setPodcastDescription(string);
                 } else {
-                    // TODO: Change to a string in Strings.xml later
                     bottomSheetView.setPodcastDescription("Podcast Description Failed to load");
                 }
             }

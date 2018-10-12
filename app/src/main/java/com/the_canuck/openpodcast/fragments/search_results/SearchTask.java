@@ -25,6 +25,7 @@ public class SearchTask extends AsyncTask<String, Void, List<Podcast>> {
         return getStatus() == Status.RUNNING;
     }
 
+    // TODO: I want to rework the search stuff to have to access a repository to handle everything
     @Override
     protected List<Podcast> doInBackground(String... strings) {
         SearchHelper searchHelper;

@@ -1,7 +1,7 @@
 package com.the_canuck.openpodcast.data.episode;
 
 import com.the_canuck.openpodcast.Episode;
-import com.the_canuck.openpodcast.fragments.bottom_sheet.EpisodeListSorter;
+import com.the_canuck.openpodcast.misc_helpers.EpisodeListSorter;
 import com.the_canuck.openpodcast.search.RssReaderApi;
 
 import java.util.List;
