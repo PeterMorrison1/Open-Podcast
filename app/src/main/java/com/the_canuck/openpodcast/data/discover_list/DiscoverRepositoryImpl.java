@@ -33,9 +33,9 @@ public class DiscoverRepositoryImpl implements DiscoverRepository {
                     }
                 });
             }
-            if (cachedLists.size() == GenreIds.getSize()) {
+//            if (cachedLists.size() == GenreIds.getSize()) {
                 callback.onListsLoaded(cachedLists);
-            }
+//            }
         } else {
             callback.onListsLoaded(cachedLists);
         }
@@ -54,5 +54,11 @@ public class DiscoverRepositoryImpl implements DiscoverRepository {
     @Override
     public void refreshCache() {
         cachedLists = null;
+    }
+
+    // Setter for tests
+
+    protected void setCachedLists(List<List<Podcast>> cachedLists) {
+        this.cachedLists = cachedLists;
     }
 }

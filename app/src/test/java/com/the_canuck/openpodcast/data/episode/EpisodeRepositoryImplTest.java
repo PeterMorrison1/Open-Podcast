@@ -26,9 +26,6 @@ public class EpisodeRepositoryImplTest {
     private RssReaderApi readerApi;
 
     @Mock
-    private EpisodeListSorter episodeListSorter;
-
-    @Mock
     private EpisodeRepository.LoadEpisodesCallback loadEpisodesCallback;
 
     @Mock
