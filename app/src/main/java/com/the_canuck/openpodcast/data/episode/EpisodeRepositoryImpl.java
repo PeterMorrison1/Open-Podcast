@@ -27,7 +27,8 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
     }
 
     @Override
-    public void getAllEpisodesSorted(final String feed, final int collectionId, final String artist, final LoadEpisodesCallback callback) {
+    public void getAllEpisodesSorted(final String feed, final int collectionId, final String artist,
+                                     final LoadEpisodesCallback callback) {
         if (cachedEpisodeList != null && cachedEpisodeList.get(0).getCollectionId() != collectionId) {
             refreshData();
         }
@@ -42,15 +43,7 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
                         getNonDownloadedEpisodes(feed, collectionId, artist, new LoadEpisodesCallback() {
                             @Override
                             public void onEpisodesLoaded(List<Episode> episodes) {
-
-                                // finally create the final sorted episode list
-                                if (cachedDownloadList == null || cachedDownloadList.isEmpty()) {
-                                    cachedEpisodeList = cachedNonDownloadedList;
-                                } else {
-                                    cachedEpisodeList = EpisodeListSorter.sortTwoEpisodeLists(cachedNonDownloadedList,
-                                            cachedDownloadList);
-                                }
-
+                                combineCachedLists();
                                 callback.onEpisodesLoaded(cachedEpisodeList);
                             }
                         });
@@ -90,6 +83,8 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
                     callback.onEpisodesLoaded(episodes);
                 }
             });
+        } else {
+            callback.onEpisodesLoaded(cachedNonDownloadedList);
         }
     }
 
@@ -149,5 +144,36 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
             callback.onStringReturned(cachedDescription);
         }
 
+    }
+
+    // Helper methods
+    protected void combineCachedLists() {
+        // finally create the final sorted episode list
+        if (cachedDownloadList == null || cachedDownloadList.isEmpty()) {
+            cachedEpisodeList = cachedNonDownloadedList;
+        } else {
+            cachedEpisodeList = EpisodeListSorter.sortTwoEpisodeLists(cachedNonDownloadedList,
+                    cachedDownloadList);
+        }
+    }
+
+    // For testing purposes
+    protected EpisodeRepositoryImpl setCachedEpisodeList(List<Episode> cachedEpisodeList) {
+        this.cachedEpisodeList = cachedEpisodeList;
+        return this;
+    }
+
+    protected List<Episode> getCachedEpisodeList() {
+        return cachedEpisodeList;
+    }
+
+    protected EpisodeRepositoryImpl setCachedDownloadList(List<Episode> cachedDownloadList) {
+        this.cachedDownloadList = cachedDownloadList;
+        return this;
+    }
+
+    protected EpisodeRepositoryImpl setCachedNonDownloadedList(List<Episode> cachedNonDownloadedList) {
+        this.cachedNonDownloadedList = cachedNonDownloadedList;
+        return this;
     }
 }
