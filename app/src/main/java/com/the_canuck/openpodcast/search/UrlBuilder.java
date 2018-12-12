@@ -19,8 +19,9 @@ public class UrlBuilder {
      *
      * @return encoded query terms
      */
+    @Deprecated
     public String encodeQueryTerms(String query) {
-        // Not 100% if this is useful. TODO: Test if this is needed.
+        // TODO: Can delete this, createQueryUrl already does necessary encoding, double check first
         String encodedTerms = "";
         try {
             encodedTerms = URLEncoder.encode(query, "UTF-8");
