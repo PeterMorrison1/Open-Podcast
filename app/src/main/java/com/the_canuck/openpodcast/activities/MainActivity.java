@@ -68,6 +68,7 @@ import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 import com.the_canuck.openpodcast.update_pods.DownloadWorker;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -337,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements
         try {
             setSupportActionBar(toolbar);
             actionBar = getSupportActionBar();
-            actionBar.setDisplayHomeAsUpEnabled(true);
+            Objects.requireNonNull(actionBar, "Bar must not be null.").setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
         } catch (NullPointerException e) {
             e.printStackTrace();
@@ -831,7 +832,8 @@ public class MainActivity extends AppCompatActivity implements
         final MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) searchItem.getActionView();
 
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setSearchableInfo(Objects.requireNonNull(searchManager,
+                "Search Manager must not be null").getSearchableInfo(getComponentName()));
 //        searchView.setSubmitButtonEnabled(true);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -871,8 +873,6 @@ public class MainActivity extends AppCompatActivity implements
 
         String maxDuration = "/  " + episode.getDuration();
         seekBarMaxDuration.setText(maxDuration);
-
-
     }
 
     /**
@@ -917,18 +917,16 @@ public class MainActivity extends AppCompatActivity implements
     private void setColoursForPlayView(Bitmap resource) {
         // Sets the panel image and generates the palette from it
         palette = Palette.from(resource).generate();
-        if (palette != null) {
-            Palette.Swatch dominantSwatch = palette.getDominantSwatch();
-            if (dominantSwatch != null) {
-                // To use the palette it must be set inside here
-                panelBigContainer.setBackgroundColor(dominantSwatch.getRgb());
-                panelBigTitle.setTextColor(dominantSwatch.getTitleTextColor());
-                seekBarMaxDuration.setTextColor(dominantSwatch.getBodyTextColor());
-                seekBarCurrentDuration.setTextColor
-                        (dominantSwatch.getBodyTextColor());
-                thumbCard.setCardBackgroundColor(dominantSwatch.getTitleTextColor());
-                thumbCardDuration.setTextColor(dominantSwatch.getBodyTextColor());
-            }
+        Palette.Swatch dominantSwatch = palette.getDominantSwatch();
+        if (dominantSwatch != null) {
+            // To use the palette it must be set inside here
+            panelBigContainer.setBackgroundColor(dominantSwatch.getRgb());
+            panelBigTitle.setTextColor(dominantSwatch.getTitleTextColor());
+            seekBarMaxDuration.setTextColor(dominantSwatch.getBodyTextColor());
+            seekBarCurrentDuration.setTextColor
+                    (dominantSwatch.getBodyTextColor());
+            thumbCard.setCardBackgroundColor(dominantSwatch.getTitleTextColor());
+            thumbCardDuration.setTextColor(dominantSwatch.getBodyTextColor());
         }
     }
 

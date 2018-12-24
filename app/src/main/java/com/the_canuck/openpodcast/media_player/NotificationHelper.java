@@ -26,10 +26,12 @@ public class NotificationHelper {
         MediaMetadataCompat mediaMetadataCompat = controllerCompat.getMetadata();
         MediaDescriptionCompat descriptionCompat = mediaMetadataCompat.getDescription();
 
-        // Makes the episode title bold
+        // Makes the episode title and bold it if not null
         Spannable title = new SpannableString(descriptionCompat.getTitle());
-        title.setSpan(new StyleSpan(Typeface.BOLD), 0, descriptionCompat.getTitle().length(),
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (descriptionCompat.getTitle() != null) {
+            title.setSpan(new StyleSpan(Typeface.BOLD), 0, descriptionCompat.getTitle().length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
 
         // The intent to start/open the main activity when notification is clicked
         Intent intent = new Intent(context, MainActivity.class);

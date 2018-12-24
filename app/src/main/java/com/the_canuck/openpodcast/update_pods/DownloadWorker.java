@@ -22,14 +22,10 @@ public class DownloadWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        // TODO: Remove logs before final release
-        Log.d("test", "Enter worker");
         sqLiteHelper = new MySQLiteHelper(getApplicationContext());
 
         UpdateHelper updateHelper = new UpdateHelper(sqLiteHelper, getApplicationContext());
         updateHelper.downloadNewEpisodes();
-
-        Log.d("test", "Exit worker");
 
         // TODO: Maybe set try-catch around method calls to be able to return Result.FAILURE
         return Result.SUCCESS;

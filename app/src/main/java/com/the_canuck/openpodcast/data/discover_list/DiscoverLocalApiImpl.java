@@ -1,6 +1,7 @@
 package com.the_canuck.openpodcast.data.discover_list;
 
 import android.content.Context;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.the_canuck.openpodcast.Podcast;
@@ -46,8 +47,9 @@ public class DiscoverLocalApiImpl implements DiscoverLocalApi {
             }
 
             callback.onPodcastsLoaded(podcastList);
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException | ArrayIndexOutOfBoundsException e ) {
             e.printStackTrace();
+            Toast.makeText(context, "Failed to read discover podcast list", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -57,7 +59,7 @@ public class DiscoverLocalApiImpl implements DiscoverLocalApi {
      * @param genre the genre/category which is the name of the file
      * @return the InputStream of the raw resource file.
      */
-    public InputStream getInputStream(int genre) {
+    private InputStream getInputStream(int genre) {
         // Currently returns same file for testing purposes, switch statement will be here
         // when all the files are made
         final int ARTS = 1301;

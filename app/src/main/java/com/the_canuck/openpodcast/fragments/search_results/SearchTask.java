@@ -6,6 +6,7 @@ import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.search.SearchHelper;
 import com.the_canuck.openpodcast.search.SearchResultHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +37,14 @@ public class SearchTask extends AsyncTask<String, Void, List<Podcast>> {
             searchHelper = new SearchHelper(strings[0]);
         }
         SearchResultHelper resultHelper = new SearchResultHelper();
-        podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
+
+        try {
+            podcastList = resultHelper.populatePodcastList(searchHelper.runSearch());
+        } catch (Exception e) {
+            // Catches for when internet is not connected
+            e.printStackTrace();
+            podcastList = new ArrayList<>();
+        }
 
         return podcastList;
     }

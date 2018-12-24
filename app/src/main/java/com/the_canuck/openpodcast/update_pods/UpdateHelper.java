@@ -33,7 +33,6 @@ public class UpdateHelper {
      * Parse all autoUpdate podcasts for new episodes, then download the episodes.
      */
     public void downloadNewEpisodes() {
-        // TODO: Remove all Logs before final release
         populateNewEpList();
         startDownloadHelpers();
     }
@@ -43,23 +42,15 @@ public class UpdateHelper {
      * populateNewEpList().
      */
     private void startDownloadHelpers() {
-        Log.d("test", "Enter downlodaHelpers");
-
         try {
             /* Starts a downloadHelper for each new episode then updates database that this ep is
             downloading. The DownloadReceiver broadcastreceiver should catch and handle the
             onComplete part, but need to still call the DownloadCompleteService.
              */
             for (Episode episode : newEpisodeList) {
-                Log.d("test", "Enter downlodaHelpers for loop");
-                Log.d("test", "Enter downlodaHelpers for loop array size: " + newEpisodeList.size());
-
-
                 DownloadHelper downloadHelper = new DownloadHelper(episode,
                         episode.getCollectionId(), context);
                 long enqueue = downloadHelper.downloadEpisode();
-                Log.d("test", "Enter downlodaHelpers start download");
-
 
                 episode.setDownloadId(enqueue);
                 episode.setDownloadStatus(Episode.CURRENTLY_DOWNLOADING);
@@ -68,42 +59,30 @@ public class UpdateHelper {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        Log.d("test", "Exit downlodaHelpers");
-
     }
 
     /**
      * Creates an arrayList of episodes that are new from podcasts marked as AutoUpdate == 1.
      */
     private void populateNewEpList() {
-        Log.d("test", "Enter worker populateneweplist");
 
         RssReader reader = new RssReader();
         RssReaderApi readerApi = new RssReaderApiImpl(reader);
 
         final List<Podcast> podcastList = sqLiteHelper.getAutoUpdatePods();
-        Log.d("test", "pass updatePods call");
-
-//        podcastList.get(0).setNewestDownloadDate("Mon, 07 May 2018 11:10:28 +0000");
-//        sqLiteHelper.updatePodcast(podcastList.get(0), 1);
 
         // Checks all autoupdate podcasts episode list for new episodes
         for (final Podcast podcast: podcastList) {
-            Log.d("test", "Title: " + podcast.getCollectionName());
 
             readerApi.getEpisodes(podcast.getFeedUrl(), podcast.getCollectionId(),
                     podcast.getArtistName(), new RssReaderApi.RssServiceCallback<List<Episode>>() {
                 @Override
                 public void onLoaded(List<Episode> episodes) {
 
-                    Log.d("test", "newest date for podcast: " + podcast.getNewestDownloadDate());
 
                     // checks episode list of current podcast for new episodes
                     for (int i = 0; i < episodes.size(); i++) {
                         Episode episode = episodes.get(i);
-                        Log.d("test", "newArray size: " + newEpisodeList.size());
-                        Log.d("test", "In for loop after on loaded, title: " + episode.getTitle());
-                        Log.d("test", "Episode Pub date: " + episode.getPubDate());
 
                         String downloadDate;
                         if (podcast.getNewestDownloadDate() == null) {
@@ -114,8 +93,6 @@ public class UpdateHelper {
 
                         int position = ListHelper.determineNewerDate(downloadDate,
                                 episode.getPubDate());
-                        Log.d("test", "Position: " + position);
-
 
                         // if a new episode, add to newEpisodeList else go to next podcast
                         // Yes, in this instance new episodes would be -1
@@ -133,7 +110,6 @@ public class UpdateHelper {
                     }
                     podcastsParsed++;
                     if (podcastsParsed >= podcastList.size() && !podcastList.isEmpty()) {
-                        Log.d("test", "---------- DONE ALL PODCAST PARSING ----------");
                         startDownloadHelpers();
                     }
                 }

@@ -1,5 +1,7 @@
 package com.the_canuck.openpodcast.data.episode;
 
+import android.widget.Toast;
+
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.misc_helpers.EpisodeListSorter;
 import com.the_canuck.openpodcast.search.RssReaderApi;
@@ -29,7 +31,12 @@ public class EpisodeRepositoryImpl implements EpisodeRepository {
     @Override
     public void getAllEpisodesSorted(final String feed, final int collectionId, final String artist,
                                      final LoadEpisodesCallback callback) {
-        if (cachedEpisodeList != null && cachedEpisodeList.get(0).getCollectionId() != collectionId) {
+        try {
+            if (cachedEpisodeList != null && cachedEpisodeList.get(0).getCollectionId() != collectionId) {
+                refreshData();
+            }
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
             refreshData();
         }
         // Check if cachedDownloadList exists, if not get it
