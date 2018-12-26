@@ -15,7 +15,7 @@ import java.util.List;
 public class SearchTask extends AsyncTask<String, Void, List<Podcast>> {
 
     private SearchContract.SearchView searchView;
-    private boolean isGenre; // TODO: Delete after discovery rework
+    private boolean isGenre;
 
     public SearchTask(SearchContract.SearchView searchView, boolean isGenre) {
         this.searchView = searchView;

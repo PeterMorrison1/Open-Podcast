@@ -28,6 +28,7 @@ public class ListHelper {
     public static int getSortedIndex(String pubDate, List<Episode> episodeList) {
         // Checks to see which episode was published first, adds episode to appropriate index
         // FIXME: Only returning the initial value of position. Maybe put directly in getEpisodes()
+        // FIXME: Seems to work for what we want, fix the hack on a later date.
         int position = -1;
         Date currentEpisodeDate;
         DateFormat formatter = new SimpleDateFormat

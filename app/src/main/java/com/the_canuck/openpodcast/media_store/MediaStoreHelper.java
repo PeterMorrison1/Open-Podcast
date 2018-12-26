@@ -9,6 +9,7 @@ import android.provider.MediaStore;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
+import com.the_canuck.openpodcast.misc_helpers.StringHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
 
 import org.apache.commons.io.FilenameUtils;
@@ -71,7 +72,6 @@ public class MediaStoreHelper {
                        (MediaStore.Audio.Media.SIZE));
 
                 // Commenting out bookmark before removing later. Using sqlite for bookmark instead
-                // TODO: Delete bookmark stuff in mediastore if I decide to not use it
 //                String bookmark = cursor.getString(cursor.getColumnIndexOrThrow
 //                       (MediaStore.Audio.Media.BOOKMARK));
 
@@ -102,9 +102,12 @@ public class MediaStoreHelper {
             String titleNoExtension = FilenameUtils.getBaseName(title);
 //            String titleNoExtension = title.substring(0, title.lastIndexOf('.'));
 
-            // TODO: Change to utf-8 encoding for title
+            String encodedTitle = StringHelper.encodeFileName(episode.getTitle());
+
             // If the title found in mediastore equals the passed in title
-            if (titleNoExtension.equalsIgnoreCase(episode.getTitle().replaceAll("/", " "))) {
+//            if (titleNoExtension.equalsIgnoreCase(episode.getTitle().replaceAll("/", " "))) {
+            if (titleNoExtension.equalsIgnoreCase(encodedTitle)) {
+
                 Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
 
                 // Creates the file path to the episode to delete
@@ -145,10 +148,9 @@ public class MediaStoreHelper {
             String titleNoExtension = FilenameUtils.getBaseName(title);
 
             // If the title found in mediastore equals the passed in title
-            // FIXME: Update this with UTF-8 encoding when I do in DownloadHelper!
-            String episodeTitle = episode.getTitle();
-            episodeTitle = episodeTitle.replaceAll("/", " ");
-            episodeTitle = episodeTitle.replaceAll("#", " ");
+            String episodeTitle = StringHelper.encodeFileName(episode.getTitle());
+//            episodeTitle = episodeTitle.replaceAll("/", " ");
+//            episodeTitle = episodeTitle.replaceAll("#", " ");
             if (titleNoExtension.equalsIgnoreCase(episodeTitle)) {
 
                 uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);

@@ -53,7 +53,6 @@ import com.the_canuck.openpodcast.fragments.FragmentComponent;
 import com.the_canuck.openpodcast.fragments.library.MyLibraryRecyclerViewAdapter;
 import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
-import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -606,7 +605,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
                     if (mListener != null) {
                         // Creates and sets the download helper for the episode clicked
                         final DownloadHelper downloadHelper = new
-                                DownloadHelper(episodes.get(getAdapterPosition()), collectionId,
+                                DownloadHelper(episodes.get(getAdapterPosition()),
                                 context);
 
                         DownloadHelperApi downloadHelperApi = new DownloadHelperApiImpl(downloadHelper);

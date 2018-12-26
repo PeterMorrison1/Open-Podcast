@@ -8,12 +8,11 @@ import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.webkit.MimeTypeMap;
-import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
-import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
+import com.the_canuck.openpodcast.misc_helpers.StringHelper;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -29,7 +28,6 @@ public class DownloadHelper {
     public final static String STATUS_SUCCESSFUL = "STATUS_SUCCESSFUL";
 
     private Episode episode;
-    private int collectionId;
     private Context context;
     private long enqueue;
     private DownloadManager downloadManager;
@@ -38,10 +36,8 @@ public class DownloadHelper {
     public DownloadHelper() {
     }
 
-    // TODO: Remove collectionid param, its stored in episode now
-    public DownloadHelper(Episode episode, int collectionId, Context context) {
+    public DownloadHelper(Episode episode, Context context) {
         this.episode = episode;
-        this.collectionId = collectionId;
         this.context = context;
     }
 
@@ -58,13 +54,15 @@ public class DownloadHelper {
 
         String mimeType = getMimeType(episode.getMediaUrl());
 
-        // FIXME: Encode the file name in utf-8!! Must be done before release!
         // Replacing invalid characters was a quick and very dirty hack, will be encoded instead
-        String title = episode.getTitle();
-        title = title.replaceAll("/", " ");
-        title = title.replaceAll("#", " ");
+//        title = title.replaceAll("/", " ");
+//        title = title.replaceAll("#", " ");
+        // Has been replaced with proper encoding now. Leaving this in just incase for now.
 
-        path = File.separator + collectionId + File.separator
+        String title = episode.getTitle();
+        title = StringHelper.encodeFileName(title);
+
+        path = File.separator + episode.getCollectionId() + File.separator
                 + title + "."
                 + FilenameUtils.getExtension(episode.getMediaUrl());
 

@@ -144,7 +144,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener,
      * @return list of every more button
      */
     public List<Button> createButtonList(View view) {
-        // TODO: Reworking discovery page, will remove "More" Buttons
         // Create list of views used in genre screen
         List<Button> views = new ArrayList<>();
         views.add((Button) view.findViewById(R.id.arts_button));
@@ -226,7 +225,6 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void onClick(View v) {
-        // TODO: Removing all "More" Buttons later, so don't bother working with this
         String genreId = null;
 
         int i = 0;
@@ -277,7 +275,7 @@ public class DiscoverFragment extends Fragment implements View.OnClickListener,
      */
     private class SearchTask extends AsyncTask<Integer, Void, List<Podcast>> {
 
-        // TODO: This is going to be completely removed on discovery page rework
+        // TODO: This is done by search intent now. can delete
 
         @Override
         protected List<Podcast> doInBackground(Integer... integers) {

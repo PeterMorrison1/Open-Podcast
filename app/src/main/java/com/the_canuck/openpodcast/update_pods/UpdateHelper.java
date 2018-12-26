@@ -1,7 +1,6 @@
 package com.the_canuck.openpodcast.update_pods;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
@@ -49,7 +48,7 @@ public class UpdateHelper {
              */
             for (Episode episode : newEpisodeList) {
                 DownloadHelper downloadHelper = new DownloadHelper(episode,
-                        episode.getCollectionId(), context);
+                        context);
                 long enqueue = downloadHelper.downloadEpisode();
 
                 episode.setDownloadId(enqueue);
