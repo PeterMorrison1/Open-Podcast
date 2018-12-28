@@ -59,8 +59,7 @@ public class DownloadHelper {
 //        title = title.replaceAll("#", " ");
         // Has been replaced with proper encoding now. Leaving this in just incase for now.
 
-        String title = episode.getTitle();
-        title = StringHelper.encodeFileName(title);
+        String title = StringHelper.encodeFileName(episode.getTitle());
 
         path = File.separator + episode.getCollectionId() + File.separator
                 + title + "."

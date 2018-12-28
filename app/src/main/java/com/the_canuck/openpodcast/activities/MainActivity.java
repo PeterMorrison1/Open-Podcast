@@ -30,6 +30,7 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
@@ -39,6 +40,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -580,6 +582,7 @@ public class MainActivity extends AppCompatActivity implements
             bundle.putSerializable(Episode.EPISODE, episode);
             Uri uri = MediaStoreHelper.getEpisodeUri(context,
                     episode);
+            Log.d("URI", "URI: " + uri + " EPISODE NAME: " + episode.getTitle());
             mainActivityPresenter.playFromUri(uri, bundle);
 //            mediaControllerCompat.getTransportControls().playFromUri(uri, bundle);
             initializePlayButtonRes();

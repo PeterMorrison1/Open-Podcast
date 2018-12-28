@@ -25,4 +25,13 @@ public class StringHelperTest {
 
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void encodeFileName_Should_ReturnEncodedOutput_When_RealTestInput() {
+        String term = "Ep. 47 - Half-Blood Prince Ch. 17 w/ Miel Bredouw";
+        String actual = StringHelper.encodeFileName(term);
+        String expected = "Ep. 47 - Half-Blood Prince Ch. 17 w%2F Miel Bredouw";
+
+        assertEquals(expected, actual);
+    }
 }

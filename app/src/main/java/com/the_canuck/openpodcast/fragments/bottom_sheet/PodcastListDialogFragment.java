@@ -284,7 +284,11 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
                 /* Set the most recent episode as the pubdate so auto download wont download every
                 episode that exists for this podcast. Then add to sqlite.
                  */
-                podcast.setNewestDownloadDate(episodes.get(0).getPubDate());
+//                try {
+//                    podcast.setNewestDownloadDate(episodes.get(0).getPubDate());
+//                } catch (NullPointerException e) {
+//                    e.printStackTrace();
+//                }
                 bottomSheetPresenter.subscribe(podcast, 1);
             }
         });
@@ -318,7 +322,6 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context, "settings", Toast.LENGTH_SHORT).show();
                 showSettingsPopup(v);
             }
         });
@@ -386,6 +389,11 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
     @Override
     public void setEpisodeList(List<Episode> episodeList) {
         episodes = episodeList;
+    }
+
+    @Override
+    public void setNewestDownloadDate() {
+        podcast.setNewestDownloadDate(episodes.get(0).getPubDate());
     }
 
     @Override

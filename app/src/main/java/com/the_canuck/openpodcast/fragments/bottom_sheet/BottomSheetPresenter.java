@@ -87,6 +87,7 @@ public class BottomSheetPresenter implements BottomSheetContract.BottomSheetPres
                 bottomSheetView.setEpisodeList(episodes);
                 bottomSheetView.showLoadingIndicator(false);
                 bottomSheetView.populateBottomSheetViews();
+                bottomSheetView.setNewestDownloadDate();
                 getDescription();
             }
         });

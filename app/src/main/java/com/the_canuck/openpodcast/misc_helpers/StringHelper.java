@@ -12,13 +12,14 @@ public class StringHelper {
      * @return the encoded filename
      */
     public static String encodeFileName(String term) {
-        try {
-            term = URLEncoder.encode(term, "UTF-8");
-            term = term.replaceAll("\\+", " ");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            term = URLEncoder.encode(term, "UTF-8");
+//            term = term.replaceAll("\\+", " ");
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+        String encoded = term.replaceAll("[^a-zA-Z0-9\\.\\- ]", "_");
 
-        return term;
+        return encoded;
     }
 }

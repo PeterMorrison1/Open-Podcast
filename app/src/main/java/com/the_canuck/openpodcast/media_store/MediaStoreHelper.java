@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.the_canuck.openpodcast.Episode;
@@ -59,9 +60,9 @@ public class MediaStoreHelper {
             String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
             String titleNoExtension = FilenameUtils.getBaseName(title);
 
-            String episodeTitle = episode.getTitle();
-            episodeTitle = episodeTitle.replaceAll("/", " ");
-            episodeTitle = episodeTitle.replaceAll("#", " ");
+            String episodeTitle = StringHelper.encodeFileName(episode.getTitle());
+//            episodeTitle = episodeTitle.replaceAll("/", " ");
+//            episodeTitle = episodeTitle.replaceAll("#", " ");
 
             // If the title found in mediastore equals the passed in title
             if (titleNoExtension.equalsIgnoreCase(episodeTitle)) {
@@ -149,6 +150,10 @@ public class MediaStoreHelper {
 
             // If the title found in mediastore equals the passed in title
             String episodeTitle = StringHelper.encodeFileName(episode.getTitle());
+//            String episodeTitle = episode.getTitle();
+
+            Log.d("Episode", "EpisodeTitle: " + episodeTitle + " titleNoExtension: " + titleNoExtension);
+
 //            episodeTitle = episodeTitle.replaceAll("/", " ");
 //            episodeTitle = episodeTitle.replaceAll("#", " ");
             if (titleNoExtension.equalsIgnoreCase(episodeTitle)) {

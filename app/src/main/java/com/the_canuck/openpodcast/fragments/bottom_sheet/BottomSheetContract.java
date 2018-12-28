@@ -20,6 +20,8 @@ public interface BottomSheetContract {
 
         void setPodcastDescription(String description);
 
+        void setNewestDownloadDate();
+
         // Views
         void populateBottomSheetViews();
         void showSubscribeButton();
