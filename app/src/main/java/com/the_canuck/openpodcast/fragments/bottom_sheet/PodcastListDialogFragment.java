@@ -104,6 +104,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
     private int trackCount;
     private String feedUrl;
 
+    private boolean isPodcastSubscribed;
+
     private List<Episode> episodes;
     private String podcastDescription;
     private Bitmap bitmapResource;
@@ -372,6 +374,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
         // TODO: Make it just one button and swap what it does like my play button
         subscribeButton.setVisibility(View.VISIBLE);
         unsubscribeButton.setVisibility(View.GONE);
+        isPodcastSubscribed = false;
     }
 
     @Override
@@ -379,6 +382,7 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
         // TODO: Make it just one button and swap what it does like my play button
         subscribeButton.setVisibility(View.GONE);
         unsubscribeButton.setVisibility(View.VISIBLE);
+        isPodcastSubscribed = true;
     }
 
     @Override
@@ -790,6 +794,12 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
                 // not downloaded, show download button. Must be library bottom sheet (subscribed)
                 holder.downloadButton.setVisibility(View.VISIBLE);
                 holder.downloadButton.setEnabled(true);
+                holder.progressBar.setVisibility(View.INVISIBLE);
+                holder.playButton.setVisibility(View.INVISIBLE);
+                holder.playButton.setEnabled(false);
+            } else if (!isPodcastSubscribed) {
+                holder.downloadButton.setVisibility(View.INVISIBLE);
+                holder.downloadButton.setEnabled(false);
                 holder.progressBar.setVisibility(View.INVISIBLE);
                 holder.playButton.setVisibility(View.INVISIBLE);
                 holder.playButton.setEnabled(false);
