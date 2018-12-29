@@ -18,6 +18,7 @@ import com.the_canuck.openpodcast.activities.MainActivity;
 import com.the_canuck.openpodcast.application.PodcastApplication;
 import com.the_canuck.openpodcast.data.podcast.PodcastRepository;
 import com.the_canuck.openpodcast.fragments.FragmentComponent;
+import com.the_canuck.openpodcast.misc_helpers.ImageHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import java.util.List;
@@ -77,9 +78,10 @@ public class LibraryFragment extends Fragment implements LibraryContract.Library
         mLibPresenter = new LibraryPresenter(this, podcastRepository);
 
 
-        if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
-        }
+//        if (getArguments() != null) {
+//            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+//        }
+
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -107,6 +109,8 @@ public class LibraryFragment extends Fragment implements LibraryContract.Library
     @Override
     public void populatePodcastViews() {
         if (getActivity() != null) {
+            mColumnCount = ImageHelper.calculateNoOfColumns(context);
+
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

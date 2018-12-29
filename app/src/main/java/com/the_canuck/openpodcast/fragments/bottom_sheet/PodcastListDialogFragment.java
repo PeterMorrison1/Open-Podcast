@@ -397,7 +397,15 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
 
     @Override
     public void setNewestDownloadDate() {
-        podcast.setNewestDownloadDate(episodes.get(0).getPubDate());
+        // TODO: Fix this error, probably by making episodes not all load at once.
+        try {
+            podcast.setNewestDownloadDate(episodes.get(0).getPubDate());
+        } catch (NullPointerException e) {
+            Toast.makeText(context, "Error: Failed to set newest download date for this " +
+                    "podcast, working on fix, for now open podcast twice then subscribe.",
+                    Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
     }
 
     @Override

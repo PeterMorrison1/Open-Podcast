@@ -257,12 +257,17 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mainActivityPresenter.getState();
-        if (mediaControllerState == PlaybackStateCompat.STATE_PLAYING) {
-            mainActivityPresenter.pause();
-            mainActivityPresenter.stop();
+        try {
+            mainActivityPresenter.getState();
+            if (mediaControllerState == PlaybackStateCompat.STATE_PLAYING) {
+                mainActivityPresenter.pause();
+                mainActivityPresenter.stop();
+            }
+            mediaBrowserCompat.disconnect();
+
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
-        mediaBrowserCompat.disconnect();
     }
 
     /**
