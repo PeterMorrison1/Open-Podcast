@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements
     private final int STATE_PLAYING = 1;
 
     private int currentState;
+
+    private String currentFragmentTag;
 
     private DrawerLayout mDrawerLayout;
     private SlidingUpPanelLayout slidingPanel;
@@ -250,8 +253,15 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onStop() {
+        try {
+            updateCurrentEpisodeBookmark();
+            Log.d("test", "Bookmark Updated");
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Error: Bookmark for episode couldn't be set",
+                    Toast.LENGTH_LONG).show();
+        }
         super.onStop();
-        updateCurrentEpisodeBookmark();
     }
 
     @Override
@@ -268,6 +278,38 @@ public class MainActivity extends AppCompatActivity implements
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        refreshFragment();
+    }
+
+    /**
+     * Refreshes the current fragment, such as after orientation change. (Works by creating a new
+     * fragment for the same type as itself and replaces it. So not very efficient, don't overuse).
+     */
+    private void refreshFragment() {
+        Fragment fragment;
+        String fragmentTag;
+
+        // Makes new Fragment rather than detach and attach because I can't get fragment context
+        if (currentFragmentTag.equalsIgnoreCase(DISCOVER_TAG)) {
+            fragment = new DiscoverFragment();
+            fragmentTag = DISCOVER_TAG;
+        } else if (currentFragmentTag.equalsIgnoreCase(SEARCH_TAG)) {
+            fragment = new SearchFragment();
+            fragmentTag = SEARCH_TAG;
+        } else if (currentFragmentTag.equalsIgnoreCase(SETTINGS_TAG)) {
+            fragment = new SettingsFragment();
+            fragmentTag = SETTINGS_TAG;
+        } else {
+            fragment = new LibraryFragment();
+            fragmentTag = LIBRARY_TAG;
+        }
+
+        replaceFragment(fragment, fragmentTag);
     }
 
     /**
@@ -330,6 +372,7 @@ public class MainActivity extends AppCompatActivity implements
                         }
                         if (newFragment != null) {
                             replaceFragment(newFragment, fragTag);
+                            currentFragmentTag = fragTag;
                         }
                         mDrawerLayout.closeDrawers();
                         return true;
@@ -362,6 +405,7 @@ public class MainActivity extends AppCompatActivity implements
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.add(R.id.fragment_container, libraryFragment);
             transaction.addToBackStack(LIBRARY_TAG);
+            currentFragmentTag = LIBRARY_TAG;
             transaction.commit();
         }
     }
@@ -888,33 +932,38 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void startGlide() {
         // Anything requiring palette colours MUST be inside onResourceReady below!
-        RequestOptions myOptions = new RequestOptions()
-                .fitCenter()
-                .placeholder(R.drawable.ic_image_black_48dp)
-                .error(R.drawable.ic_error_black_24dp)
-                .override(900, 900);
+        try {
 
-        Glide.with(this)
-                .asBitmap()
-                .load(artwork)
-                .thumbnail(0.1f)
-                .listener(new RequestListener<Bitmap>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model,
-                                                Target<Bitmap> target, boolean isFirstResource) {
-                        return false;
-                    }
+            RequestOptions myOptions = new RequestOptions()
+                    .fitCenter()
+                    .placeholder(R.drawable.ic_image_black_48dp)
+                    .error(R.drawable.ic_error_black_24dp)
+                    .override(900, 900);
 
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, Object model,
-                                                   Target<Bitmap> target, DataSource dataSource,
-                                                   boolean isFirstResource) {
-                        setColoursForPlayView(resource);
-                        return false;
-                    }
-                })
-                .apply(myOptions)
-                .into(panelImage);
+            Glide.with(this)
+                    .asBitmap()
+                    .load(artwork)
+                    .thumbnail(0.1f)
+                    .listener(new RequestListener<Bitmap>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model,
+                                                    Target<Bitmap> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Bitmap resource, Object model,
+                                                       Target<Bitmap> target, DataSource dataSource,
+                                                       boolean isFirstResource) {
+                            setColoursForPlayView(resource);
+                            return false;
+                        }
+                    })
+                    .apply(myOptions)
+                    .into(panelImage);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
