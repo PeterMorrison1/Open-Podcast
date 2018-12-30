@@ -21,6 +21,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -499,7 +500,12 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
                 artist.setTextColor(dominantSwatch.getBodyTextColor());
 
                 // description and constraint colours
-                descriptionLayout.setBackgroundColor(dominantSwatch.getRgb());
+                try {
+
+                    descriptionLayout.setBackgroundColor(dominantSwatch.getRgb());
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
                 descrpitonText.setTextColor(dominantSwatch.getBodyTextColor());
             } else {
                 constraintLayout.setBackgroundColor(defaultColour);

@@ -22,6 +22,7 @@ import com.the_canuck.openpodcast.misc_helpers.ImageHelper;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -109,7 +110,9 @@ public class LibraryFragment extends Fragment implements LibraryContract.Library
     @Override
     public void populatePodcastViews() {
         if (getActivity() != null) {
-            mColumnCount = ImageHelper.calculateNoOfColumns(context);
+            // Determine column count
+            Map<String, Integer> imageMap = ImageHelper.calculateImageSizes(context);
+            mColumnCount = imageMap.get(ImageHelper.COLUMN_NUM_MAP);
 
             getActivity().runOnUiThread(new Runnable() {
                 @Override

@@ -3,8 +3,10 @@ package com.the_canuck.openpodcast.fragments.library;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +18,10 @@ import com.bumptech.glide.request.RequestOptions;
 import com.the_canuck.openpodcast.Podcast;
 import com.the_canuck.openpodcast.R;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment.OnListFragmentInteractionListener;
+import com.the_canuck.openpodcast.misc_helpers.ImageHelper;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Podcast} and makes a call to the
@@ -29,6 +33,7 @@ public class MyLibraryRecyclerViewAdapter extends
     private final List<Podcast> mValues;
     private final OnListFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
+    private Map<String, Integer> imageMap;
 
     public MyLibraryRecyclerViewAdapter(List<Podcast> items,
                                         OnListFragmentInteractionListener listener,
@@ -43,6 +48,14 @@ public class MyLibraryRecyclerViewAdapter extends
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.fragment_library_constraint, parent, false);
         return new ViewHolder(view);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+
+        // When attached determine image size. Not in bindViewHolder since it is called too often
+        imageMap = ImageHelper.calculateImageSizes(recyclerView.getContext());
     }
 
     @Override
@@ -62,7 +75,7 @@ public class MyLibraryRecyclerViewAdapter extends
                 .fitCenter()
                 .placeholder(R.drawable.ic_glide_placeholder_library_24dp)
                 .error(R.drawable.ic_glide_placeholder_library_24dp)
-                .override(400);
+                .override(imageMap.get(ImageHelper.IMAGE_SIZE_MAP));
         Glide.with(holder.mView.getContext())
                 .load(mValues.get(position).getArtworkUrl600())
                 .apply(myOptions)
