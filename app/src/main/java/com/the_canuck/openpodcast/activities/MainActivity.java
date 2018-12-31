@@ -31,7 +31,6 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
@@ -68,7 +67,6 @@ import com.the_canuck.openpodcast.media_player.MediaControlApi;
 import com.the_canuck.openpodcast.media_player.MediaControlApiImpl;
 import com.the_canuck.openpodcast.media_store.MediaStoreHelper;
 import com.the_canuck.openpodcast.misc_helpers.TimeHelper;
-import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 import com.the_canuck.openpodcast.update_pods.DownloadWorker;
 
 import java.util.Objects;
@@ -255,7 +253,6 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStop() {
         try {
             updateCurrentEpisodeBookmark();
-            Log.d("test", "Bookmark Updated");
         } catch (NullPointerException e) {
             e.printStackTrace();
             Toast.makeText(context, "Error: Bookmark for episode couldn't be set",
@@ -282,8 +279,48 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        updateCurrentEpisodeBookmark();
         super.onConfigurationChanged(newConfig);
         refreshFragment();
+
+        setContentView(R.layout.activity_main);
+
+        component = PodcastApplication.get().plusActivityComponent(this);
+        component.injectMainActivity(this);
+
+//        // Can't inject fragment manager, after restarting app it becomes null with injection
+        fragmentManager = getSupportFragmentManager();
+        mainActivityPresenter = new MainActivityPresenter(this, podcastRepository,
+                episodeRepository);
+//
+        mediaBrowserConnectionCallback.onConnected();
+//
+        initializeViews();
+
+        /* Sets the play button to be pause or play based on if there is a previously played episode
+        code that sets if there is a previously played episode MUST go before this
+         */
+        initializePlayButtonRes();
+        slidingPanel.setParallaxOffset(1000);
+        thumbCard.setVisibility(View.INVISIBLE);
+        hideSlideUpPanel();
+
+//        // -------------------------------- Button Listeners --------------------------------
+        seekBarChangeListener();
+        panelSlideListener();
+        seekButtonListeners();
+        playButtonListeners();
+
+        setSlidingPanelEpisode(currentEpisode);
+        updateSeekBar();
+        initializeActionBar();
+        navigationViewListener();
+        initializeUpdateWorker();
+
+        if (currentState == STATE_PLAYING) {
+            panelLargePlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
+            panelSmallPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+        }
     }
 
     /**
@@ -585,7 +622,7 @@ public class MainActivity extends AppCompatActivity implements
                         mainActivityPresenter.setMediaController(mediaControlApi);
 
                         mainActivityPresenter.registerCallback(mediaControllerCallback);
-                        if (currentEpisode != null) {
+                        if (currentEpisode != null && currentState != STATE_PLAYING) {
                             playEpisode(currentEpisode);
                         }
 
@@ -593,6 +630,8 @@ public class MainActivity extends AppCompatActivity implements
                         e.printStackTrace();
                     }
                 }
+
+
             };
 
     // Check if the media is playing or paused, and set current state as that
@@ -631,7 +670,6 @@ public class MainActivity extends AppCompatActivity implements
             bundle.putSerializable(Episode.EPISODE, episode);
             Uri uri = MediaStoreHelper.getEpisodeUri(context,
                     episode);
-            Log.d("URI", "URI: " + uri + " EPISODE NAME: " + episode.getTitle());
             mainActivityPresenter.playFromUri(uri, bundle);
 //            mediaControllerCompat.getTransportControls().playFromUri(uri, bundle);
             initializePlayButtonRes();
@@ -721,10 +759,14 @@ public class MainActivity extends AppCompatActivity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (currentState == STATE_PLAYING) {
-                    mainActivityPresenter.getPosition();
-                    int currentPosition = (int) mediaPosition / 1000;
-                    seekBar.setProgress(currentPosition);
+                try {
+                    if (currentState == STATE_PLAYING) {
+                        mainActivityPresenter.getPosition();
+                        int currentPosition = (int) mediaPosition / 1000;
+                        seekBar.setProgress(currentPosition);
+                    }
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
                 }
                 handler.postDelayed(this, 1000);
             }
@@ -778,16 +820,20 @@ public class MainActivity extends AppCompatActivity implements
 
         } else {
             // Pauses the episode and sets button icon to play
-            mainActivityPresenter.getState();
-            if (mediaControllerState == PlaybackStateCompat.STATE_PLAYING) {
+            try {
+                mainActivityPresenter.getState();
+                if (mediaControllerState == PlaybackStateCompat.STATE_PLAYING) {
 
-                isEpisodePaused = true;
-                panelLargePlay.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
-                panelSmallPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+                    isEpisodePaused = true;
+                    panelLargePlay.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
+                    panelSmallPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
 
-                mainActivityPresenter.pause();
+                    mainActivityPresenter.pause();
+                }
+                currentState = STATE_PAUSED;
+            } catch (NullPointerException e) {
+                e.printStackTrace();
             }
-            currentState = STATE_PAUSED;
         }
     }
 
