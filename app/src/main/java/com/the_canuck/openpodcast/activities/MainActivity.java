@@ -9,6 +9,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
@@ -494,6 +498,7 @@ public class MainActivity extends AppCompatActivity implements
         slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
+                panelTinyContainer.animate().alpha((1 - slideOffset)).start();
             }
 
             @Override
@@ -501,18 +506,12 @@ public class MainActivity extends AppCompatActivity implements
                                             SlidingUpPanelLayout.PanelState previousState,
                                             SlidingUpPanelLayout.PanelState newState) {
 
+                // Fades in and out the small panel on open/close/slide
                 if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
-                    panelTinyContainer.setVisibility(View.VISIBLE);
-                    panelTinyContainer.setEnabled(true);
+                    panelSmallPlay.setEnabled(true);
                 } else if (slidingPanel.getPanelState() ==
                         SlidingUpPanelLayout.PanelState.EXPANDED) {
-                    // TODO: Maybe add animation here or animate to different viewholder
-                    /* Update: Above comment means when you drag panel up the tiny bar remains until
-                    the panel is completely expanded or collapsed. So fade away tiny bar basically.
-                    Take this as a learning experience to write better comments, future Peter.
-                     */
-                    panelTinyContainer.setVisibility(View.INVISIBLE);
-                    panelTinyContainer.setEnabled(false);
+                    panelSmallPlay.setEnabled(false);
                 }
             }
         });
@@ -1030,8 +1029,28 @@ public class MainActivity extends AppCompatActivity implements
                     (dominantSwatch.getBodyTextColor());
             thumbCard.setCardBackgroundColor(dominantSwatch.getTitleTextColor());
             thumbCardDuration.setTextColor(dominantSwatch.getBodyTextColor());
+
+            // TODO: Figure out better design for tiny slide up panel
+//            panelTinyContainer.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+
+//            actionBar.setBackgroundDrawable(new ColorDrawable(dominantSwatch.getTitleTextColor()));
+//            toolbar.setBackgroundColor(dominantSwatch.getRgb());
+//            toolbar.setTitleTextColor(dominantSwatch.getTitleTextColor());
+////            actionBar.setDisplayShowTitleEnabled(false);
+////            actionBar.setDisplayShowTitleEnabled(true);
+//            panelTinyTitle.setTextColor(dominantSwatch.getTitleTextColor());
+//
+//            setButtonColours(dominantSwatch, panelSmallPlay, getResources().getDrawable(R.drawable.ic_play_circle_outline_black_24dp));
+
         }
     }
+
+//    public void setButtonColours(Palette.Swatch dominantSwatch, View button, Drawable buttonDrawable) {
+//        // pass in current drawable for subscribe button (sub or unsub) and tint it
+//        Drawable drawable = buttonDrawable;
+//        drawable.setColorFilter(dominantSwatch.getBodyTextColor(), PorterDuff.Mode.SRC_IN);
+//        button.setBackground(drawable);
+//    }
 
     @Override
     public void setArtwork600(String artwork) {
