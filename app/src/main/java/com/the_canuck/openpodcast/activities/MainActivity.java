@@ -780,12 +780,17 @@ public class MainActivity extends AppCompatActivity implements
         /* Opted to use bookmark in episodes table over mediastore since mediastore seems more
         expensive to use (possibly from how I coded it). Also episode table is easier :)
          */
-        if (currentEpisode != null) {
-            long bookmark = MediaControllerCompat.getMediaController(MainActivity.this)
-                    .getPlaybackState().getPosition();
+        try {
+            if (currentEpisode != null) {
+                long bookmark = MediaControllerCompat.getMediaController(MainActivity.this)
+                        .getPlaybackState().getPosition();
 
-            currentEpisode.setBookmark(String.valueOf(bookmark));
-            episodeRepository.updateEpisode(currentEpisode);
+                currentEpisode.setBookmark(String.valueOf(bookmark));
+                episodeRepository.updateEpisode(currentEpisode);
+            }
+        } catch (NullPointerException e) {
+            Toast.makeText(context, "Failed to update episode's current duration.",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 

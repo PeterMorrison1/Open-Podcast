@@ -1,23 +1,20 @@
 package com.the_canuck.openpodcast.update_pods;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import com.the_canuck.openpodcast.Episode;
-import com.the_canuck.openpodcast.Podcast;
-import com.the_canuck.openpodcast.download.DownloadHelper;
-import com.the_canuck.openpodcast.misc_helpers.ListHelper;
-import com.the_canuck.openpodcast.search.RssReader;
 import com.the_canuck.openpodcast.sqlite.MySQLiteHelper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 public class DownloadWorker extends Worker {
 
     private MySQLiteHelper sqLiteHelper;
+
+    public DownloadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
+    }
 
     @NonNull
     @Override
@@ -28,6 +25,6 @@ public class DownloadWorker extends Worker {
         updateHelper.downloadNewEpisodes();
 
         // TODO: Maybe set try-catch around method calls to be able to return Result.FAILURE
-        return Result.SUCCESS;
+        return Result.success();
     }
 }

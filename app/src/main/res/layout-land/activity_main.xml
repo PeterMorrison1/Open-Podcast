@@ -68,8 +68,10 @@
                         android:id="@+id/panel_small_title"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:layout_marginEnd="8dp"
                         android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="Test title"
                         android:textSize="22sp"
                         sothree:layout_constraintEnd_toStartOf="@id/panel_small_play_button"
@@ -138,31 +140,31 @@
                     android:id="@+id/panel_episode_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
                     android:background="@android:drawable/dialog_holo_light_frame"
                     sothree:layout_constraintBottom_toBottomOf="parent"
+                    sothree:layout_constraintEnd_toStartOf="@id/seek_bar"
                     sothree:layout_constraintStart_toStartOf="parent"
-                    sothree:layout_constraintTop_toTopOf="parent"
-                    sothree:layout_constraintEnd_toStartOf="@id/seek_bar"/>
+                    sothree:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/panel_big_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="2"
-                    android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
+                    android:maxLines="2"
                     android:textAlignment="center"
                     android:textSize="20sp"
-                    sothree:layout_constraintEnd_toEndOf="parent"
                     sothree:layout_constraintBottom_toTopOf="@id/seek_bar"
+                    sothree:layout_constraintEnd_toEndOf="parent"
                     sothree:layout_constraintStart_toEndOf="@id/panel_episode_image"
-                    sothree:layout_constraintTop_toBottomOf="parent" />
+                    sothree:layout_constraintTop_toTopOf="parent" />
 
                 <android.support.v7.widget.AppCompatSeekBar
                     android:id="@+id/seek_bar"
@@ -173,7 +175,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     sothree:layout_constraintTop_toBottomOf="@id/panel_big_title"
-                    sothree:layout_constraintBottom_toTopOf="parent"
+                    sothree:layout_constraintBottom_toTopOf="@id/panel_big_button_constraint"
                     sothree:layout_constraintStart_toEndOf="@id/panel_episode_image"
                     sothree:layout_constraintEnd_toEndOf="parent" />
 
