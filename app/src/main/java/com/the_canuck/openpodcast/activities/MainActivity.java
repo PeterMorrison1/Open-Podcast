@@ -259,8 +259,7 @@ public class MainActivity extends AppCompatActivity implements
             updateCurrentEpisodeBookmark();
         } catch (NullPointerException e) {
             e.printStackTrace();
-            Toast.makeText(context, "Error: Bookmark for episode couldn't be set",
-                    Toast.LENGTH_LONG).show();
+            // FIXME: Sometimes thrown but no real problem. Sometimes doesn't update auto-update status
         }
         super.onStop();
     }

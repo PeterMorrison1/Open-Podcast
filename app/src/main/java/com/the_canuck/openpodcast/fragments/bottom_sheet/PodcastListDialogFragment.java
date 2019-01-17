@@ -403,7 +403,8 @@ public class PodcastListDialogFragment extends BottomSheetDialogFragment
             podcast.setNewestDownloadDate(episodes.get(0).getPubDate());
         } catch (NullPointerException e) {
             Toast.makeText(context, "Error: Failed to set newest download date for this " +
-                    "podcast, working on fix, for now open podcast twice then subscribe.",
+                    "podcast, close, then open podcast again, then subscribe again please. " +
+                            "Working on solution.",
                     Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }

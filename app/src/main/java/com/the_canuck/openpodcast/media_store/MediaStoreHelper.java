@@ -152,7 +152,6 @@ public class MediaStoreHelper {
             String episodeTitle = StringHelper.encodeFileName(episode.getTitle());
 //            String episodeTitle = episode.getTitle();
 
-            Log.d("Episode", "EpisodeTitle: " + episodeTitle + " titleNoExtension: " + titleNoExtension);
 
 //            episodeTitle = episodeTitle.replaceAll("/", " ");
 //            episodeTitle = episodeTitle.replaceAll("#", " ");
