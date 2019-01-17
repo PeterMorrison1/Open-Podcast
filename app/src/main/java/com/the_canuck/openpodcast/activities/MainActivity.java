@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements
                                 }
                                 break;
 
-                            case R.id.nav_libraries:
+                            case R.id.nav_about:
                                 if (container instanceof LibsSupportFragment) {
                                     mDrawerLayout.closeDrawers();
                                     return true;

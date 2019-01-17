@@ -71,4 +71,14 @@
         download</string>
 
 
+    <string name="aboutLibraries_description_showIcon">true</string>
+    <string name="aboutLibraries_description_showVersion">true</string>
+    <string name="aboutLibraries_description_text">I am a student working on my second degree,
+    which is in Computer Information Systems.
+    I have a passion for podcasts, so I made this app to have a free open source podcast player
+        on the Android market that isn\'t bloated with ads.
+    See the Github for Open-Podcast here: https://github.com/The-Canuck/Open-Podcast.
+    Our Privacy Policy can be viewed here: https://sites.google.com/view/open-podcast/home
+    </string>
+
 </resources>
