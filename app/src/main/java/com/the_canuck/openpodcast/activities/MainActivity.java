@@ -52,6 +52,9 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.mikepenz.aboutlibraries.LibsBuilder;
+import com.mikepenz.aboutlibraries.LibsFragmentCompat;
+import com.mikepenz.aboutlibraries.ui.LibsSupportFragment;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.the_canuck.openpodcast.Episode;
 import com.the_canuck.openpodcast.Podcast;
@@ -94,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements
     final String SEARCH_TAG = "search";
     final String DISCOVER_TAG = "discover";
     final String SETTINGS_TAG = "settings";
+    final String ABOUT_TAG = "about";
 
     final static String UPDATE_WORK_TAG = "auto_update_episodes";
 
@@ -344,9 +348,12 @@ public class MainActivity extends AppCompatActivity implements
         } else if (currentFragmentTag.equalsIgnoreCase(SETTINGS_TAG)) {
             fragment = new SettingsFragment();
             fragmentTag = SETTINGS_TAG;
-        } else {
+        } else if (currentFragmentTag.equalsIgnoreCase(SETTINGS_TAG)){
             fragment = new LibraryFragment();
             fragmentTag = LIBRARY_TAG;
+        } else {
+            fragment = new LibsBuilder().supportFragment();
+            fragmentTag = ABOUT_TAG;
         }
 
         replaceFragment(fragment, fragmentTag);
@@ -408,6 +415,21 @@ public class MainActivity extends AppCompatActivity implements
 
                                     newFragment = new SettingsFragment();
                                     fragTag = SETTINGS_TAG;
+                                }
+                                break;
+
+                            case R.id.nav_libraries:
+                                if (container instanceof LibsSupportFragment) {
+                                    mDrawerLayout.closeDrawers();
+                                    return true;
+                                } else {
+                                    fragmentManager.popBackStack(ABOUT_TAG,
+                                            FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+                                    newFragment = new LibsBuilder()
+                                            .withFields(R.string.class.getFields())
+                                            .supportFragment();
+                                    fragTag = ABOUT_TAG;
                                 }
                         }
                         if (newFragment != null) {

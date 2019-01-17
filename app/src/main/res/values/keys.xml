@@ -6,7 +6,7 @@
 
     <!--Storage Keys-->
     <string name="pref_storage_external">pref_storage_external</string>
-
+    <string name="pref_storage_discoverable">pref_storage_discoverable</string>
     <!--Download Keys-->
     <string name="pref_auto_download">pref_auto_download</string>
     <string name="pref_network_roaming">pref_network_roaming</string>

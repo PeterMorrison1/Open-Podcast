@@ -12,6 +12,14 @@
             android:enabled="false"
             android:defaultValue="false"/>
 
+        <SwitchPreference
+            android:key="@string/pref_storage_discoverable"
+            android:title="@string/pref_discoverable"
+            android:summary="@string/pref_discoverable_sum"
+            android:selectable="false"
+            android:enabled="false"
+            android:defaultValue="true"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory
