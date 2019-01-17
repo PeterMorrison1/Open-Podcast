@@ -1,7 +1,6 @@
 package com.the_canuck.openpodcast.misc_helpers;
 
 import com.the_canuck.openpodcast.Episode;
-import com.the_canuck.openpodcast.misc_helpers.ListHelper;
 
 import org.junit.Before;
 import org.junit.Test;

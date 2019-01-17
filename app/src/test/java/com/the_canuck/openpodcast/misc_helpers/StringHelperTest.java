@@ -1,8 +1,8 @@
 package com.the_canuck.openpodcast.misc_helpers;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class StringHelperTest {
 

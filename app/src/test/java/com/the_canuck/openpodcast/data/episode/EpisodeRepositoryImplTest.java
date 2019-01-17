@@ -1,7 +1,6 @@
 package com.the_canuck.openpodcast.data.episode;
 
 import com.the_canuck.openpodcast.Episode;
-import com.the_canuck.openpodcast.misc_helpers.EpisodeListSorter;
 import com.the_canuck.openpodcast.search.RssReaderApi;
 
 import org.junit.Before;
@@ -13,7 +12,12 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import static org.mockito.Mockito.*;
+
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 
 public class EpisodeRepositoryImplTest {

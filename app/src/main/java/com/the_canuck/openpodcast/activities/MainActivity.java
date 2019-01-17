@@ -9,11 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -30,14 +27,13 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -53,7 +49,6 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.mikepenz.aboutlibraries.LibsBuilder;
-import com.mikepenz.aboutlibraries.LibsFragmentCompat;
 import com.mikepenz.aboutlibraries.ui.LibsSupportFragment;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.the_canuck.openpodcast.Episode;
@@ -63,9 +58,9 @@ import com.the_canuck.openpodcast.application.PodcastApplication;
 import com.the_canuck.openpodcast.data.episode.EpisodeRepository;
 import com.the_canuck.openpodcast.data.podcast.PodcastRepository;
 import com.the_canuck.openpodcast.download.DownloadCompleteService;
+import com.the_canuck.openpodcast.fragments.bottom_sheet.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.discover.DiscoverFragment;
 import com.the_canuck.openpodcast.fragments.library.LibraryFragment;
-import com.the_canuck.openpodcast.fragments.bottom_sheet.PodcastListDialogFragment;
 import com.the_canuck.openpodcast.fragments.search_results.SearchFragment;
 import com.the_canuck.openpodcast.fragments.settings.PreferenceKeys;
 import com.the_canuck.openpodcast.fragments.settings.SettingsFragment;
@@ -90,7 +85,7 @@ import androidx.work.WorkManager;
 public class MainActivity extends AppCompatActivity implements
         SearchFragment.OnListFragmentInteractionListener, PodcastListDialogFragment.Listener,
         LibraryFragment.OnListFragmentInteractionListener,
-        DiscoverFragment.OnListFragmentInteractionListener, MainActivityContract.MainActivityView{
+        DiscoverFragment.OnListFragmentInteractionListener, MainActivityContract.MainActivityView {
 
     private static final int REQUEST_WRITE_STORAGE_REQUEST_CODE = 112;
     final String LIBRARY_TAG = "library";
@@ -348,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (currentFragmentTag.equalsIgnoreCase(SETTINGS_TAG)) {
             fragment = new SettingsFragment();
             fragmentTag = SETTINGS_TAG;
-        } else if (currentFragmentTag.equalsIgnoreCase(SETTINGS_TAG)){
+        } else if (currentFragmentTag.equalsIgnoreCase(SETTINGS_TAG)) {
             fragment = new LibraryFragment();
             fragmentTag = LIBRARY_TAG;
         } else {
@@ -360,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     *  Controls what to do when the side drawer's buttons are clicked.
+     * Controls what to do when the side drawer's buttons are clicked.
      */
     private void navigationViewListener() {
         // Set and control navigation view (The drawer)
@@ -657,26 +652,26 @@ public class MainActivity extends AppCompatActivity implements
     // Check if the media is playing or paused, and set current state as that
     private MediaControllerCompat.Callback mediaControllerCallback =
             new MediaControllerCompat.Callback() {
-        @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            super.onPlaybackStateChanged(state);
+                @Override
+                public void onPlaybackStateChanged(PlaybackStateCompat state) {
+                    super.onPlaybackStateChanged(state);
 
-            if (state == null) {
-                return;
-            }
+                    if (state == null) {
+                        return;
+                    }
 
-            switch (state.getState()) {
-                case PlaybackStateCompat.STATE_PLAYING: {
-                    currentState = STATE_PLAYING;
-                    break;
+                    switch (state.getState()) {
+                        case PlaybackStateCompat.STATE_PLAYING: {
+                            currentState = STATE_PLAYING;
+                            break;
+                        }
+                        case PlaybackStateCompat.STATE_PAUSED: {
+                            currentState = STATE_PAUSED;
+                            break;
+                        }
+                    }
                 }
-                case PlaybackStateCompat.STATE_PAUSED: {
-                    currentState = STATE_PAUSED;
-                    break;
-                }
-            }
-        }
-    };
+            };
 
     /**
      * Sends the passed in episode to the AudioService.
@@ -867,7 +862,7 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void requestAppPermissions() {
         ActivityCompat.requestPermissions(this,
-                new String[] {
+                new String[]{
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
                 }, REQUEST_WRITE_STORAGE_REQUEST_CODE);
@@ -937,7 +932,7 @@ public class MainActivity extends AppCompatActivity implements
      * Swaps out current fragment in fragment container for new fragment, adds old to backstack.
      *
      * @param newFragment new fragment being created/put in view
-     * @param tag tag of the fragment for possible query later
+     * @param tag         tag of the fragment for possible query later
      */
     public void replaceFragment(Fragment newFragment, String tag) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -1113,7 +1108,7 @@ public class MainActivity extends AppCompatActivity implements
 
         PodcastListDialogFragment.newInstance()
                 .setPodcastBundle(podcastBundle)
-                .show(getSupportFragmentManager(),"dialog");
+                .show(getSupportFragmentManager(), "dialog");
     }
 
     @Override
@@ -1125,7 +1120,7 @@ public class MainActivity extends AppCompatActivity implements
                 .setLibraryRecyclerView(item.getRecyclerView())
                 .setPosition(item.getPosition())
                 .setPodcastBundle(podcastBundle)
-                .show(getSupportFragmentManager(),"dialog");
+                .show(getSupportFragmentManager(), "dialog");
     }
 
     @Override
@@ -1135,6 +1130,6 @@ public class MainActivity extends AppCompatActivity implements
 
         PodcastListDialogFragment.newInstance()
                 .setPodcastBundle(podcastBundle)
-                .show(getSupportFragmentManager(),"dialog");
+                .show(getSupportFragmentManager(), "dialog");
     }
 }

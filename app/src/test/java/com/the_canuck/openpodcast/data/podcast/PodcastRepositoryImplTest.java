@@ -12,7 +12,10 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class PodcastRepositoryImplTest {
     private PodcastRepositoryImpl repository;
