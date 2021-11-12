@@ -1,5 +1,8 @@
 # Open-Podcast
 
+This project is no longer worked on (probably doesn't even run on Android anymore), it is just being left up to see my previous projects
+
+
 The Open-Podcast project was created by me due to a passion for podcasts, and a desire to create
 a podcast app on Android that was free and not bloated with ads. Since I am a student the project
 was unable to be worked on as much as I wanted around August-December. There are planned updates for
@@ -29,11 +32,3 @@ significantly easier. This was also with help from Dagger 2 and MVP design.
 - SD card support
 - Import/export subscribed podcasts & episodes
 - Improve UI
-
-## Privacy Policy
-
-https://sites.google.com/view/open-podcast/home
-
-## Contact
-
-If anyone wishes to contact me, email me at: cheekibreekidev@gmail.com
